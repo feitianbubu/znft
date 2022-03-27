@@ -6,26 +6,6 @@ const binPath = 'build/';
 
 process.noDeprecation = true;
 
-let postcss_plugins = [
-  require('postcss-simple-vars'),
-  require('postcss-cssnext')({
-    compress: true
-  }),
-  require('postcss-sprites')({
-    retina: true,
-    spritePath: binPath+'assets/temp/images',
-    filterBy: (image) =>{
-      if (image.url.indexOf('/sprites/') === -1){
-        return Promise.reject();
-      }
-      return Promise.resolve();
-    }
-  }),
-  // require("cssnano")({ 
-  //   autoprefixer: false 
-  // })
-];
-
 module.exports = {
   mode: 'development',
   entry: ['@babel/polyfill', './src/index.js'],
@@ -140,7 +120,7 @@ module.exports = {
     }),
     new CopyWebpackPlugin({
       patterns: [
-        { from: 'index.html', to: '..' }
+        { from: 'public/index.html', to: binPath }
       ]
     })
   ],
