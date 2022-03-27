@@ -145,5 +145,8 @@ module.exports = {
         { from: 'index.html', to: '..' }
       ]
     })
-  ]
+  ],
+  performance: {
+    hints:false
+  }
 };
