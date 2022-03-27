@@ -1,7 +1,7 @@
 import './App.css';
 
 import Button from '@mui/material/Button';
-// import Web3 from "web3";
+import Web3 from "web3";
 // import Web3Modal from "web3modal";
 
 let onConnect = async () => {
@@ -18,8 +18,8 @@ let onConnect = async () => {
     //
     // const provider = await web3Modal.connect();
     //
-    // const web3 = new Web3(provider);
-    // console.log(`web3: ${web3}`);
+    const web3 = new Web3(window.web3.currentProvider);
+    console.log(`web3: ${web3}`);
 };
 
 function App() {

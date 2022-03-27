@@ -10,7 +10,7 @@ ReactDOM.render(
       <Header />
       <App />
   </React.StrictMode>,
-    document.querySelector('#app')
+    document.querySelector('#root')
 );
 
 // If you want to start measuring performance in your app, pass a function
