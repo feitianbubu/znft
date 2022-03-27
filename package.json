@@ -4,7 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "webpack-dev-server --open --mode production",
+    "watch": "webpack --watch",
+    "build": "webpack --mode production",
+    "dev": "webpack  --mode development& webpack-dev-server --open  --mode development"
   },
   "author": "",
   "license": "ISC",
@@ -43,7 +46,21 @@
     "uuid": "^8.3.2",
     "webpack": "^5.53.0",
     "webpack-cli": "^4.8.0",
-    "webpack-dev-server": "^4.2.1"
+    "webpack-dev-server": "^4.2.1",
+    "@mui/icons-material": "^5.5.1",
+    "@mui/styled-engine-sc": "^5.5.2",
+    "@testing-library/jest-dom": "^5.16.3",
+    "@testing-library/react": "^12.1.4",
+    "@testing-library/user-event": "^13.5.0",
+    "react-scripts": "5.0.0",
+    "styled-components": "^5.3.5",
+    "web-vitals": "^2.1.4",
+    "@babel/cli": "^7.17.6",
+    "@babel/plugin-proposal-class-properties": "^7.16.7",
+    "html-webpack-plugin": "^5.5.0",
+    "node-sass": "^7.0.1",
+    "sass-loader": "^12.6.0",
+    "url-loader": "^4.1.1"
   },
   "dependencies": {}
 }

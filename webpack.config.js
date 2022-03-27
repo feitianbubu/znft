@@ -4,7 +4,7 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const OfflinePlugin = require('offline-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
-const binPath = '../bin/';
+const binPath = 'build/';
 
 process.noDeprecation = true;
 
@@ -57,7 +57,7 @@ module.exports = {
         ]
       },
       {
-        test: /\.pcss$/,
+        test: /\.(pcss|css)$/,
         exclude: /(node_modules|bower_components)/,
         use: [
           {
