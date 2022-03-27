@@ -1,119 +1,149 @@
 const path = require('path');
 const webpack = require('webpack');
-const HtmlPlugin = require('html-webpack-plugin');
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const OfflinePlugin = require('offline-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
+const binPath = '../bin/';
 
-const hasJsxRuntime = (() => {
-    if (process.env.DISABLE_NEW_JSX_TRANSFORM === 'true') {
-        return false;
+process.noDeprecation = true;
+
+let postcss_plugins = [
+  require('postcss-simple-vars'),
+  require('postcss-cssnext')({
+    compress: true
+  }),
+  require('postcss-sprites')({
+    retina: true,
+    spritePath: binPath+'assets/temp/images',
+    filterBy: (image) =>{
+      if (image.url.indexOf('/sprites/') === -1){
+        return Promise.reject();
+      }
+      return Promise.resolve();
     }
-
-    try {
-        require.resolve('react/jsx-runtime');
-        return true;
-    } catch (e) {
-        return false;
-    }
-})();
-
-process.env.NODE_ENV = process.env.NODE_ENV || 'development';
-const isEnvDevelopment = true;
-const isEnvProduction = !isEnvDevelopment;
-const getCacheIdentifier = require('react-dev-utils/getCacheIdentifier');
-const paths = require('react-scripts/config/paths');
-const getClientEnvironment = require('react-scripts/config/env');
-const env = getClientEnvironment(paths.publicUrlOrPath.slice(0, -1));
-const shouldUseReactRefresh = env.raw.FAST_REFRESH;
+  }),
+  // require("cssnano")({ 
+  //   autoprefixer: false 
+  // })
+];
 
 module.exports = {
-    devtool: 'inline-source-map',
-    entry: {
-        index: './src/index.js'
+  mode: 'development',
+  entry: ['@babel/polyfill', './src/index.js'],
+  devtool: 'source-map',
+  devServer: { 
+    // inline: true,
+    static: {
+      directory: path.join(__dirname, binPath),
     },
-    output: {
-        filename: 'bundle.js',
-        path: path.resolve(__dirname, 'build')
-    },
-    module: {
-        rules: [{
-            test: /\.css$/,
-            use: [{loader:'style-loader'}, {loader:'css-loader'}]
-        }, {
-            test: /\.scss$/,
-            use: [{loader:'style-loader'}, {loader:'css-loader'}, {loader:'sass-loader'}]
-        }, {
-            test: /\.(png|svg|jpg|gif)$/,
-            loader: 'url-loader',
-            options: {
-                limit: 10000,
-                name: 'img/[name].[hash:7].[ext]'
-            }
-        },
-
-            {
-                test: /\.(js|mjs|jsx|ts|tsx)$/,
-                include: paths.appSrc,
-                loader: require.resolve('babel-loader'),
-                options: {
-                    customize: require.resolve(
-                        'babel-preset-react-app/webpack-overrides'
-                    ),
-                    presets: [
-                        [
-                            require.resolve('babel-preset-react-app'),
-                            {
-                                runtime: hasJsxRuntime ? 'automatic' : 'classic',
-                            },
-                        ],
-                    ],
-                    // @remove-on-eject-begin
-                    babelrc: false,
-                    configFile: false,
-                    // Make sure we have a unique cache identifier, erring on the
-                    // side of caution.
-                    // We remove this when the user ejects because the default
-                    // is sane and uses Babel options. Instead of options, we use
-                    // the react-scripts and babel-preset-react-app versions.
-                    cacheIdentifier: getCacheIdentifier(
-                        isEnvProduction
-                            ? 'production'
-                            : isEnvDevelopment && 'development',
-                        [
-                            'babel-plugin-named-asset-import',
-                            'babel-preset-react-app',
-                            'react-dev-utils',
-                            'react-scripts',
-                        ]
-                    ),
-                    // @remove-on-eject-end
-                    plugins: [
-                        isEnvDevelopment &&
-                        shouldUseReactRefresh &&
-                        require.resolve('react-refresh/babel'),
-                    ].filter(Boolean),
-                    // This is a feature of `babel-loader` for webpack (not Babel itself).
-                    // It enables caching results in ./node_modules/.cache/babel-loader/
-                    // directory for faster rebuilds.
-                    cacheDirectory: true,
-                    // See #6846 for context on why cacheCompression is disabled
-                    cacheCompression: false,
-                    compact: isEnvProduction,
-                },
-            },
-
-
+    compress: true
+  },
+  resolve: {
+    extensions: ['.js', '.jsx']
+  },
+  output: {
+    filename: 'bundle.js',
+    path: path.resolve(__dirname, binPath, 'assets'),
+    publicPath: "/assets/"
+  },
+  module: {
+    rules: [
+      {
+        test: /\.(js|jsx)$/,
+        exclude: /(node_modules|bower_components)/,
+        use:[
+          'babel-loader'
         ]
-    },
-    devServer: {
-        // contentBase: './build',
-        port: 8081, // 端口号
-        // inline: true,
-        hot: true
-    },
-    plugins: [
-        new webpack.HotModuleReplacementPlugin(),
-        new HtmlPlugin({
-            template: 'public/index.html'
-        })
+      },
+      {
+        test: /\.pcss$/,
+        exclude: /(node_modules|bower_components)/,
+        use: [
+          {
+            loader: MiniCssExtractPlugin.loader,
+          },
+          {
+          loader: 'css-loader',
+          options: {
+            modules: true,
+            importLoaders: 1
+          }
+          },
+          {
+            loader: 'postcss-loader',
+            options: {
+              postcssOptions: {
+                plugins: [
+                  ['postcss-simple-vars'],
+                  ['postcss-cssnext', {compress:true}],
+                  ['postcss-sprites', {
+                    retina: true,
+                    spritePath: binPath+'assets/temp/images',
+                    filterBy: (image) =>{
+                      if (image.url.indexOf('/sprites/') === -1){
+                        return Promise.reject();
+                      }
+                      return Promise.resolve();
+                    }
+                  }]
+                ]
+              }
+            }
+          }
+        ]
+      },
+      {
+        test: /\.css$/,
+        include: /(node_modules|bower_components)/,
+        use: [
+          {
+            loader: MiniCssExtractPlugin.loader,
+          },
+          {
+            loader: 'css-loader',
+            // options: {
+            //   minimize: {autoprefixer: false}
+            // }
+          },
+        ]
+      },
+      {
+        test: /\.(woff|woff2|ttf|svg|eot)(\?v=\d+\.\d+\.\d+)?$/,
+        use: [
+          {
+            loader: 'file-loader',
+            options:{
+              limit: 10000,
+              name: 'fonts/[sha1:hash:hex:7].[ext]',
+            }
+          }
+        ]
+      },
+      {
+        test: /\.(png|gif|jpg)(\?v=\d+\.\d+\.\d+)?$/,
+        use: [
+          {
+            loader: 'file-loader',
+            options:{
+              limit: 10000,
+              name: 'images/[sha1:hash:hex:7].[ext]',
+            }
+          }
+        ]
+      }
     ]
-}
+  },
+  plugins:[
+    // new OfflinePlugin(),
+    // new webpack.optimize.UglifyJsPlugin(),
+    new MiniCssExtractPlugin({
+      filename: "stylesheets/styles.css"
+    }),
+    new CopyWebpackPlugin({
+      patterns: [
+        { from: 'index.html', to: '..' }
+      ]
+    })
+  ]
+};
