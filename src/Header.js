@@ -38,18 +38,22 @@ class App extends React.Component {
 
     handleClick = async () => {
         console.log('handleClick', connectBtnName);
+        this.setState({connectBtnDisabled: true});
         if (user.account) {
+
             console.log('disconnect', user);
             user = {};
             connectBtnName = '连接钱包';
+            this.setState({connectBtnDisabled: false});
             this.forceUpdate();
             return;
         }
+        connectBtnName = '正在连接...';
         web3 = new Web3(Web3.givenProvider);
         user.account = (await web3.eth.getAccounts())[0];
         user.balance = web3.utils.fromWei(await web3.eth.getBalance(user.account));
         connectBtnName = '断开钱包';
-        console.log('user: ', user);
+        this.setState({connectBtnDisabled: false});
         this.forceUpdate();
     };
     handleTranscation = async () => {
@@ -82,7 +86,7 @@ class App extends React.Component {
             <div className="App">
                 <header className="App-header" align="left">
                     <div>
-                        <Button variant="contained" onClick={this.handleClick}>{connectBtnName}</Button>
+                        <Button id="connectBtn" variant="contained" disabled={this.state.connectBtnDisabled} onClick={this.handleClick}>{connectBtnName}</Button>
                     </div>
                     <div>
                         <UserInfo user={user}/>
