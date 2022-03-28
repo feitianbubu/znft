@@ -1,97 +1,109 @@
 import './App.css';
-
+import React from 'react';
+import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Web3 from "web3";
-import Web3Modal from "web3modal";
-import WalletConnectProvider from "@walletconnect/web3-provider";
 
 
-// Unpkg imports
-// const Fortmatic = window.Fortmatic;
-// const evmChains = window.evmChains;
-let web3Modal;
+let web3;
+let user = {};
+let connectBtnName = '连接钱包';
 
-function init() {
-
-    console.log("Initializing example");
-    console.log("WalletConnectProvider is", WalletConnectProvider);
-    // console.log("Fortmatic is", Fortmatic);
-    console.log("window.web3 is", window.web3, "window.ethereum is", window.ethereum);
-
-    // Check that the web page is run in a secure context,
-    // as otherwise MetaMask won't be available
-    // if(location.protocol !== 'https:') {
-    //   // https://ethereum.stackexchange.com/a/62217/620
-    //   const alert = document.querySelector("#alert-error-https");
-    //   alert.style.display = "block";
-    //   document.querySelector("#btn-connect").setAttribute("disabled", "disabled")
-    //   return;
-    // }
-
-    // Tell Web3modal what providers we have available.
-    // Built-in web browser provider (only one can exist as a time)
-    // like MetaMask, Brave or Opera is added automatically by Web3modal
-    const providerOptions = {
-        // Example with injected providers
-        injected: {
-            display: {
-                // logo: "data:image/gif;base64,INSERT_BASE64_STRING",
-                name: "Injected",
-                description: "Connect with the provider in your Browser"
-            },
-            package: null
-        },
-        // Example with WalletConnect provider
-        // walletconnect: {
-        //     display: {
-        //         logo: "data:image/gif;base64,INSERT_BASE64_STRING",
-        //         name: "Mobile",
-        //         description: "Scan qrcode with your mobile wallet"
-        //     },
-        //     package: WalletConnectProvider,
-        //     options: {
-        //         infuraId: "INFURA_ID" // required
-        //     }
-        // }
-    };
-
-    web3Modal = new Web3Modal({
-        network: "mainnet", // optional
-        cacheProvider: true, // optional
-        providerOptions // required
-    });
-
-    console.log("Web3Modal instance is", web3Modal);
+function UserInfo(props) {
+    console.log('UserInfo: ', props);
+    if (props.user.account) {
+        return (
+            <div>
+                <div>账号: {props.user.account}</div>
+                <div>余额: {props.user.balance}</div>
+            </div>
+        )
+    } else {
+        return (
+            <div>请先连接钱包</div>
+        )
+    }
 }
 
+class App extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {value: ''};
+        this.handleChange = this.handleChange.bind(this);
+    }
 
-let onConnect = async () => {
-  console.log('onConnect');
-    init();
-    const providerOptions = {
-        /* See Provider Options Section */
+    componentDidMount() {
+        console.log('componentDidMount');
+    }
+
+    handleClick = async () => {
+        console.log('handleClick', connectBtnName);
+        if (user.account) {
+            console.log('disconnect', user);
+            user = {};
+            connectBtnName = '连接钱包';
+            this.forceUpdate();
+            return;
+        }
+        web3 = new Web3(Web3.givenProvider);
+        user.account = (await web3.eth.getAccounts())[0];
+        user.balance = web3.utils.fromWei(await web3.eth.getBalance(user.account));
+        connectBtnName = '断开钱包';
+        console.log('user: ', user);
+        this.forceUpdate();
+    };
+    handleTranscation = async () => {
+        console.log('handleTranscation', user, this.state);
+        if (!user.account) {
+            alert('请先连接钱包');
+            return;
+        }
+        let msg = {
+            from: user.account,
+            to: this.state.toAccount,
+            value: web3.utils.toWei(this.state.toBalance, 'ether')
+        }
+        web3.eth.sendTransaction(msg).then(function (result) {
+            console.log('then: ', result);
+        }).catch(function (err) {
+            console.log('catch: ', err);
+        });
     };
 
-    const web3Modal = new Web3Modal({
-        network: "mainnet", // optional
-        cacheProvider: true, // optional
-        providerOptions // required
-    });
+    handleChange(event) {
+        console.log('handleChange', event.target.id);
+        let state = {};
+        state[event.target.id] = event.target.value;
+        this.setState(state);
+    }
 
-    const provider = await web3Modal.connect();
+    render() {
+        return (
+            <div className="App">
+                <header className="App-header" align="left">
+                    <div>
+                        <Button variant="contained" onClick={this.handleClick}>{connectBtnName}</Button>
+                    </div>
+                    <div>
+                        <UserInfo user={user}/>
+                    </div>
 
-    const web3 = new Web3(provider);
-    console.log(`web3: ${web3}`);
-};
+                    <div>
+                        <form>
+                        <p></p>
+                        <div><TextField id="toBalance" label="输入金额" value={user.toBalance} required sx={{ m: 1, width: '25ch' }} type="number"
+                                        onChange={this.handleChange}/></div>
+                        <div><TextField id="toAccount" label="输入收款账号" value={user.toAccount} required sx={{ m: 1, width: '25ch' }}
+                                        onChange={this.handleChange}/></div>
+                        <div><Button  type="submit" variant="contained" onClick={this.handleTranscation}>确认</Button></div>
+                            </form>
+                    </div>
 
-function App() {
-  return (
-      <div className="App">
-        <header className="App-header">
-            <Button variant="contained" onClick={onConnect}>连接钱包</Button>
-        </header>
-      </div>
-  );
+
+                </header>
+            </div>
+        )
+    }
 }
 
 export default App;
