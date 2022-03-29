@@ -2,8 +2,10 @@ import './App.css';
 import React from 'react';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
+import {FormControl} from '@mui/material';
 import Web3 from "web3";
 
+import Snackbar from '@mui/material/Snackbar';
 
 let web3;
 let user = {};
@@ -20,7 +22,7 @@ function UserInfo(props) {
         )
     } else {
         return (
-            <div>请先连接钱包</div>
+            <div></div>
         )
     }
 }
@@ -60,6 +62,8 @@ class App extends React.Component {
         console.log('handleTranscation', user, this.state);
         if (!user.account) {
             alert('请先连接钱包');
+            this.setState({snackbarMsg: "请先连接钱包"});
+            this.setState({SnackbarOpen: true});
             return;
         }
         let msg = {
@@ -86,7 +90,8 @@ class App extends React.Component {
             <div className="App">
                 <header className="App-header" align="left">
                     <div>
-                        <Button id="connectBtn" variant="contained" disabled={this.state.connectBtnDisabled} onClick={this.handleClick}>{connectBtnName}</Button>
+                        <Button id="connectBtn" variant="contained" disabled={this.state.connectBtnDisabled}
+                                onClick={this.handleClick}>{connectBtnName}</Button>
                     </div>
                     <div>
                         <UserInfo user={user}/>
@@ -94,16 +99,26 @@ class App extends React.Component {
 
                     <div>
                         <form>
-                        <p></p>
-                        <div><TextField id="toBalance" label="输入金额" value={user.toBalance} required sx={{ m: 1, width: '25ch' }} type="number"
-                                        onChange={this.handleChange}/></div>
-                        <div><TextField id="toAccount" label="输入收款账号" value={user.toAccount} required sx={{ m: 1, width: '25ch' }}
-                                        onChange={this.handleChange}/></div>
-                        <div><Button  type="submit" variant="contained" onClick={this.handleTranscation}>确认</Button></div>
-                            </form>
+                            <FormControl>
+                                <div><TextField id="toBalance" label="输入金额" value={user.toBalance} required
+                                                sx={{m: 1, width: '25ch'}} type="number"
+                                                onChange={this.handleChange}/></div>
+                                <div><TextField id="toAccount" label="输入收款账号" value={user.toAccount} required
+                                                sx={{m: 1, width: '25ch'}}
+                                                onChange={this.handleChange}/></div>
+                                <div><Button type="submit" variant="contained"
+                                             onClick={this.handleTranscation}>确认</Button></div>
+                            </FormControl>
+                        </form>
                     </div>
 
-
+                    <div>
+                        <Snackbar
+                            open = {this.state.SnackbarOpen}
+                            autoHideDuration={6000}
+                            message={this.state.snackbarMsg}
+                        />
+                    </div>
                 </header>
             </div>
         )
