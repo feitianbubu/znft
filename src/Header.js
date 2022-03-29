@@ -3,14 +3,20 @@ import React from 'react';
 import Web3 from "web3";
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
-import {FormControl} from '@mui/material';
+import {Box, FormControl, Grid} from '@mui/material';
 import Snackbar from '@mui/material/Snackbar';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
 import ImageListItemBar from '@mui/material/ImageListItemBar';
 import CardGiftcardIcon from '@mui/icons-material/CardGiftcard';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
+import AppBar from '@mui/material/AppBar';
 import _ from 'lodash';
 
+const AppName = 'Z-NFT';
 let web3;
 let user = {};
 let connectBtnName = '连接钱包';
@@ -18,15 +24,29 @@ let contractBtnName = '获取信息';
 let contractBtnNameDisabled = false;
 
 function UserInfo(props) {
-    console.log('UserInfo: ', props);
     if (props.user.account) {
-        return (<div>
-                <div>账号: {props.user.account}</div>
-                <div>余额: {props.user.balance}</div>
-            </div>)
+        return (
+            <Grid container>
+                <Grid xs={6}>
+                    <Typography variant="subtitle1" gutterBottom component="div">
+                        <Box sx={{ color:'primary.main', display:'inline' }}>账号:</Box> {props.user.account}
+                    </Typography>
+                </Grid>
+                <Grid xs={6}>
+                    <Typography variant="subtitle1" gutterBottom component="div">
+                        <Box sx={{ color:'primary.main', display:'inline' }}>余额:</Box>{props.user.balance}
+                    </Typography>
+                </Grid>
+            </Grid>
+        )
     } else {
         return (<div></div>)
     }
+}
+const theme = createTheme();
+
+function HeartIcon() {
+    return null;
 }
 
 class App extends React.Component {
@@ -109,15 +129,23 @@ class App extends React.Component {
 
     render() {
         return (<div className="App">
-                <header className="App-header" align="left">
-                    <div>
-                        <Button id="connectBtn" variant="contained" disabled={this.state.connectBtnDisabled}
+            <ThemeProvider theme={theme}>
+                <CssBaseline/>
+                <AppBar position="relative">
+                    <Toolbar>
+                        <Typography type="title" color="inherit" sx={{flex: 1, fontSize: 24, fontWeight: 'bold' }}>
+                            {AppName}
+                        </Typography>
+                        <Button id="connectBtn" disabled={this.state.connectBtnDisabled}
+                                color="inherit"
                                 onClick={this.handleClick}>{connectBtnName}</Button>
-                    </div>
-                    <div>
+                    </Toolbar>
+                </AppBar>
+            </ThemeProvider>
+                <header className="App-header">
+                    <div style={{ width: '100%' }}>
                         <UserInfo user={user}/>
                     </div>
-
                     <div>
                         <form>
                             <FormControl>
