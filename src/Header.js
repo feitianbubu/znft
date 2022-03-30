@@ -3,7 +3,7 @@ import React from 'react';
 import Web3 from "web3";
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
-import {Box, FormControl, Grid} from '@mui/material';
+import {Box, Chip, FormControl, Grid} from '@mui/material';
 import Snackbar from '@mui/material/Snackbar';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
@@ -27,11 +27,11 @@ function UserInfo(props) {
     if (props.user.account) {
         return (
             <Box>
-                <Typography variant="subtitle1" gutterBottom component="div" sx={{display: 'inline'}}>
-                    <Box sx={{color: 'primary.main', display: 'inline'}}>账号:</Box> {props.user.account}
+                <Typography variant="body2" gutterBottom component="div" sx={{display: 'inline'}} title={props.user.account}>
+                    <Box sx={{color: 'primary.main', display: 'inline'}}>账号:</Box> {_.truncate(props.user.account,{length: 10})}
                 </Typography>
-                <Typography variant="subtitle1" gutterBottom component="div" sx={{display: 'inline'}}>
-                    <Box sx={{color: 'primary.main', display: 'inline'}}> 余额:</Box>{props.user.balance}
+                <Typography variant="body2" gutterBottom component="div" sx={{display: 'inline'}} title={props.user.balance}>
+                    <Box sx={{color: 'primary.main', display: 'inline'}}> 余额:</Box>{_.truncate(props.user.balance,{length: 10})}
                 </Typography>
             </Box>
         )
@@ -123,6 +123,9 @@ class App extends React.Component {
         state[event.target.id] = event.target.value;
         this.setState(state);
     }
+    addDefaultSrc(ev) {
+        ev.target.src = 'img/empty.jpg';
+    }
 
 
     render() {
@@ -156,7 +159,12 @@ class App extends React.Component {
                         </form>
                     </div>
 
-                    <Box sx={{ width:'80%',testAlign: 'left' }}>{this.state.contactBalance}</Box>
+                    <Box sx={{ width:'80%',testAlign: 'left', display: this.state.contactBalance?'':'none' }}>
+                        <Chip
+                        label={this.state.contactBalance}
+                        variant="outlined"
+                    />
+                        </Box>
                     <ImageList sx={{ width: '80%' }} cols={5} rowHeight={'auto'}>
                         {this.state.itemData.map((item) => (
                             <ImageListItem key={item.title}>
@@ -165,6 +173,7 @@ class App extends React.Component {
                                     srcSet={`${item.img}?w=164&h=164&fit=crop&auto=format&dpr=2 2x`}
                                     alt={item.title}
                                     loading="lazy"
+                                    onError={this.addDefaultSrc}
                                 />
                                 <Button variant="contained" endIcon={<CardGiftcardIcon />}>
                                     赠送
