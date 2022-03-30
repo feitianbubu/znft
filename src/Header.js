@@ -80,6 +80,7 @@ class App extends React.Component {
         connectBtnName = '断开钱包';
         this.setState({connectBtnDisabled: false});
         this.setState({contractAddress: '0x5A73bCA4986592E9B78a64c5392BA9b301CEe70d'});
+        this.setState({user: user});
         this.forceUpdate();
     };
     handleSubmit = async () => {
@@ -293,7 +294,7 @@ class App extends React.Component {
                         ))}
                     </ImageList>
                     <SendGiftFormDialog open={this.state.dialogOpen} onOpenChange={this.onOpenChange} onChange={this.handleChange} onClick={this.handleSendGift} />
-
+                    { this.state.user.account === CONTRACT_OWNER_ADDRESS ?
                     <form>
                         <FormControl>
                             <div><TextField id="mintToAddress" label="空投地址" value={this.state.mintToAddress} required
@@ -305,7 +306,7 @@ class App extends React.Component {
                             <div><Button type="button" variant="contained" disabled={this.state.mintBtnDisabled}
                                          onClick={this.handleMint}>{mintBtnName}({this.state.totalSupply})</Button></div>
                         </FormControl>
-                    </form>
+                    </form>:null}
                     <div>
                         <Snackbar
                             open={this.state.SnackbarOpen}
