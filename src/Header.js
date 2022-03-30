@@ -15,6 +15,7 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import AppBar from '@mui/material/AppBar';
 import _ from 'lodash';
+import SendGiftFormDialog from "./SendGiftFormDialog";
 
 const AppName = 'Z-NFT';
 let web3;
@@ -100,7 +101,7 @@ class App extends React.Component {
 
         let itemData = [];
         for await( const i of  _.range(balance)) {
-            let index = await myContract.methods.tokenByIndex(i).call();
+            let index = await myContract.methods.tokenOfOwnerByIndex(user.account, i).call();
             console.log('tokenByIndex', index);
             let tokenURI = await myContract.methods.tokenURI(index).call();
             console.log('tokenURI', tokenURI);
@@ -118,7 +119,7 @@ class App extends React.Component {
     };
 
     handleChange(event) {
-        console.log('handleChange', event.target.id);
+        console.log('handleChange', event.target.id, event.target.value);
         let state = {};
         state[event.target.id] = event.target.value;
         this.setState(state);
@@ -126,7 +127,45 @@ class App extends React.Component {
     addDefaultSrc(ev) {
         ev.target.src = 'img/empty.jpg';
     }
+    openSendGiftDialog = (event) => {
+        this.setState({dialogOpen: true});
+        this.setState({tokenId: event.target.getAttribute('tokenid')});
+        this.forceUpdate();
+    };
 
+    handleSendGift = async (event, msg) => {
+        let self = this;
+        console.log('handleSendGift', user, this.state, msg);
+        if (!user.account) {
+            this.setState({snackbarMsg: "请先连接钱包"});
+            this.setState({SnackbarOpen: true});
+            return;
+        }
+        let myContract = new web3.eth.Contract(jsonInterface, this.state.contractAddress);
+        let to = msg.to;
+        let tokenId = this.state.tokenId;
+        if (!to || !tokenId) {
+            console.log('handleSendGift fail', to, tokenId);
+            this.setState({snackbarMsg: "请输入收货地址和NFT编号"});
+            this.setState({SnackbarOpen: true});
+            return;
+        }
+        let gasPrice = await web3.eth.getGasPrice();
+        let from = user.account;
+        console.log('handleSendGift msg: ', from, to, tokenId, gasPrice);
+        let gasLimit = await myContract.methods.safeTransferFrom(from, to ,tokenId).estimateGas({from: user.account});
+        console.log('gasPrice', gasPrice);
+        console.log('gasLimit', gasLimit);
+        let tx = await myContract.methods.safeTransferFrom(from, to ,tokenId).send({from: user.account, gasPrice: gasPrice, gas: gasLimit});
+        console.log('tx', tx);
+        self.setState({snackbarMsg: "赠送成功"});
+        self.setState({SnackbarOpen: true});
+    };
+    onOpenChange = (open) => {
+        console.log('onOpenChange', open);
+        this.setState({dialogOpen: open});
+        this.forceUpdate();
+    };
 
     render() {
         return (<div className="App">
@@ -175,7 +214,7 @@ class App extends React.Component {
                                     loading="lazy"
                                     onError={this.addDefaultSrc}
                                 />
-                                <Button variant="contained" endIcon={<CardGiftcardIcon />}>
+                                <Button tokenid={item.title} variant="contained" endIcon={<CardGiftcardIcon />} onClick={this.openSendGiftDialog}>
                                     赠送
                                 </Button>
                                 <ImageListItemBar
@@ -185,7 +224,7 @@ class App extends React.Component {
                             </ImageListItem>
                         ))}
                     </ImageList>
-
+                    <SendGiftFormDialog open={this.state.dialogOpen} onOpenChange={this.onOpenChange} onChange={this.handleChange} onClick={this.handleSendGift} />
                     <div>
                         <Snackbar
                             open={this.state.SnackbarOpen}
