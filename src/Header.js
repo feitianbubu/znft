@@ -16,6 +16,8 @@ import Typography from '@mui/material/Typography';
 import AppBar from '@mui/material/AppBar';
 import _ from 'lodash';
 import SendGiftFormDialog from "./SendGiftFormDialog";
+import IconButton from '@mui/material/IconButton';
+import CloseIcon from '@mui/icons-material/Close';
 
 const AppName = 'Z-NFT';
 let web3;
@@ -45,7 +47,7 @@ const theme = createTheme();
 class App extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {value: '', rows: [], contractAddress:'', itemData: [], user: {}, snackbarOpen: false, snackbarMsg: '', dialogOpen: false, dialogMsg: '',open: false, tokenId: ''};
+        this.state = {value: '', rows: [], contractAddress:'', itemData: [], user: {}, snackbarOpen: false, snackbarMsg: '', dialogOpen: false, dialogMsg: '',open: false, tokenId: '', SnackbarOpen:false};
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
     }
@@ -171,7 +173,27 @@ class App extends React.Component {
         this.forceUpdate();
     };
 
+    handleClose = (event, reason) => {
+        console.log('handleClose', event, reason);
+        if (reason === 'clickaway') {
+            return;
+        }
+        this.setState({SnackbarOpen: false});
+    };
     render() {
+
+        const action = (
+            <React.Fragment>
+                <IconButton
+                    size="small"
+                    aria-label="close"
+                    color="inherit"
+                    onClick={this.handleClose}
+                >
+                    <CloseIcon fontSize="small" />
+                </IconButton>
+            </React.Fragment>
+        );
         return (<div className="App">
             <ThemeProvider theme={theme}>
                 <CssBaseline/>
@@ -235,6 +257,7 @@ class App extends React.Component {
                             autoHideDuration={6000}
                             message={this.state.snackbarMsg}
                             anchorOrigin={{vertical: 'top', horizontal: 'center'}}
+                            action={action}
                         />
                     </div>
                 </header>
