@@ -218,8 +218,9 @@ class App extends React.Component {
         console.log('gasLimit', gasLimit);
         let tx = await myContract.methods.safeMint(mintToAddress,toTokenId, mintUri).send({from: user.account, gasPrice: gasPrice, gas: gasLimit});
         console.log('tx', tx);
-        self.setState({snackbarMsg: "success:" + tx});
+        self.setState({snackbarMsg: "空投成功"});
         self.setState({SnackbarOpen: true});
+        await self.handleSubmit();
     };
     render() {
 
