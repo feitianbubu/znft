@@ -8,7 +8,6 @@ import reportWebVitals from './reportWebVitals';
 ReactDOM.render(
   <React.StrictMode>
       <Header />
-      <App />
   </React.StrictMode>,
     document.querySelector('#root')
 );

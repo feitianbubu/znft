@@ -20,10 +20,12 @@ import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 
 const AppName = 'Z-NFT';
+const CONTRACT_OWNER_ADDRESS = '0xf7c5921DAa96F045851509a62a005Af19dADEe23';
 let web3;
 let user = {};
 let connectBtnName = '连接钱包';
 let contractBtnName = '获取信息';
+let mintBtnName = '空投';
 let contractBtnNameDisabled = false;
 
 function UserInfo(props) {
@@ -47,9 +49,12 @@ const theme = createTheme();
 class App extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {value: '', rows: [], contractAddress:'', itemData: [], user: {}, snackbarOpen: false, snackbarMsg: '', dialogOpen: false, dialogMsg: '',open: false, tokenId: '', SnackbarOpen:false};
+        this.state = {value: '', rows: [], contractAddress:'', itemData: [], user: {}, snackbarOpen: false, snackbarMsg: '',
+            dialogOpen: false, dialogMsg: '',open: false, tokenId: '', SnackbarOpen:false, mintToAddress: '',mintUri:'', mintBtnDisabled: false,
+            totalSupply:''}
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
+        this.handleMint = this.handleMint.bind(this);
     }
 
     componentDidMount() {
@@ -118,6 +123,9 @@ class App extends React.Component {
                 self.forceUpdate();
             }
         });
+        let totalSupply = await myContract.methods.totalSupply().call();
+        self.setState({totalSupply: `总量: ${totalSupply}`});
+        self.forceUpdate();
     };
 
     handleChange(event) {
@@ -179,6 +187,34 @@ class App extends React.Component {
             return;
         }
         this.setState({SnackbarOpen: false});
+    };
+
+    handleMint = async (event) => {
+        let self = this;
+        console.log('handleMint', user, this.state);
+        if (!user.account) {
+            this.setState({snackbarMsg: "请先连接钱包"});
+            this.setState({SnackbarOpen: true});
+            return;
+        }
+        let myContract = new web3.eth.Contract(jsonInterface, this.state.contractAddress);
+        let mintToAddress = this.state.mintToAddress;
+        let mintUri = this.state.mintUri;
+
+        let totalSupply = await myContract.methods.totalSupply().call();
+        console.log('totalSupply', totalSupply);
+        let gasPrice = await web3.eth.getGasPrice();
+        console.log('handleMint msg: ', mintToAddress, mintUri, gasPrice);
+        this.setState({totalSupply: totalSupply});
+        let toTokenId = parseInt(totalSupply)+1;
+
+        let gasLimit = await myContract.methods.safeMint(mintToAddress,toTokenId, mintUri).estimateGas({from: user.account});
+        console.log('gasPrice', gasPrice);
+        console.log('gasLimit', gasLimit);
+        let tx = await myContract.methods.safeMint(mintToAddress,(totalSupply+1), mintUri).send({from: user.account, gasPrice: gasPrice, gas: gasLimit});
+        console.log('tx', tx);
+        self.setState({snackbarMsg: "success:" + tx});
+        self.setState({SnackbarOpen: true});
     };
     render() {
 
@@ -251,6 +287,19 @@ class App extends React.Component {
                         ))}
                     </ImageList>
                     <SendGiftFormDialog open={this.state.dialogOpen} onOpenChange={this.onOpenChange} onChange={this.handleChange} onClick={this.handleSendGift} />
+
+                    <form>
+                        <FormControl>
+                            <div><TextField id="mintToAddress" label="空投地址" value={this.state.mintToAddress} required
+                                            sx={{m: 1, width: '25ch'}}
+                                            onChange={this.handleChange}/></div>
+                            <div><TextField id="mintUri" label="uri" value={this.state.mintUri} required
+                                            sx={{m: 1, width: '25ch'}}
+                                            onChange={this.handleChange}/></div>
+                            <div><Button type="button" variant="contained" disabled={this.state.mintBtnDisabled}
+                                         onClick={this.handleMint}>{mintBtnName}({this.state.totalSupply})</Button></div>
+                        </FormControl>
+                    </form>
                     <div>
                         <Snackbar
                             open={this.state.SnackbarOpen}
