@@ -26,18 +26,14 @@ let contractBtnNameDisabled = false;
 function UserInfo(props) {
     if (props.user.account) {
         return (
-            <Grid container>
-                <Grid xs={6}>
-                    <Typography variant="subtitle1" gutterBottom component="div">
-                        <Box sx={{ color:'primary.main', display:'inline' }}>账号:</Box> {props.user.account}
-                    </Typography>
-                </Grid>
-                <Grid xs={6}>
-                    <Typography variant="subtitle1" gutterBottom component="div">
-                        <Box sx={{ color:'primary.main', display:'inline' }}>余额:</Box>{props.user.balance}
-                    </Typography>
-                </Grid>
-            </Grid>
+            <Box>
+                <Typography variant="subtitle1" gutterBottom component="div" sx={{display: 'inline'}}>
+                    <Box sx={{color: 'primary.main', display: 'inline'}}>账号:</Box> {props.user.account}
+                </Typography>
+                <Typography variant="subtitle1" gutterBottom component="div" sx={{display: 'inline'}}>
+                    <Box sx={{color: 'primary.main', display: 'inline'}}> 余额:</Box>{props.user.balance}
+                </Typography>
+            </Box>
         )
     } else {
         return (<div></div>)
@@ -91,6 +87,8 @@ class App extends React.Component {
         if (!user.account) {
             this.setState({snackbarMsg: "请先连接钱包"});
             this.setState({SnackbarOpen: true});
+            contractBtnName = '获取信息'
+            contractBtnNameDisabled = false;
             return;
         }
 
@@ -98,7 +96,7 @@ class App extends React.Component {
 
 
         let balance =await myContract.methods.balanceOf(user.account).call();
-        self.setState({contactBalance: `balance: ${balance}`});
+        self.setState({contactBalance: `我的NFT: ${balance}`});
 
         let itemData = [];
         for await( const i of  _.range(balance)) {
@@ -106,9 +104,9 @@ class App extends React.Component {
             console.log('tokenByIndex', index);
             let tokenURI = await myContract.methods.tokenURI(index).call();
             console.log('tokenURI', tokenURI);
-            if(!_.startsWith(tokenURI, 'http')) {
-                continue;
-            }
+            // if(!_.startsWith(tokenURI, 'http')) {
+            //     continue;
+            // }
             let row = {title: index, img: tokenURI};
             itemData.push(row);
             self.setState({itemData});
@@ -143,7 +141,7 @@ class App extends React.Component {
                 </AppBar>
             </ThemeProvider>
                 <header className="App-header">
-                    <div style={{ width: '100%' }}>
+                    <div style={{ width: '100%', textAlign:'right' }}>
                         <UserInfo user={user}/>
                     </div>
                     <div>
@@ -158,8 +156,8 @@ class App extends React.Component {
                         </form>
                     </div>
 
-                    <div>{this.state.contactBalance}</div>
-                    <ImageList sx={{ width: 500, height: 450 }} cols={3} rowHeight={164}>
+                    <Box sx={{ width:'80%',testAlign: 'left' }}>{this.state.contactBalance}</Box>
+                    <ImageList sx={{ width: '80%' }} cols={5} rowHeight={'auto'}>
                         {this.state.itemData.map((item) => (
                             <ImageListItem key={item.title}>
                                 <img
