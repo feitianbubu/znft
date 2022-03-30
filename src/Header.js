@@ -97,8 +97,6 @@ class App extends React.Component {
         }
 
         let myContract = new web3.eth.Contract(jsonInterface, this.state.contractAddress);
-
-
         let balance =await myContract.methods.balanceOf(user.account).call();
         self.setState({contactBalance: `我的NFT: ${balance}`});
 
@@ -123,6 +121,12 @@ class App extends React.Component {
                 self.forceUpdate();
             }
         });
+        if(balance === '0'){
+            contractBtnName = '获取信息'
+            contractBtnNameDisabled = false;
+            self.forceUpdate();
+        }
+
         let totalSupply = await myContract.methods.totalSupply().call();
         self.setState({totalSupply: `总量: ${totalSupply}`});
         self.forceUpdate();
@@ -174,6 +178,7 @@ class App extends React.Component {
         console.log('tx', tx);
         self.setState({snackbarMsg: "赠送成功"});
         self.setState({SnackbarOpen: true});
+        await self.handleSubmit();
     };
     onOpenChange = (open) => {
         console.log('onOpenChange', open);
@@ -211,7 +216,7 @@ class App extends React.Component {
         let gasLimit = await myContract.methods.safeMint(mintToAddress,toTokenId, mintUri).estimateGas({from: user.account});
         console.log('gasPrice', gasPrice);
         console.log('gasLimit', gasLimit);
-        let tx = await myContract.methods.safeMint(mintToAddress,(totalSupply+1), mintUri).send({from: user.account, gasPrice: gasPrice, gas: gasLimit});
+        let tx = await myContract.methods.safeMint(mintToAddress,toTokenId, mintUri).send({from: user.account, gasPrice: gasPrice, gas: gasLimit});
         console.log('tx', tx);
         self.setState({snackbarMsg: "success:" + tx});
         self.setState({SnackbarOpen: true});
