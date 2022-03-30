@@ -42,14 +42,10 @@ function UserInfo(props) {
 }
 const theme = createTheme();
 
-function HeartIcon() {
-    return null;
-}
-
 class App extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {value: '', rows: [], contractAddress:'', itemData: [], user: {}, snackbarOpen: false, snackbarMsg: ''};
+        this.state = {value: '', rows: [], contractAddress:'', itemData: [], user: {}, snackbarOpen: false, snackbarMsg: '', dialogOpen: false, dialogMsg: '',open: false, tokenId: ''};
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
     }
@@ -100,7 +96,9 @@ class App extends React.Component {
         self.setState({contactBalance: `我的NFT: ${balance}`});
 
         let itemData = [];
-        for await( const i of  _.range(balance)) {
+
+        let count = 0;
+        _.times(parseInt(balance), async function (i) {
             let index = await myContract.methods.tokenOfOwnerByIndex(user.account, i).call();
             console.log('tokenByIndex', index);
             let tokenURI = await myContract.methods.tokenURI(index).call();
@@ -112,10 +110,12 @@ class App extends React.Component {
             itemData.push(row);
             self.setState({itemData});
             self.forceUpdate();
-        }
-        contractBtnName = '获取信息'
-        contractBtnNameDisabled = false;
-        self.forceUpdate();
+            if(++count === parseInt(balance)){
+                contractBtnName = '获取信息'
+                contractBtnNameDisabled = false;
+                self.forceUpdate();
+            }
+        });
     };
 
     handleChange(event) {
@@ -128,11 +128,15 @@ class App extends React.Component {
         ev.target.src = 'img/empty.jpg';
     }
     openSendGiftDialog = (event) => {
+        let tokenid = event.target.getAttribute('tokenid');
+        if(!tokenid) {
+            return;
+        }
+        console.log('openSendGiftDialog', tokenid);
         this.setState({dialogOpen: true});
-        this.setState({tokenId: event.target.getAttribute('tokenid')});
+        this.setState({tokenId: tokenid});
         this.forceUpdate();
-    };
-
+    }
     handleSendGift = async (event, msg) => {
         let self = this;
         console.log('handleSendGift', user, this.state, msg);

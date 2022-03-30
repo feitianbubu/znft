@@ -11,7 +11,7 @@ class App extends React.Component  {
     constructor(props) {
         console.log('constructor', props);
         super(props);
-        this.state = {props};
+        this.state = {props, to: ''};
         this.handleClose = this.handleClose.bind(this);
         this.handleChange = this.handleChange.bind(this);
     }
