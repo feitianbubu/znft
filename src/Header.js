@@ -3,7 +3,7 @@ import React from 'react';
 import Web3 from "web3";
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
-import {Box, Chip, FormControl, Grid} from '@mui/material';
+import {Box, Chip, FormControl, Grid, Tooltip} from '@mui/material';
 import Snackbar from '@mui/material/Snackbar';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
@@ -28,30 +28,29 @@ let contractBtnName = '获取信息';
 let mintBtnName = '空投';
 let contractBtnNameDisabled = false;
 
-function UserInfo(props) {
-    if (props.user.account) {
-        return (
-            <Box>
-                <Typography variant="body2" gutterBottom component="div" sx={{display: 'inline'}} title={props.user.account}>
-                    <Box sx={{color: 'primary.main', display: 'inline'}}>账号:</Box> {_.truncate(props.user.account,{length: 10})}
-                </Typography>
-                <Typography variant="body2" gutterBottom component="div" sx={{display: 'inline'}} title={props.user.balance}>
-                    <Box sx={{color: 'primary.main', display: 'inline'}}> 余额:</Box>{_.truncate(props.user.balance,{length: 10})}
-                </Typography>
-            </Box>
-        )
-    } else {
-        return (<div></div>)
-    }
-}
 const theme = createTheme();
 
 class App extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {value: '', rows: [], contractAddress:'', itemData: [], user: {}, snackbarOpen: false, snackbarMsg: '',
-            dialogOpen: false, dialogMsg: '',open: false, tokenId: '', SnackbarOpen:false, mintToAddress: '',mintUri:'', mintBtnDisabled: false,
-            totalSupply:''}
+        this.state = {
+            value: '',
+            rows: [],
+            contractAddress: '',
+            itemData: [],
+            user: {},
+            snackbarOpen: false,
+            snackbarMsg: '',
+            dialogOpen: false,
+            dialogMsg: '',
+            open: false,
+            tokenId: '',
+            SnackbarOpen: false,
+            mintToAddress: '',
+            mintUri: '',
+            mintBtnDisabled: false,
+            totalSupply: '',
+        }
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
         this.handleMint = this.handleMint.bind(this);
@@ -65,7 +64,6 @@ class App extends React.Component {
         console.log('handleClick', connectBtnName);
         this.setState({connectBtnDisabled: true});
         if (user.account) {
-
             console.log('disconnect', user);
             user = {};
             connectBtnName = '连接钱包';
@@ -76,6 +74,13 @@ class App extends React.Component {
         connectBtnName = '正在连接...';
         web3 = new Web3(Web3.givenProvider);
         user.account = (await web3.eth.getAccounts())[0];
+        if(!user.account) {
+            this.addOpenSnackbar('请先解锁钱包');
+            connectBtnName = '连接钱包';
+            this.setState({connectBtnDisabled: false});
+            this.forceUpdate();
+            return;
+        }
         user.balance = web3.utils.fromWei(await web3.eth.getBalance(user.account));
         connectBtnName = '断开钱包';
         this.setState({connectBtnDisabled: false});
@@ -187,11 +192,16 @@ class App extends React.Component {
         this.forceUpdate();
     };
 
-    handleClose = (event, reason) => {
-        console.log('handleClose', event, reason);
-        if (reason === 'clickaway') {
+    addOpenSnackbar = (snackbarMsg) => {
+        if(!snackbarMsg) {
             return;
         }
+        console.log('addOpenSnackbar snackbarMsg:', snackbarMsg);
+        this.setState({snackbarMsg});
+        this.setState({SnackbarOpen: true});
+    };
+    handleClose = (event, reason) => {
+        console.log('handleClose', event, reason);
         this.setState({SnackbarOpen: false});
     };
 
@@ -233,10 +243,11 @@ class App extends React.Component {
                     color="inherit"
                     onClick={this.handleClose}
                 >
-                    <CloseIcon fontSize="small" />
+                    <CloseIcon fontSize="small"/>
                 </IconButton>
             </React.Fragment>
         );
+
         return (<div className="App">
             <ThemeProvider theme={theme}>
                 <CssBaseline/>
@@ -252,8 +263,28 @@ class App extends React.Component {
                 </AppBar>
             </ThemeProvider>
                 <header className="App-header">
-                    <div style={{ width: '100%', textAlign:'right' }}>
-                        <UserInfo user={user}/>
+                    <div style={{width: '100%', textAlign: 'right'}}>
+                        {this.state.user.account ?
+                            <Box>
+                                <Tooltip title={this.state.user.account} enterDelay={500} leaveDelay={200} >
+                                <Typography variant="body2" gutterBottom component="div" sx={{display: 'inline'}} >
+                                    <Box sx={{
+                                        color: 'primary.main',
+                                        display: 'inline'
+                                    }}>账号:</Box>
+                                        {_.truncate(this.state.user.account, {length: 10})}
+                                </Typography>
+                                </Tooltip>
+                                <Typography variant="body2" gutterBottom component="div" sx={{display: 'inline'}}
+                                            title={this.state.user.balance}>
+                                    <Box sx={{
+                                        color: 'primary.main',
+                                        display: 'inline'
+                                    }}> 余额:</Box>{_.truncate(this.state.user.balance, {length: 10})}
+                                </Typography>
+                            </Box>
+                            : null
+                        }
                     </div>
                     <div>
                         <form>
@@ -310,6 +341,7 @@ class App extends React.Component {
                     <div>
                         <Snackbar
                             open={this.state.SnackbarOpen}
+                            onClose={this.handleClose}
                             autoHideDuration={6000}
                             message={this.state.snackbarMsg}
                             anchorOrigin={{vertical: 'top', horizontal: 'center'}}

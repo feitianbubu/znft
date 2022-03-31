@@ -33,3 +33,16 @@
     transform: rotate(360deg);
   }
 }
+
+.css-ja5taz-MuiTooltip-tooltip {
+  background-color: rgba(97, 97, 97, 0.92);
+  border-radius: 4px;
+  color: #fff;
+  font-family: "Roboto","Helvetica","Arial",sans-serif;
+  padding: 4px 8px;
+  font-size: 0.6875rem;
+   max-width: 500px;
+  margin: 2px;
+  word-wrap: break-word;
+  font-weight: 500;
+}
