@@ -8,7 +8,7 @@ import Snackbar from '@mui/material/Snackbar';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
 import ImageListItemBar from '@mui/material/ImageListItemBar';
-import CardGiftcardIcon from '@mui/icons-material/CardGiftcard';
+import CardGiftCardIcon from '@mui/icons-material/CardGiftcard';
 import {createTheme, ThemeProvider} from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import Toolbar from '@mui/material/Toolbar';
@@ -106,16 +106,16 @@ class App extends React.Component {
         }
 
         let myContract = new web3.eth.Contract(jsonInterface, this.state.contractAddress);
-        let balance = await myContract.methods.balanceOf(user.account).call();
+        let balance = await myContract.methods['balanceOf'](user.account).call();
         self.setState({contactBalance: `我的NFT: ${balance}`});
 
         let itemData = [];
 
         let count = 0;
         _.times(parseInt(balance), async function (i) {
-            let index = await myContract.methods.tokenOfOwnerByIndex(user.account, i).call();
+            let index = await myContract.methods['tokenOfOwnerByIndex'](user.account, i).call();
             console.log('tokenByIndex', index);
-            let tokenURI = await myContract.methods.tokenURI(index).call();
+            let tokenURI = await myContract.methods['tokenURI'](index).call();
             console.log('tokenURI', tokenURI);
             // if(!_.startsWith(tokenURI, 'http')) {
             //     continue;
@@ -183,10 +183,11 @@ class App extends React.Component {
         let gasPrice = await web3.eth.getGasPrice();
         let from = user.account;
         console.log('handleSendGift msg: ', from, to, tokenId, gasPrice);
-        let gasLimit = await myContract.methods.safeTransferFrom(from, to, tokenId).estimateGas({from: user.account});
+        let method = myContract.methods['safeTransferFrom'](from, to, tokenId);
+        let gasLimit = await method.estimateGas({from: user.account});
         console.log('gasPrice', gasPrice);
         console.log('gasLimit', gasLimit);
-        let tx = await myContract.methods.safeTransferFrom(from, to, tokenId).send({
+        let tx = await method.send({
             from: user.account,
             gasPrice: gasPrice,
             gas: gasLimit
@@ -210,8 +211,8 @@ class App extends React.Component {
         this.setState({snackbarMsg});
         this.setState({SnackbarOpen: true});
     };
-    handleClose = (event, reason) => {
-        console.log('handleClose', event, reason);
+    handleClose = () => {
+        console.log('handleClose');
         this.setState({SnackbarOpen: false});
     };
 
@@ -234,10 +235,11 @@ class App extends React.Component {
         this.setState({totalSupply: totalSupply});
         let toTokenId = parseInt(totalSupply) + 1;
 
-        let gasLimit = await myContract.methods.safeMint(mintToAddress, toTokenId, mintUri).estimateGas({from: user.account});
+        let method = myContract.methods['safeMint'](mintToAddress, toTokenId, mintUri);
+        let gasLimit = await method.estimateGas({from: user.account});
         console.log('gasPrice', gasPrice);
         console.log('gasLimit', gasLimit);
-        let tx = await myContract.methods.safeMint(mintToAddress, toTokenId, mintUri).send({
+        let tx = await method.send({
             from: user.account,
             gasPrice: gasPrice,
             gas: gasLimit
@@ -330,7 +332,7 @@ class App extends React.Component {
                                 loading="lazy"
                                 onError={this.addDefaultSrc}
                             />
-                            <Button name={item.title} variant="contained" endIcon={<CardGiftcardIcon/>}
+                            <Button name={item.title} variant="contained" endIcon={<CardGiftCardIcon/>}
                                     onClick={this.openSendGiftDialog}>
                                 赠送
                             </Button>
