@@ -154,13 +154,13 @@ class App extends React.Component {
     }
 
     openSendGiftDialog = (event) => {
-        let tokenid = event.target.getAttribute('tokenid');
-        if (!tokenid) {
+        let tokenId = event.target.name;
+        if (!tokenId) {
             return;
         }
-        console.log('openSendGiftDialog', tokenid);
+        console.log('openSendGiftDialog', tokenId);
         this.setState({dialogOpen: true});
-        this.setState({tokenId: tokenid});
+        this.setState({tokenId: tokenId});
         this.forceUpdate();
     }
     handleSendGift = async (event, msg) => {
@@ -330,7 +330,7 @@ class App extends React.Component {
                                 loading="lazy"
                                 onError={this.addDefaultSrc}
                             />
-                            <Button tokenid={item.title} variant="contained" endIcon={<CardGiftcardIcon/>}
+                            <Button name={item.title} variant="contained" endIcon={<CardGiftcardIcon/>}
                                     onClick={this.openSendGiftDialog}>
                                 赠送
                             </Button>
