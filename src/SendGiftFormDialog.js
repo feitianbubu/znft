@@ -35,7 +35,6 @@ class App extends React.Component  {
                     <DialogTitle>赠送</DialogTitle>
                     <DialogContent>
                         <DialogContentText>
-                            赠送礼物
                         </DialogContentText>
                         <TextField
                             autoFocus

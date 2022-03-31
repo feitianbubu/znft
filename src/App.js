@@ -278,49 +278,50 @@ class App extends React.Component {
                                 {AppName}
                             </Typography>
                             <Box>
-                                <Box sx={{ height: 15 }}>
-                                {this.state.user.account ?
-                                    <Box sx={{width: '100%', textAlign: 'right', display: 'flex'}}>
-                                        <Typography variant="body2" gutterBottom component="div" sx={{display: 'flex'}}
-                                                    title={this.state.user.networkType}>
-                                            网络:{_.truncate(this.state.user.networkType, {length: 10})}
-                                        </Typography>
-                                        <Tooltip title={this.state.user.account} enterDelay={500} leaveDelay={200}>
+                                <Box sx={{height: 15}}>
+                                    {this.state.user.account ?
+                                        <Box sx={{width: '100%', textAlign: 'right', display: 'flex'}}>
                                             <Typography variant="body2" gutterBottom component="div"
-                                                        sx={{display: 'flex', mx:3}}>
-                                                账号:
-                                                {_.truncate(this.state.user.account, {length: 10})}
+                                                        sx={{display: 'flex'}}
+                                                        title={this.state.user.networkType}>
+                                                <Box className='name'>网络:</Box>{_.truncate(this.state.user.networkType, {length: 10})}
                                             </Typography>
-                                        </Tooltip>
-                                        <Typography variant="body2" gutterBottom component="div"
-                                                    sx={{display: 'flex'}}
-                                                    title={this.state.user.balance}>
-                                            余额:{_.truncate(this.state.user.balance, {length: 10})}
-                                        </Typography>
-                                    </Box>
-                                    : null
-                                }
+                                            <Tooltip title={this.state.user.account} enterDelay={500} leaveDelay={200}>
+                                                <Typography variant="body2" gutterBottom component="div"
+                                                            sx={{display: 'flex', mx: 3}}>
+                                                    <Box className='name'>账号:</Box>
+                                                    {_.truncate(this.state.user.account, {length: 10})}
+                                                </Typography>
+                                            </Tooltip>
+                                            <Typography variant="body2" gutterBottom component="div"
+                                                        sx={{display: 'flex'}}
+                                                        title={this.state.user.balance}>
+                                                <Box className='name'>余额:</Box>{_.truncate(this.state.user.balance, {length: 10})}
+                                            </Typography>
+                                        </Box>
+                                        : null
+                                    }
                                 </Box>
-                                <Box sx={{ display: 'flex',justifyContent: 'flex-end' }}>
-                                <Button id="connectBtn" disabled={this.state.connectBtnDisabled}
-                                        color="inherit"
-                                        onClick={this.handleClick}>{connectBtnName}</Button>
+                                <Box sx={{display: 'flex', justifyContent: 'flex-end'}}>
+                                    <Button id="connectBtn" disabled={this.state.connectBtnDisabled}
+                                            color="inherit"
+                                            onClick={this.handleClick}>{connectBtnName}</Button>
                                 </Box>
                             </Box>
                         </Box>
                     </Toolbar>
                 </AppBar>
                 <Box className='App-body'>
-                        <form>
-                            <FormControl>
-                                <div><TextField id="contractAddress" label="合约地址" value={this.state.contractAddress}
-                                                required
-                                                sx={{m: 2, width: '50ch'}}
-                                                onChange={this.handleChange}/></div>
-                                <div><Button type="button" variant="contained" disabled={contractBtnNameDisabled}
-                                             onClick={this.handleSubmit}>{contractBtnName}</Button></div>
-                            </FormControl>
-                        </form>
+                    <form>
+                        <FormControl>
+                            <div><TextField id="contractAddress" label="合约地址" value={this.state.contractAddress}
+                                            required
+                                            sx={{m: 2, width: '50ch'}}
+                                            onChange={this.handleChange}/></div>
+                            <div><Button type="button" variant="contained" disabled={contractBtnNameDisabled}
+                                         onClick={this.handleSubmit}>{contractBtnName}</Button></div>
+                        </FormControl>
+                    </form>
 
                     <Box sx={{width: '80%', testAlign: 'left', display: this.state.contactBalance ? '' : 'none'}}>
                         <Chip
