@@ -9,7 +9,7 @@ import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
 import ImageListItemBar from '@mui/material/ImageListItemBar';
 import CardGiftcardIcon from '@mui/icons-material/CardGiftcard';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
+import {createTheme, ThemeProvider} from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
@@ -18,6 +18,9 @@ import _ from 'lodash';
 import SendGiftFormDialog from "./SendGiftFormDialog";
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
+import abiJson from './config/abi.json';
+
+const jsonInterface = abiJson.nftAbi;
 
 const AppName = 'Z-NFT';
 const CONTRACT_OWNER_ADDRESS = '0xf7c5921DAa96F045851509a62a005Af19dADEe23';
@@ -74,7 +77,7 @@ class App extends React.Component {
         connectBtnName = '正在连接...';
         web3 = new Web3(Web3.givenProvider);
         user.account = (await web3.eth.getAccounts())[0];
-        if(!user.account) {
+        if (!user.account) {
             this.addOpenSnackbar('请先解锁钱包');
             connectBtnName = '连接钱包';
             this.setState({connectBtnDisabled: false});
@@ -103,7 +106,7 @@ class App extends React.Component {
         }
 
         let myContract = new web3.eth.Contract(jsonInterface, this.state.contractAddress);
-        let balance =await myContract.methods.balanceOf(user.account).call();
+        let balance = await myContract.methods.balanceOf(user.account).call();
         self.setState({contactBalance: `我的NFT: ${balance}`});
 
         let itemData = [];
@@ -121,13 +124,13 @@ class App extends React.Component {
             itemData.push(row);
             self.setState({itemData});
             self.forceUpdate();
-            if(++count === parseInt(balance)){
+            if (++count === parseInt(balance)) {
                 contractBtnName = '获取信息'
                 contractBtnNameDisabled = false;
                 self.forceUpdate();
             }
         });
-        if(balance === '0'){
+        if (balance === '0') {
             self.setState({itemData});
             contractBtnName = '获取信息'
             contractBtnNameDisabled = false;
@@ -145,12 +148,14 @@ class App extends React.Component {
         state[event.target.id] = event.target.value;
         this.setState(state);
     }
+
     addDefaultSrc(ev) {
         ev.target.src = 'img/empty.jpg';
     }
+
     openSendGiftDialog = (event) => {
         let tokenid = event.target.getAttribute('tokenid');
-        if(!tokenid) {
+        if (!tokenid) {
             return;
         }
         console.log('openSendGiftDialog', tokenid);
@@ -178,10 +183,14 @@ class App extends React.Component {
         let gasPrice = await web3.eth.getGasPrice();
         let from = user.account;
         console.log('handleSendGift msg: ', from, to, tokenId, gasPrice);
-        let gasLimit = await myContract.methods.safeTransferFrom(from, to ,tokenId).estimateGas({from: user.account});
+        let gasLimit = await myContract.methods.safeTransferFrom(from, to, tokenId).estimateGas({from: user.account});
         console.log('gasPrice', gasPrice);
         console.log('gasLimit', gasLimit);
-        let tx = await myContract.methods.safeTransferFrom(from, to ,tokenId).send({from: user.account, gasPrice: gasPrice, gas: gasLimit});
+        let tx = await myContract.methods.safeTransferFrom(from, to, tokenId).send({
+            from: user.account,
+            gasPrice: gasPrice,
+            gas: gasLimit
+        });
         console.log('tx', tx);
         self.setState({snackbarMsg: "赠送成功"});
         self.setState({SnackbarOpen: true});
@@ -194,7 +203,7 @@ class App extends React.Component {
     };
 
     addOpenSnackbar = (snackbarMsg) => {
-        if(!snackbarMsg) {
+        if (!snackbarMsg) {
             return;
         }
         console.log('addOpenSnackbar snackbarMsg:', snackbarMsg);
@@ -223,17 +232,22 @@ class App extends React.Component {
         let gasPrice = await web3.eth.getGasPrice();
         console.log('handleMint msg: ', mintToAddress, mintUri, gasPrice);
         this.setState({totalSupply: totalSupply});
-        let toTokenId = parseInt(totalSupply)+1;
+        let toTokenId = parseInt(totalSupply) + 1;
 
-        let gasLimit = await myContract.methods.safeMint(mintToAddress,toTokenId, mintUri).estimateGas({from: user.account});
+        let gasLimit = await myContract.methods.safeMint(mintToAddress, toTokenId, mintUri).estimateGas({from: user.account});
         console.log('gasPrice', gasPrice);
         console.log('gasLimit', gasLimit);
-        let tx = await myContract.methods.safeMint(mintToAddress,toTokenId, mintUri).send({from: user.account, gasPrice: gasPrice, gas: gasLimit});
+        let tx = await myContract.methods.safeMint(mintToAddress, toTokenId, mintUri).send({
+            from: user.account,
+            gasPrice: gasPrice,
+            gas: gasLimit
+        });
         console.log('tx', tx);
         self.setState({snackbarMsg: "空投成功"});
         self.setState({SnackbarOpen: true});
         await self.handleSubmit();
     };
+
     render() {
 
         const action = (
@@ -254,7 +268,7 @@ class App extends React.Component {
                 <CssBaseline/>
                 <AppBar position="relative">
                     <Toolbar>
-                        <Typography type="title" color="inherit" sx={{flex: 1, fontSize: 24, fontWeight: 'bold' }}>
+                        <Typography type="title" color="inherit" sx={{flex: 1, fontSize: 24, fontWeight: 'bold'}}>
                             {AppName}
                         </Typography>
                         <Button id="connectBtn" disabled={this.state.connectBtnDisabled}
@@ -263,70 +277,73 @@ class App extends React.Component {
                     </Toolbar>
                 </AppBar>
             </ThemeProvider>
-                <header className="App-header">
-                    <div style={{width: '100%', textAlign: 'right'}}>
-                        {this.state.user.account ?
-                            <Box>
-                                <Tooltip title={this.state.user.account} enterDelay={500} leaveDelay={200} >
-                                <Typography variant="body2" gutterBottom component="div" sx={{display: 'inline'}} >
+            <header className="App-header">
+                <div style={{width: '100%', textAlign: 'right'}}>
+                    {this.state.user.account ?
+                        <Box>
+                            <Tooltip title={this.state.user.account} enterDelay={500} leaveDelay={200}>
+                                <Typography variant="body2" gutterBottom component="div" sx={{display: 'inline'}}>
                                     <Box sx={{
                                         color: 'primary.main',
                                         display: 'inline'
                                     }}>账号:</Box>
-                                        {_.truncate(this.state.user.account, {length: 10})}
+                                    {_.truncate(this.state.user.account, {length: 10})}
                                 </Typography>
-                                </Tooltip>
-                                <Typography variant="body2" gutterBottom component="div" sx={{display: 'inline'}}
-                                            title={this.state.user.balance}>
-                                    <Box sx={{
-                                        color: 'primary.main',
-                                        display: 'inline'
-                                    }}> 余额:</Box>{_.truncate(this.state.user.balance, {length: 10})}
-                                </Typography>
-                            </Box>
-                            : null
-                        }
-                    </div>
-                    <div>
-                        <form>
-                            <FormControl>
-                                <div><TextField id="contractAddress" label="合约地址" value={this.state.contractAddress} required
-                                                sx={{m: 1, width: '25ch'}}
-                                                onChange={this.handleChange}/></div>
-                                <div><Button type="button" variant="contained" disabled={contractBtnNameDisabled}
-                                             onClick={this.handleSubmit}>{contractBtnName}</Button></div>
-                            </FormControl>
-                        </form>
-                    </div>
+                            </Tooltip>
+                            <Typography variant="body2" gutterBottom component="div" sx={{display: 'inline'}}
+                                        title={this.state.user.balance}>
+                                <Box sx={{
+                                    color: 'primary.main',
+                                    display: 'inline'
+                                }}> 余额:</Box>{_.truncate(this.state.user.balance, {length: 10})}
+                            </Typography>
+                        </Box>
+                        : null
+                    }
+                </div>
+                <div>
+                    <form>
+                        <FormControl>
+                            <div><TextField id="contractAddress" label="合约地址" value={this.state.contractAddress}
+                                            required
+                                            sx={{m: 1, width: '25ch'}}
+                                            onChange={this.handleChange}/></div>
+                            <div><Button type="button" variant="contained" disabled={contractBtnNameDisabled}
+                                         onClick={this.handleSubmit}>{contractBtnName}</Button></div>
+                        </FormControl>
+                    </form>
+                </div>
 
-                    <Box sx={{ width:'80%',testAlign: 'left', display: this.state.contactBalance?'':'none' }}>
-                        <Chip
+                <Box sx={{width: '80%', testAlign: 'left', display: this.state.contactBalance ? '' : 'none'}}>
+                    <Chip
                         label={this.state.contactBalance}
                         variant="outlined"
                     />
-                        </Box>
-                    <ImageList sx={{ width: '80%' }} cols={5} rowHeight={'auto'}>
-                        {this.state.itemData.map((item) => (
-                            <ImageListItem key={item.title}>
-                                <img
-                                    src={`${item.img}?w=164&h=164&fit=crop&auto=format`}
-                                    srcSet={`${item.img}?w=164&h=164&fit=crop&auto=format&dpr=2 2x`}
-                                    alt={item.title}
-                                    loading="lazy"
-                                    onError={this.addDefaultSrc}
-                                />
-                                <Button tokenid={item.title} variant="contained" endIcon={<CardGiftcardIcon />} onClick={this.openSendGiftDialog}>
-                                    赠送
-                                </Button>
-                                <ImageListItemBar
-                                    title={`tokenId: ${item.title}`}
-                                    position="below"
-                                />
-                            </ImageListItem>
-                        ))}
-                    </ImageList>
-                    <SendGiftFormDialog open={this.state.dialogOpen} onOpenChange={this.onOpenChange} onChange={this.handleChange} onClick={this.handleSendGift} />
-                    { this.state.user.account === CONTRACT_OWNER_ADDRESS ?
+                </Box>
+                <ImageList sx={{width: '80%'}} cols={5} rowHeight={'auto'}>
+                    {this.state.itemData.map((item) => (
+                        <ImageListItem key={item.title}>
+                            <img
+                                src={`${item.img}?w=164&h=164&fit=crop&auto=format`}
+                                srcSet={`${item.img}?w=164&h=164&fit=crop&auto=format&dpr=2 2x`}
+                                alt={item.title}
+                                loading="lazy"
+                                onError={this.addDefaultSrc}
+                            />
+                            <Button tokenid={item.title} variant="contained" endIcon={<CardGiftcardIcon/>}
+                                    onClick={this.openSendGiftDialog}>
+                                赠送
+                            </Button>
+                            <ImageListItemBar
+                                title={`tokenId: ${item.title}`}
+                                position="below"
+                            />
+                        </ImageListItem>
+                    ))}
+                </ImageList>
+                <SendGiftFormDialog open={this.state.dialogOpen} onOpenChange={this.onOpenChange}
+                                    onChange={this.handleChange} onClick={this.handleSendGift}/>
+                {this.state.user.account === CONTRACT_OWNER_ADDRESS ?
                     <form>
                         <FormControl>
                             <div><TextField id="mintToAddress" label="空投地址" value={this.state.mintToAddress} required
@@ -336,24 +353,24 @@ class App extends React.Component {
                                             sx={{m: 1, width: '25ch'}}
                                             onChange={this.handleChange}/></div>
                             <div><Button type="button" variant="contained" disabled={this.state.mintBtnDisabled}
-                                         onClick={this.handleMint}>{mintBtnName}({this.state.totalSupply})</Button></div>
+                                         onClick={this.handleMint}>{mintBtnName}({this.state.totalSupply})</Button>
+                            </div>
                         </FormControl>
-                    </form>:null}
-                    <div>
-                        <Snackbar
-                            open={this.state.SnackbarOpen}
-                            onClose={this.handleClose}
-                            autoHideDuration={6000}
-                            message={this.state.snackbarMsg}
-                            anchorOrigin={{vertical: 'top', horizontal: 'center'}}
-                            action={action}
-                        />
-                    </div>
-                </header>
-            </div>)
+                    </form> : null}
+                <div>
+                    <Snackbar
+                        open={this.state.SnackbarOpen}
+                        onClose={this.handleClose}
+                        autoHideDuration={6000}
+                        message={this.state.snackbarMsg}
+                        anchorOrigin={{vertical: 'top', horizontal: 'center'}}
+                        action={action}
+                    />
+                </div>
+            </header>
+        </div>)
     }
 }
 
-const jsonInterface = [{"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"approved","type":"address"},{"indexed":true,"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"Approval","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"operator","type":"address"},{"indexed":false,"internalType":"bool","name":"approved","type":"bool"}],"name":"ApprovalForAll","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"delegator","type":"address"},{"indexed":true,"internalType":"address","name":"fromDelegate","type":"address"},{"indexed":true,"internalType":"address","name":"toDelegate","type":"address"}],"name":"DelegateChanged","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"delegate","type":"address"},{"indexed":false,"internalType":"uint256","name":"previousBalance","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"newBalance","type":"uint256"}],"name":"DelegateVotesChanged","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"account","type":"address"}],"name":"Paused","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":true,"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"Transfer","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"account","type":"address"}],"name":"Unpaused","type":"event"},{"inputs":[],"name":"DOMAIN_SEPARATOR","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"approve","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"owner","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"burn","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"delegatee","type":"address"}],"name":"delegate","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"delegatee","type":"address"},{"internalType":"uint256","name":"nonce","type":"uint256"},{"internalType":"uint256","name":"expiry","type":"uint256"},{"internalType":"uint8","name":"v","type":"uint8"},{"internalType":"bytes32","name":"r","type":"bytes32"},{"internalType":"bytes32","name":"s","type":"bytes32"}],"name":"delegateBySig","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"delegates","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"getApproved","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"blockNumber","type":"uint256"}],"name":"getPastTotalSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"},{"internalType":"uint256","name":"blockNumber","type":"uint256"}],"name":"getPastVotes","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"getVotes","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"operator","type":"address"}],"name":"isApprovedForAll","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"owner","type":"address"}],"name":"nonces","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"ownerOf","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"pause","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"paused","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"},{"internalType":"string","name":"uri","type":"string"}],"name":"safeMint","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"safeTransferFrom","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"},{"internalType":"bytes","name":"_data","type":"bytes"}],"name":"safeTransferFrom","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"operator","type":"address"},{"internalType":"bool","name":"approved","type":"bool"}],"name":"setApprovalForAll","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes4","name":"interfaceId","type":"bytes4"}],"name":"supportsInterface","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"index","type":"uint256"}],"name":"tokenByIndex","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"uint256","name":"index","type":"uint256"}],"name":"tokenOfOwnerByIndex","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"tokenURI","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"transferFrom","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"unpause","outputs":[],"stateMutability":"nonpayable","type":"function"}];
 
 export default App;
