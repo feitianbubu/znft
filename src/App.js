@@ -71,6 +71,7 @@ class App extends React.Component {
             user = {};
             connectBtnName = '连接钱包';
             this.setState({connectBtnDisabled: false});
+            this.setState({user})
             this.forceUpdate();
             return;
         }
@@ -85,6 +86,7 @@ class App extends React.Component {
             return;
         }
         user.balance = web3.utils.fromWei(await web3.eth.getBalance(user.account));
+        user.networkType = await web3.eth.net.getNetworkType();
         connectBtnName = '断开钱包';
         this.setState({connectBtnDisabled: false});
         this.setState({contractAddress: '0x5A73bCA4986592E9B78a64c5392BA9b301CEe70d'});
@@ -270,106 +272,113 @@ class App extends React.Component {
                 <CssBaseline/>
                 <AppBar position="relative">
                     <Toolbar>
-                        <Typography type="title" color="inherit" sx={{flex: 1, fontSize: 24, fontWeight: 'bold'}}>
-                            {AppName}
-                        </Typography>
-                        <Button id="connectBtn" disabled={this.state.connectBtnDisabled}
-                                color="inherit"
-                                onClick={this.handleClick}>{connectBtnName}</Button>
+                        <Box sx={{display: 'flex', width: '100%', justifyContent: 'space-between'}}>
+                            <Typography type="title" color="inherit"
+                                        sx={{fontSize: 24, fontWeight: 'bold'}}>
+                                {AppName}
+                            </Typography>
+                            <Box>
+                                <Box sx={{ height: 15 }}>
+                                {this.state.user.account ?
+                                    <Box sx={{width: '100%', textAlign: 'right', display: 'flex'}}>
+                                        <Typography variant="body2" gutterBottom component="div" sx={{display: 'flex'}}
+                                                    title={this.state.user.networkType}>
+                                            网络:{_.truncate(this.state.user.networkType, {length: 10})}
+                                        </Typography>
+                                        <Tooltip title={this.state.user.account} enterDelay={500} leaveDelay={200}>
+                                            <Typography variant="body2" gutterBottom component="div"
+                                                        sx={{display: 'flex', mx:3}}>
+                                                账号:
+                                                {_.truncate(this.state.user.account, {length: 10})}
+                                            </Typography>
+                                        </Tooltip>
+                                        <Typography variant="body2" gutterBottom component="div"
+                                                    sx={{display: 'flex'}}
+                                                    title={this.state.user.balance}>
+                                            余额:{_.truncate(this.state.user.balance, {length: 10})}
+                                        </Typography>
+                                    </Box>
+                                    : null
+                                }
+                                </Box>
+                                <Box sx={{ display: 'flex',justifyContent: 'flex-end' }}>
+                                <Button id="connectBtn" disabled={this.state.connectBtnDisabled}
+                                        color="inherit"
+                                        onClick={this.handleClick}>{connectBtnName}</Button>
+                                </Box>
+                            </Box>
+                        </Box>
                     </Toolbar>
                 </AppBar>
-            </ThemeProvider>
-            <header className="App-header">
-                <div style={{width: '100%', textAlign: 'right'}}>
-                    {this.state.user.account ?
-                        <Box>
-                            <Tooltip title={this.state.user.account} enterDelay={500} leaveDelay={200}>
-                                <Typography variant="body2" gutterBottom component="div" sx={{display: 'inline'}}>
-                                    <Box sx={{
-                                        color: 'primary.main',
-                                        display: 'inline'
-                                    }}>账号:</Box>
-                                    {_.truncate(this.state.user.account, {length: 10})}
-                                </Typography>
-                            </Tooltip>
-                            <Typography variant="body2" gutterBottom component="div" sx={{display: 'inline'}}
-                                        title={this.state.user.balance}>
-                                <Box sx={{
-                                    color: 'primary.main',
-                                    display: 'inline'
-                                }}> 余额:</Box>{_.truncate(this.state.user.balance, {length: 10})}
-                            </Typography>
-                        </Box>
-                        : null
-                    }
-                </div>
-                <div>
-                    <form>
-                        <FormControl>
-                            <div><TextField id="contractAddress" label="合约地址" value={this.state.contractAddress}
-                                            required
-                                            sx={{m: 1, width: '25ch'}}
-                                            onChange={this.handleChange}/></div>
-                            <div><Button type="button" variant="contained" disabled={contractBtnNameDisabled}
-                                         onClick={this.handleSubmit}>{contractBtnName}</Button></div>
-                        </FormControl>
-                    </form>
-                </div>
+                <Box className='App-body'>
+                        <form>
+                            <FormControl>
+                                <div><TextField id="contractAddress" label="合约地址" value={this.state.contractAddress}
+                                                required
+                                                sx={{m: 2, width: '50ch'}}
+                                                onChange={this.handleChange}/></div>
+                                <div><Button type="button" variant="contained" disabled={contractBtnNameDisabled}
+                                             onClick={this.handleSubmit}>{contractBtnName}</Button></div>
+                            </FormControl>
+                        </form>
 
-                <Box sx={{width: '80%', testAlign: 'left', display: this.state.contactBalance ? '' : 'none'}}>
-                    <Chip
-                        label={this.state.contactBalance}
-                        variant="outlined"
-                    />
+                    <Box sx={{width: '80%', testAlign: 'left', display: this.state.contactBalance ? '' : 'none'}}>
+                        <Chip
+                            label={this.state.contactBalance}
+                            variant="outlined"
+                        />
+                    </Box>
+                    <ImageList sx={{width: '80%'}} cols={5} rowHeight={'auto'}>
+                        {this.state.itemData.map((item) => (
+                            <ImageListItem key={item.title}>
+                                <img
+                                    src={`${item.img}?w=164&h=164&fit=crop&auto=format`}
+                                    srcSet={`${item.img}?w=164&h=164&fit=crop&auto=format&dpr=2 2x`}
+                                    alt={item.title}
+                                    loading="lazy"
+                                    onError={this.addDefaultSrc}
+                                />
+                                <Button name={item.title} variant="contained" endIcon={<CardGiftCardIcon/>}
+                                        onClick={this.openSendGiftDialog}>
+                                    赠送
+                                </Button>
+                                <ImageListItemBar
+                                    title={`tokenId: ${item.title}`}
+                                    position="below"
+                                />
+                            </ImageListItem>
+                        ))}
+                    </ImageList>
+                    <SendGiftFormDialog open={this.state.dialogOpen} onOpenChange={this.onOpenChange}
+                                        onChange={this.handleChange} onClick={this.handleSendGift}/>
+                    {this.state.user.account === CONTRACT_OWNER_ADDRESS ?
+                        <form>
+                            <FormControl>
+                                <div><TextField id="mintToAddress" label="空投地址" value={this.state.mintToAddress}
+                                                required
+                                                sx={{m: 1, width: '25ch'}}
+                                                onChange={this.handleChange}/></div>
+                                <div><TextField id="mintUri" label="uri" value={this.state.mintUri} required
+                                                sx={{m: 1, width: '25ch'}}
+                                                onChange={this.handleChange}/></div>
+                                <div><Button type="button" variant="contained" disabled={this.state.mintBtnDisabled}
+                                             onClick={this.handleMint}>{mintBtnName}({this.state.totalSupply})</Button>
+                                </div>
+                            </FormControl>
+                        </form> : null}
+                    <div>
+                        <Snackbar
+                            open={this.state.SnackbarOpen}
+                            onClose={this.handleClose}
+                            autoHideDuration={6000}
+                            message={this.state.snackbarMsg}
+                            anchorOrigin={{vertical: 'top', horizontal: 'center'}}
+                            action={action}
+                        />
+                    </div>
                 </Box>
-                <ImageList sx={{width: '80%'}} cols={5} rowHeight={'auto'}>
-                    {this.state.itemData.map((item) => (
-                        <ImageListItem key={item.title}>
-                            <img
-                                src={`${item.img}?w=164&h=164&fit=crop&auto=format`}
-                                srcSet={`${item.img}?w=164&h=164&fit=crop&auto=format&dpr=2 2x`}
-                                alt={item.title}
-                                loading="lazy"
-                                onError={this.addDefaultSrc}
-                            />
-                            <Button name={item.title} variant="contained" endIcon={<CardGiftCardIcon/>}
-                                    onClick={this.openSendGiftDialog}>
-                                赠送
-                            </Button>
-                            <ImageListItemBar
-                                title={`tokenId: ${item.title}`}
-                                position="below"
-                            />
-                        </ImageListItem>
-                    ))}
-                </ImageList>
-                <SendGiftFormDialog open={this.state.dialogOpen} onOpenChange={this.onOpenChange}
-                                    onChange={this.handleChange} onClick={this.handleSendGift}/>
-                {this.state.user.account === CONTRACT_OWNER_ADDRESS ?
-                    <form>
-                        <FormControl>
-                            <div><TextField id="mintToAddress" label="空投地址" value={this.state.mintToAddress} required
-                                            sx={{m: 1, width: '25ch'}}
-                                            onChange={this.handleChange}/></div>
-                            <div><TextField id="mintUri" label="uri" value={this.state.mintUri} required
-                                            sx={{m: 1, width: '25ch'}}
-                                            onChange={this.handleChange}/></div>
-                            <div><Button type="button" variant="contained" disabled={this.state.mintBtnDisabled}
-                                         onClick={this.handleMint}>{mintBtnName}({this.state.totalSupply})</Button>
-                            </div>
-                        </FormControl>
-                    </form> : null}
-                <div>
-                    <Snackbar
-                        open={this.state.SnackbarOpen}
-                        onClose={this.handleClose}
-                        autoHideDuration={6000}
-                        message={this.state.snackbarMsg}
-                        anchorOrigin={{vertical: 'top', horizontal: 'center'}}
-                        action={action}
-                    />
-                </div>
-            </header>
+
+            </ThemeProvider>
         </div>)
     }
 }
