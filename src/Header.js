@@ -128,6 +128,7 @@ class App extends React.Component {
             }
         });
         if(balance === '0'){
+            self.setState({itemData});
             contractBtnName = '获取信息'
             contractBtnNameDisabled = false;
             self.forceUpdate();
