@@ -12,7 +12,7 @@ class App extends React.Component {
     constructor(props) {
         console.log('constructor', props);
         super(props);
-        this.state = {props, to: ''};
+        this.state = {props, to: '', toProps: {}};
         this.handleClose = this.handleClose.bind(this);
         this.handleChange = this.handleChange.bind(this);
     }
@@ -22,8 +22,17 @@ class App extends React.Component {
     };
     handleClick = (ev) => {
         console.log('handleClick', ev);
-        this.state.props.onClick(ev, {to: this.state.to})
+        let to = this.state.to;
+        // check to not a NFT address
+        if (to.length !== 42 || to.substr(0, 2) !== '0x') {
+            let toProps = {error: true};
+            this.setState({toProps})
+            ev.preventDefault();
+            return;
+        }
+        this.state.props.onClick(ev, {to})
         this.state.props.onOpenChange(false);
+        this.setState({toProps: {}});
         ev.preventDefault();
     };
 
@@ -42,6 +51,8 @@ class App extends React.Component {
                         <DialogContentText>
                         </DialogContentText>
                         <TextField
+                            error={this.state.toProps.error}
+                            helperText={this.state.toProps.error ? '请输入合法的地址' : ''}
                             required
                             autoFocus
                             margin="dense"
