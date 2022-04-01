@@ -79,7 +79,7 @@ class App extends React.Component {
         web3 = new Web3(Web3.givenProvider);
         try {
             user.account = (await web3.eth.getAccounts())[0];
-        }catch (e){
+        } catch (e) {
             this.addOpenSnackbar('请先安装metamask');
             return;
         }
@@ -93,6 +93,12 @@ class App extends React.Component {
         this.setState({connectBtnDisabled: false});
         this.setState({contractAddress: '0x5A73bCA4986592E9B78a64c5392BA9b301CEe70d'});
         this.setState({user: user});
+        // debugger;
+        console.log('transactionConfirmationBlocks', web3.eth.transactionConfirmationBlocks);
+        // web3.eth.transactionConfirmationBlocks = 1
+        console.log('transactionConfirmationBlocks', web3.eth.transactionConfirmationBlocks);
+
+
         this.forceUpdate();
     };
     handleSubmit = async () => {
@@ -190,13 +196,15 @@ class App extends React.Component {
         let gasLimit = await method.estimateGas({from: user.account});
         console.log('gasPrice', gasPrice);
         console.log('gasLimit', gasLimit);
-        let tx = await method.send({
-            from: user.account, gasPrice: gasPrice, gas: gasLimit
-        });
-        console.log('tx', tx);
-        self.setState({snackbarMsg: "赠送成功"});
-        self.setState({SnackbarOpen: true});
-        await self.handleSubmit();
+        try {
+            let tx = await method.send({
+                from: user.account, gasPrice: gasPrice, gas: gasLimit
+            });
+            self.addOpenSnackbar("赠送成功:" , tx);
+            await self.handleSubmit();
+        } catch (e) {
+            self.addOpenSnackbar("赠送失败:" , e);
+        }
     };
     onOpenChange = (open) => {
         console.log('onOpenChange', open);
@@ -204,11 +212,14 @@ class App extends React.Component {
         this.forceUpdate();
     };
 
-    addOpenSnackbar = (snackbarMsg) => {
+    addOpenSnackbar = (snackbarMsg, json) => {
         if (!snackbarMsg) {
             return;
         }
-        console.log('addOpenSnackbar snackbarMsg:', snackbarMsg);
+        console.log('addOpenSnackbar snackbarMsg:', snackbarMsg, json);
+        if (json) {
+            snackbarMsg += (json.message || JSON.stringify(json));
+        }
         this.setState({snackbarMsg});
         this.setState({SnackbarOpen: true});
         connectBtnName = '连接钱包';
@@ -269,9 +280,14 @@ class App extends React.Component {
                 <CssBaseline/>
                 <AppBar position="relative">
                     <Toolbar>
-                        <Box sx={{display: 'flex', width: '100%', justifyContent: 'space-between', alignItems:'center'}}>
+                        <Box sx={{
+                            display: 'flex',
+                            width: '100%',
+                            justifyContent: 'space-between',
+                            alignItems: 'center'
+                        }}>
                             <Typography type="title" color="inherit"
-                                        sx={{fontSize: 24, fontWeight: 'bold' }}>
+                                        sx={{fontSize: 24, fontWeight: 'bold'}}>
                                 {AppName}
                             </Typography>
                             <Box>
@@ -356,7 +372,7 @@ class App extends React.Component {
                         <Snackbar
                             open={this.state.SnackbarOpen}
                             onClose={this.handleClose}
-                            autoHideDuration={6000}
+                            autoHideDuration={30000}
                             message={this.state.snackbarMsg}
                             anchorOrigin={{vertical: 'top', horizontal: 'center'}}
                             action={action}
