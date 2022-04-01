@@ -190,9 +190,7 @@ class App extends React.Component {
         console.log('gasPrice', gasPrice);
         console.log('gasLimit', gasLimit);
         let tx = await method.send({
-            from: user.account,
-            gasPrice: gasPrice,
-            gas: gasLimit
+            from: user.account, gasPrice: gasPrice, gas: gasLimit
         });
         console.log('tx', tx);
         self.setState({snackbarMsg: "赠送成功"});
@@ -242,9 +240,7 @@ class App extends React.Component {
         console.log('gasPrice', gasPrice);
         console.log('gasLimit', gasLimit);
         let tx = await method.send({
-            from: user.account,
-            gasPrice: gasPrice,
-            gas: gasLimit
+            from: user.account, gasPrice: gasPrice, gas: gasLimit
         });
         console.log('tx', tx);
         self.setState({snackbarMsg: "空投成功"});
@@ -254,55 +250,44 @@ class App extends React.Component {
 
     render() {
 
-        const action = (
-            <React.Fragment>
-                <IconButton
-                    size="small"
-                    aria-label="close"
-                    color="inherit"
-                    onClick={this.handleClose}
-                >
-                    <CloseIcon fontSize="small"/>
-                </IconButton>
-            </React.Fragment>
-        );
+        const action = (<React.Fragment>
+            <IconButton
+                size="small"
+                aria-label="close"
+                color="inherit"
+                onClick={this.handleClose}
+            >
+                <CloseIcon fontSize="small"/>
+            </IconButton>
+        </React.Fragment>);
 
         return (<div className="App">
             <ThemeProvider theme={theme}>
                 <CssBaseline/>
                 <AppBar position="relative">
                     <Toolbar>
-                        <Box sx={{display: 'flex', width: '100%', justifyContent: 'space-between'}}>
+                        <Box sx={{display: 'flex', width: '100%', justifyContent: 'space-between', alignItems:'center'}}>
                             <Typography type="title" color="inherit"
-                                        sx={{fontSize: 24, fontWeight: 'bold'}}>
+                                        sx={{fontSize: 24, fontWeight: 'bold' }}>
                                 {AppName}
                             </Typography>
                             <Box>
-                                <Box sx={{height: 15}}>
-                                    {this.state.user.account ?
-                                        <Box sx={{width: '100%', textAlign: 'right', display: 'flex'}}>
-                                            <Typography variant="body2" gutterBottom component="div"
-                                                        sx={{display: 'flex'}}
-                                                        title={this.state.user.networkType}>
-                                                <Box className='name'>网络:</Box>{_.truncate(this.state.user.networkType, {length: 10})}
-                                            </Typography>
-                                            <Tooltip title={this.state.user.account} enterDelay={500} leaveDelay={200}>
-                                                <Typography variant="body2" gutterBottom component="div"
-                                                            sx={{display: 'flex', mx: 3}}>
-                                                    <Box className='name'>账号:</Box>
-                                                    {_.truncate(this.state.user.account, {length: 10})}
-                                                </Typography>
-                                            </Tooltip>
-                                            <Typography variant="body2" gutterBottom component="div"
-                                                        sx={{display: 'flex'}}
-                                                        title={this.state.user.balance}>
-                                                <Box className='name'>余额:</Box>{_.truncate(this.state.user.balance, {length: 10})}
-                                            </Typography>
+                                <Box sx={{height: 20}}>
+                                    {this.state.user.account ? <Box sx={{display: 'flex'}}>
+                                        <span class='name'>网络:</span>
+                                        {_.truncate(this.state.user.networkType, {length: 10})}
+                                        <Box
+                                            sx={{mx: 2}}>
+                                            <span className='name'>账号:</span>
+                                            {_.truncate(this.state.user.account, {length: 100})}
                                         </Box>
-                                        : null
-                                    }
+                                        <Box title={this.state.user.balance}>
+                                            <span class='name'>余额:</span>
+                                            {_.truncate(this.state.user.balance, {length: 10})}
+                                        </Box>
+                                    </Box> : null}
                                 </Box>
-                                <Box sx={{display: 'flex', justifyContent: 'flex-end'}}>
+                                <Box sx={{display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-end'}}>
                                     <Button id="connectBtn" disabled={this.state.connectBtnDisabled}
                                             color="inherit"
                                             onClick={this.handleClick}>{connectBtnName}</Button>
@@ -330,43 +315,40 @@ class App extends React.Component {
                         />
                     </Box>
                     <ImageList sx={{width: '80%'}} cols={5} rowHeight={'auto'}>
-                        {this.state.itemData.map((item) => (
-                            <ImageListItem key={item.title}>
-                                <img
-                                    src={`${item.img}?w=164&h=164&fit=crop&auto=format`}
-                                    srcSet={`${item.img}?w=164&h=164&fit=crop&auto=format&dpr=2 2x`}
-                                    alt={item.title}
-                                    loading="lazy"
-                                    onError={this.addDefaultSrc}
-                                />
-                                <Button name={item.title} variant="contained" endIcon={<CardGiftCardIcon/>}
-                                        onClick={this.openSendGiftDialog}>
-                                    赠送
-                                </Button>
-                                <ImageListItemBar
-                                    title={`tokenId: ${item.title}`}
-                                    position="below"
-                                />
-                            </ImageListItem>
-                        ))}
+                        {this.state.itemData.map((item) => (<ImageListItem key={item.title}>
+                            <img
+                                src={`${item.img}?w=164&h=164&fit=crop&auto=format`}
+                                srcSet={`${item.img}?w=164&h=164&fit=crop&auto=format&dpr=2 2x`}
+                                alt={item.title}
+                                loading="lazy"
+                                onError={this.addDefaultSrc}
+                            />
+                            <Button name={item.title} variant="contained" endIcon={<CardGiftCardIcon/>}
+                                    onClick={this.openSendGiftDialog}>
+                                赠送
+                            </Button>
+                            <ImageListItemBar
+                                title={`tokenId: ${item.title}`}
+                                position="below"
+                            />
+                        </ImageListItem>))}
                     </ImageList>
                     <SendGiftFormDialog open={this.state.dialogOpen} onOpenChange={this.onOpenChange}
                                         onChange={this.handleChange} onClick={this.handleSendGift}/>
-                    {this.state.user.account === CONTRACT_OWNER_ADDRESS ?
-                        <form>
-                            <FormControl>
-                                <div><TextField id="mintToAddress" label="空投地址" value={this.state.mintToAddress}
-                                                required
-                                                sx={{m: 1, width: '25ch'}}
-                                                onChange={this.handleChange}/></div>
-                                <div><TextField id="mintUri" label="uri" value={this.state.mintUri} required
-                                                sx={{m: 1, width: '25ch'}}
-                                                onChange={this.handleChange}/></div>
-                                <div><Button type="button" variant="contained" disabled={this.state.mintBtnDisabled}
-                                             onClick={this.handleMint}>{mintBtnName}({this.state.totalSupply})</Button>
-                                </div>
-                            </FormControl>
-                        </form> : null}
+                    {this.state.user.account === CONTRACT_OWNER_ADDRESS ? <form>
+                        <FormControl>
+                            <div><TextField id="mintToAddress" label="空投地址" value={this.state.mintToAddress}
+                                            required
+                                            sx={{m: 1, width: '25ch'}}
+                                            onChange={this.handleChange}/></div>
+                            <div><TextField id="mintUri" label="uri" value={this.state.mintUri} required
+                                            sx={{m: 1, width: '25ch'}}
+                                            onChange={this.handleChange}/></div>
+                            <div><Button type="button" variant="contained" disabled={this.state.mintBtnDisabled}
+                                         onClick={this.handleMint}>{mintBtnName}({this.state.totalSupply})</Button>
+                            </div>
+                        </FormControl>
+                    </form> : null}
                     <div>
                         <Snackbar
                             open={this.state.SnackbarOpen}
