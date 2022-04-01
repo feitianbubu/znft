@@ -274,7 +274,7 @@ class App extends React.Component {
                             <Box>
                                 <Box sx={{height: 20}}>
                                     {this.state.user.account ? <Box sx={{display: 'flex'}}>
-                                        <span class='name'>网络:</span>
+                                        <span className='name'>网络:</span>
                                         {_.truncate(this.state.user.networkType, {length: 10})}
                                         <Box
                                             sx={{mx: 2}}>
@@ -282,7 +282,7 @@ class App extends React.Component {
                                             {_.truncate(this.state.user.account, {length: 100})}
                                         </Box>
                                         <Box title={this.state.user.balance}>
-                                            <span class='name'>余额:</span>
+                                            <span className='name'>余额:</span>
                                             {_.truncate(this.state.user.balance, {length: 10})}
                                         </Box>
                                     </Box> : null}

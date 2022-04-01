@@ -6,8 +6,9 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
+import {Box} from "@mui/material";
 
-class App extends React.Component  {
+class App extends React.Component {
     constructor(props) {
         console.log('constructor', props);
         super(props);
@@ -20,8 +21,10 @@ class App extends React.Component  {
         this.state.props.onOpenChange(false);
     };
     handleClick = (ev) => {
+        console.log('handleClick', ev);
         this.state.props.onClick(ev, {to: this.state.to})
         this.state.props.onOpenChange(false);
+        ev.preventDefault();
     };
 
     handleChange = (e) => {
@@ -29,14 +32,17 @@ class App extends React.Component  {
         this.setState({[e.target.id]: e.target.value});
         this.state.props.onChange(e);
     }
+
     render() {
         return (
-                <Dialog open={this.props.open} onClose={this.handleClose} fullWidth>
+            <Dialog open={this.props.open} onClose={this.handleClose} fullWidth>
+                <Box component="form" onSubmit={this.handleClick}>
                     <DialogTitle>赠送</DialogTitle>
                     <DialogContent>
                         <DialogContentText>
                         </DialogContentText>
                         <TextField
+                            required
                             autoFocus
                             margin="dense"
                             id="to"
@@ -49,10 +55,12 @@ class App extends React.Component  {
                     </DialogContent>
                     <DialogActions>
                         <Button onClick={this.handleClose}>取消</Button>
-                        <Button onClick={this.handleClick}>确认</Button>
+                        <Button type="submit">确认</Button>
                     </DialogActions>
-                </Dialog>
+                </Box>
+            </Dialog>
         );
     }
 }
+
 export default App;
