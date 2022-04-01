@@ -3,7 +3,7 @@ import React from 'react';
 import Web3 from "web3";
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
-import {Box, Chip, FormControl, Tooltip} from '@mui/material';
+import {Box, Chip, FormControl} from '@mui/material';
 import Snackbar from '@mui/material/Snackbar';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
@@ -77,12 +77,14 @@ class App extends React.Component {
         }
         connectBtnName = '正在连接...';
         web3 = new Web3(Web3.givenProvider);
-        user.account = (await web3.eth.getAccounts())[0];
+        try {
+            user.account = (await web3.eth.getAccounts())[0];
+        }catch (e){
+            this.addOpenSnackbar('请先安装metamask');
+            return;
+        }
         if (!user.account) {
-            this.addOpenSnackbar('请先解锁钱包');
-            connectBtnName = '连接钱包';
-            this.setState({connectBtnDisabled: false});
-            this.forceUpdate();
+            this.addOpenSnackbar('请先解锁metamask');
             return;
         }
         user.balance = web3.utils.fromWei(await web3.eth.getBalance(user.account));
@@ -169,8 +171,7 @@ class App extends React.Component {
         let self = this;
         console.log('handleSendGift', user, this.state, msg);
         if (!user.account) {
-            this.setState({snackbarMsg: "请先连接钱包"});
-            this.setState({SnackbarOpen: true});
+            this.addOpenSnackbar('请先连接钱包');
             return;
         }
         let myContract = new web3.eth.Contract(jsonInterface, this.state.contractAddress);
@@ -210,6 +211,9 @@ class App extends React.Component {
         console.log('addOpenSnackbar snackbarMsg:', snackbarMsg);
         this.setState({snackbarMsg});
         this.setState({SnackbarOpen: true});
+        connectBtnName = '连接钱包';
+        this.setState({connectBtnDisabled: false});
+        this.forceUpdate();
     };
     handleClose = () => {
         console.log('handleClose');
@@ -220,8 +224,7 @@ class App extends React.Component {
         let self = this;
         console.log('handleMint', user, this.state);
         if (!user.account) {
-            this.setState({snackbarMsg: "请先连接钱包"});
-            this.setState({SnackbarOpen: true});
+            this.addOpenSnackbar('请先连接钱包');
             return;
         }
         let myContract = new web3.eth.Contract(jsonInterface, this.state.contractAddress);
