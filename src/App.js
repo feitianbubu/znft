@@ -40,6 +40,7 @@ class App extends React.Component {
             value: '',
             rows: [],
             contractAddress: '',
+            transactionConfirmationBlocks: '',
             itemData: [],
             user: {},
             snackbarOpen: false,
@@ -93,11 +94,9 @@ class App extends React.Component {
         this.setState({connectBtnDisabled: false});
         this.setState({contractAddress: '0x5A73bCA4986592E9B78a64c5392BA9b301CEe70d'});
         this.setState({user: user});
-        // debugger;
-        console.log('transactionConfirmationBlocks', web3.eth.transactionConfirmationBlocks);
-        // web3.eth.transactionConfirmationBlocks = 1
-        console.log('transactionConfirmationBlocks', web3.eth.transactionConfirmationBlocks);
 
+        let transactionConfirmationBlocks = web3.eth.transactionConfirmationBlocks;
+        this.setState({transactionConfirmationBlocks});
 
         this.forceUpdate();
     };
@@ -157,6 +156,11 @@ class App extends React.Component {
         let state = {};
         state[event.target.id] = event.target.value;
         this.setState(state);
+
+        if(event.target.id === 'transactionConfirmationBlocks') {
+            web3.eth.transactionConfirmationBlocks = parseInt(event.target.value);
+            this.addOpenSnackbar('设置成功: web3.eth.transactionConfirmationBlocks = ' + event.target.value);
+        }
     }
 
     addDefaultSrc(ev) {
@@ -200,10 +204,10 @@ class App extends React.Component {
             let tx = await method.send({
                 from: user.account, gasPrice: gasPrice, gas: gasLimit
             });
-            self.addOpenSnackbar("赠送成功:" , tx);
+            self.addOpenSnackbar("赠送成功:", tx);
             await self.handleSubmit();
         } catch (e) {
-            self.addOpenSnackbar("赠送失败:" , e);
+            self.addOpenSnackbar("赠送失败:", e);
         }
     };
     onOpenChange = (open) => {
@@ -222,8 +226,10 @@ class App extends React.Component {
         }
         this.setState({snackbarMsg});
         this.setState({SnackbarOpen: true});
-        connectBtnName = '连接钱包';
-        this.setState({connectBtnDisabled: false});
+        if(!user.account){
+            connectBtnName = '连接钱包';
+            this.setState({connectBtnDisabled: false});
+        }
         this.forceUpdate();
     };
     handleClose = () => {
@@ -318,16 +324,30 @@ class App extends React.Component {
                 <Box className='App-body'>
                     <form>
                         <FormControl>
-                            <div><TextField id="contractAddress" label="合约地址" value={this.state.contractAddress}
-                                            required
-                                            sx={{m: 2, width: '50ch'}}
-                                            onChange={this.handleChange}/></div>
+                            <Box sx={{display: 'flex'}}>
+
+                                <TextField id="contractAddress" label="合约地址"
+                                           value={this.state.contractAddress}
+                                           required
+                                           sx={{m: 2, width: '30ch'}}
+                                           size="small"
+                                           onChange={this.handleChange}/>
+
+                                <TextField id="transactionConfirmationBlocks" label="确认区块数"
+                                           value={this.state.transactionConfirmationBlocks}
+                                           required
+                                           sx={{m: 2, width: '8ch'}}
+                                           size="small"
+                                           type="number"
+                                           onChange={this.handleChange}/>
+                            </Box>
                             <div><Button type="button" variant="contained" disabled={contractBtnNameDisabled}
-                                         onClick={this.handleSubmit}>{contractBtnName}</Button></div>
+                                         onClick={this.handleSubmit}>{contractBtnName}</Button>
+                            </div>
                         </FormControl>
                     </form>
 
-                    <Box sx={{width: '80%', testAlign: 'left', display: this.state.contactBalance ? '' : 'none'}}>
+                    <Box sx={{width: '80%', display: this.state.contactBalance ? '' : 'none'}}>
                         <Chip
                             label={this.state.contactBalance}
                             variant="outlined"
