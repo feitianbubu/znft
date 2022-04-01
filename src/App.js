@@ -298,7 +298,15 @@ class App extends React.Component {
                             </Typography>
                             <Box>
                                 <Box sx={{height: 20}}>
-                                    {this.state.user.account ? <Box sx={{display: 'flex'}}>
+                                    {Object.keys(this.state.user).map((key, index) => {
+                                        let name = this.state.user[key];
+                                        let length = (key === 'account' ? name.length : 10);
+                                        return (<Box component="span" key={index}><span className="name"> {_.startCase(key)}:</span>
+                                            {_.truncate(name, {length})}
+                                            </Box>);
+                                    })}
+
+{/*                                    {this.state.user.account ? <Box sx={{display: 'flex'}}>
                                         <span className='name'>网络:</span>
                                         {_.truncate(this.state.user.networkType, {length: 10})}
                                         <Box
@@ -310,7 +318,7 @@ class App extends React.Component {
                                             <span className='name'>余额:</span>
                                             {_.truncate(this.state.user.balance, {length: 10})}
                                         </Box>
-                                    </Box> : null}
+                                    </Box> : null}*/}
                                 </Box>
                                 <Box sx={{display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-end'}}>
                                     <Button id="connectBtn" disabled={this.state.connectBtnDisabled}
