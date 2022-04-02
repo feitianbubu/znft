@@ -1,24 +1,24 @@
-import './App.css';
-import React from 'react';
-import Web3 from "web3";
-import TextField from '@mui/material/TextField';
-import Button from '@mui/material/Button';
+import CardGiftCardIcon from '@mui/icons-material/CardGiftcard';
+import CloseIcon from '@mui/icons-material/Close';
 import {Box, Chip, FormControl} from '@mui/material';
-import Snackbar from '@mui/material/Snackbar';
+import AppBar from '@mui/material/AppBar';
+import Button from '@mui/material/Button';
+import CssBaseline from '@mui/material/CssBaseline';
+import IconButton from '@mui/material/IconButton';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
 import ImageListItemBar from '@mui/material/ImageListItemBar';
-import CardGiftCardIcon from '@mui/icons-material/CardGiftcard';
+import Snackbar from '@mui/material/Snackbar';
 import {createTheme, ThemeProvider} from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
+import TextField from '@mui/material/TextField';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
-import AppBar from '@mui/material/AppBar';
 import _ from 'lodash';
-import SendGiftFormDialog from "./SendGiftFormDialog";
-import IconButton from '@mui/material/IconButton';
-import CloseIcon from '@mui/icons-material/Close';
+import React from 'react';
+import Web3 from "web3";
+import './App.css';
 import abiJson from './config/abi.json';
+import SendGiftFormDialog from "./SendGiftFormDialog";
 
 const jsonInterface = abiJson.nftAbi;
 
@@ -89,7 +89,7 @@ class App extends React.Component {
             return;
         }
         user.balance = web3.utils.fromWei(await web3.eth.getBalance(user.account));
-        user.networkType = await web3.eth.net.getNetworkType();
+        user.network = await web3.eth.net.getNetworkType();
         connectBtnName = '断开钱包';
         this.setState({connectBtnDisabled: false});
         this.setState({contractAddress: '0x5A73bCA4986592E9B78a64c5392BA9b301CEe70d'});
@@ -344,7 +344,7 @@ class App extends React.Component {
                                 <TextField id="transactionConfirmationBlocks" label="确认区块数"
                                            value={this.state.transactionConfirmationBlocks}
                                            required
-                                           sx={{m: 2, width: '8ch'}}
+                                           sx={{m: 2, width: '6ch'}}
                                            size="small"
                                            type="number"
                                            onChange={this.handleChange}/>
