@@ -21,6 +21,7 @@ import abiJson from './config/abi.json';
 import SendGiftFormDialog from "./SendGiftFormDialog";
 
 const jsonInterface = abiJson.nftAbi;
+const USER_LOGIN_URL = abiJson.userLoginUrl;
 
 const AppName = 'Z-NFT';
 const CONTRACT_OWNER_ADDRESS = '0xf7c5921DAa96F045851509a62a005Af19dADEe23';
@@ -98,6 +99,18 @@ class App extends React.Component {
         let transactionConfirmationBlocks = web3.eth.transactionConfirmationBlocks;
         this.setState({transactionConfirmationBlocks});
 
+        // 获取角色信息
+        try{
+            let userSync = await this.getUserInfo(user.account);
+            let userInfo = await userSync.json();
+            user.nickname = userInfo.nickName;
+            this.setState({user: user});
+        }catch (e) {
+            console.log('getUserInfo fail', e);
+            user['getLpFail'] = e
+            this.addOpenSnackbar("lp用户信息获取失败", e);
+        }
+
         this.forceUpdate();
     };
     handleSubmit = async () => {
@@ -109,7 +122,7 @@ class App extends React.Component {
         if (!user.account) {
             this.setState({snackbarMsg: "请先连接钱包"});
             this.setState({SnackbarOpen: true});
-            contractBtnName = '获取信息'
+            contractBtnName = '获取信息';
             contractBtnNameDisabled = false;
             return;
         }
@@ -134,7 +147,7 @@ class App extends React.Component {
             self.setState({itemData});
             self.forceUpdate();
             if (++count === parseInt(balance)) {
-                contractBtnName = '获取信息'
+                contractBtnName = '获取信息';
                 contractBtnNameDisabled = false;
                 self.forceUpdate();
             }
@@ -301,7 +314,7 @@ class App extends React.Component {
                                     {Object.keys(this.state.user).map((key, index) => {
                                         let name = this.state.user[key];
                                         let length = (key === 'account' ? name.length : 10);
-                                        return (<Box component="span" key={index}><span className="name"> {_.startCase(key)}:</span>
+                                        return (<Box component="span" key={index} title={name}><span className="name">{_.startCase(key)}:</span>
                                             {_.truncate(name, {length})}
                                             </Box>);
                                     })}
@@ -410,6 +423,10 @@ class App extends React.Component {
 
             </ThemeProvider>
         </div>)
+    }
+
+    async getUserInfo(accountId) {
+        return await fetch(`${USER_LOGIN_URL}`, {method:"POST", body: JSON.stringify({accountId})})
     }
 }
 
