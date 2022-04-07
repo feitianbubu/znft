@@ -1,5 +1,6 @@
 import CardGiftCardIcon from '@mui/icons-material/CardGiftcard';
 import CloseIcon from '@mui/icons-material/Close';
+import ShoppingCartCheckoutIcon from '@mui/icons-material/ShoppingCartCheckout';
 import {Box, Chip, FormControl} from '@mui/material';
 import AppBar from '@mui/material/AppBar';
 import Button from '@mui/material/Button';
@@ -22,6 +23,7 @@ import SendGiftFormDialog from "./SendGiftFormDialog";
 
 const jsonInterface = abiJson.nftAbi;
 const USER_LOGIN_URL = abiJson.userLoginUrl;
+const BASE_LP_URL = abiJson.baseLpUrl;
 
 const AppName = 'Z-NFT';
 const CONTRACT_OWNER_ADDRESS = '0xf7c5921DAa96F045851509a62a005Af19dADEe23';
@@ -55,10 +57,12 @@ class App extends React.Component {
             mintUri: '',
             mintBtnDisabled: false,
             totalSupply: '',
+            sellList: [],
         }
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
         this.handleMint = this.handleMint.bind(this);
+        this.openSellDialog = this.openSellDialog.bind(this);
     }
 
     componentDidMount() {
@@ -104,9 +108,10 @@ class App extends React.Component {
             let userSync = await this.getUserInfo(user.account);
             let userInfo = await userSync.json();
             user.nickname = userInfo.nickName;
-            this.setState({user: user});
+            let token = userInfo.token;
+            this.setState({token});
+            this.setState({user});
         }catch (e) {
-            console.log('getUserInfo fail', e);
             user['getLpFail'] = e
             this.addOpenSnackbar("lp用户信息获取失败", e);
         }
@@ -159,6 +164,22 @@ class App extends React.Component {
             self.forceUpdate();
         }
 
+        // 获取交易列表
+        try {
+            let sellList = await fetch(BASE_LP_URL + '/SellList', {
+                method: 'POST',
+                headers: {
+                    'Tevat-Authorization': this.state.token,
+                },
+                body: JSON.stringify({})
+            }).then(res => res.json())
+            sellList = sellList?.Items;
+            console.log('sellList', sellList);
+            this.setState({sellList});
+        } catch (e) {
+            this.addOpenSnackbar("交易列表获取失败", e);
+        }
+
         let totalSupply = await myContract.methods.totalSupply().call();
         self.setState({totalSupply: `总量: ${totalSupply}`});
         self.forceUpdate();
@@ -172,7 +193,7 @@ class App extends React.Component {
 
         if(event.target.id === 'transactionConfirmationBlocks') {
             web3.eth.transactionConfirmationBlocks = parseInt(event.target.value);
-            this.addOpenSnackbar('设置成功: web3.eth.transactionConfirmationBlocks = ' + event.target.value);
+            this.addOpenSnackbar('设置成功: 确认区块数=' + event.target.value);
         }
     }
 
@@ -281,6 +302,53 @@ class App extends React.Component {
         await self.handleSubmit();
     };
 
+    openSellDialog = (event) => {
+        let self = this;
+        let body = {
+            itemId: event.target.name,
+        }
+        if(this.isSelled(event.target.name)){
+            //取回操作
+            if(!confirm(`确认取回该物品吗?`)){
+                return;
+            }
+        }else{
+            let price = prompt("请输入价格", "0");
+            price = parseFloat(price);
+            if(!_.isNumber(price) || price <= 0){
+                alert(`请输入正确的价格!`);
+                return;
+            }
+            if(!confirm(`确认将该物品以${price}的价格出售吗?`)){
+                return;
+            }
+            body.uid = this.state.user.account;
+        }
+        let sellUrl = 'http://192.168.246.62:8080/cos/lobbyplatform/user/User/Sell';
+        fetch(sellUrl, {
+            method: 'POST',
+            headers: {
+                'Tevat-Authorization': this.state.token,
+            },
+            body: JSON.stringify(body)
+        }).then(function (response) {
+            return response.json();
+        }).then(function (json) {
+            self.addOpenSnackbar('出售成功: ', json);
+        }).catch(function (e) {
+            self.addOpenSnackbar('出售失败: ', e);
+        });
+    }
+    isSelled = (itemId) => {
+        let find = _.find(this.state.sellList, (item) => {
+            debugger
+            if(item.itemId === itemId){
+                return true;
+            }
+        });
+        return !!find;
+    }
+
     render() {
 
         const action = (<React.Fragment>
@@ -318,20 +386,6 @@ class App extends React.Component {
                                             {_.truncate(name, {length})}
                                             </Box>);
                                     })}
-
-{/*                                    {this.state.user.account ? <Box sx={{display: 'flex'}}>
-                                        <span className='name'>网络:</span>
-                                        {_.truncate(this.state.user.networkType, {length: 10})}
-                                        <Box
-                                            sx={{mx: 2}}>
-                                            <span className='name'>账号:</span>
-                                            {_.truncate(this.state.user.account, {length: 100})}
-                                        </Box>
-                                        <Box title={this.state.user.balance}>
-                                            <span className='name'>余额:</span>
-                                            {_.truncate(this.state.user.balance, {length: 10})}
-                                        </Box>
-                                    </Box> : null}*/}
                                 </Box>
                                 <Box sx={{display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-end'}}>
                                     <Button id="connectBtn" disabled={this.state.connectBtnDisabled}
@@ -346,7 +400,6 @@ class App extends React.Component {
                     <form>
                         <FormControl>
                             <Box sx={{display: 'flex'}}>
-
                                 <TextField id="contractAddress" label="合约地址"
                                            value={this.state.contractAddress}
                                            required
@@ -383,10 +436,16 @@ class App extends React.Component {
                                 loading="lazy"
                                 onError={this.addDefaultSrc}
                             />
+                            <Box  sx={{ display:'flex', justifyContent:'space-between'}}>
                             <Button name={item.title} variant="contained" endIcon={<CardGiftCardIcon/>}
                                     onClick={this.openSendGiftDialog}>
                                 赠送
                             </Button>
+                            <Button name={item.title} variant="contained" endIcon={<ShoppingCartCheckoutIcon/>}
+                                    onClick={this.openSellDialog}  color={this.isSelled(item.title) ? 'secondary' : 'success'}>
+                                {this.isSelled(item.title) ? '取回' : '出售'}
+                            </Button>
+                            </Box>
                             <ImageListItemBar
                                 title={`tokenId: ${item.title}`}
                                 position="below"
