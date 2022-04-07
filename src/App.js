@@ -134,24 +134,41 @@ class App extends React.Component {
 
         let myContract = new web3.eth.Contract(jsonInterface, this.state.contractAddress);
         let balance = await myContract.methods['balanceOf'](user.account).call();
+        balance = parseInt(balance);
         self.setState({contactBalance: `我的NFT: ${balance}`});
 
         let itemData = [];
 
         let count = 0;
-        _.times(parseInt(balance), async function (i) {
-            let index = await myContract.methods['tokenOfOwnerByIndex'](user.account, i).call();
-            console.log('tokenByIndex', index);
+
+        let indexArray = [];
+
+        for (let i = 0; i < balance; i++){
+             let tokenId = await myContract.methods['tokenOfOwnerByIndex'](user.account, i).call();
+             indexArray.push(tokenId);
+        }
+        indexArray = _.sortBy(indexArray);
+    console.log('indexArray', indexArray);
+    _.each(indexArray, function (index) {
+        let row = {title: index};
+        itemData.push(row);
+    });
+    self.setState({itemData});
+
+
+        _.each(indexArray, async function (index) {
+            // let index = await myContract.methods['tokenOfOwnerByIndex'](user.account, i).call();
+            // console.log('tokenByIndex', index);
             let tokenURI = await myContract.methods['tokenURI'](index).call();
             console.log('tokenURI', tokenURI);
-            // if(!_.startsWith(tokenURI, 'http')) {
-            //     continue;
-            // }
-            let row = {title: index, img: tokenURI};
-            itemData.push(row);
-            self.setState({itemData});
+            let row = _.find(self.state.itemData, function (item) {
+                return item.title === index;
+            });
+            row.img = tokenURI;
+            // itemData.push(row);
+            // self.setState({itemData});
             self.forceUpdate();
-            if (++count === parseInt(balance)) {
+            if (++count === balance) {
                 contractBtnName = '获取信息';
                 contractBtnNameDisabled = false;
                 self.forceUpdate();
@@ -307,13 +324,15 @@ class App extends React.Component {
         let body = {
             itemId: event.target.name,
         }
+        let actionName = '出售';
         if(this.isSelled(event.target.name)){
             //取回操作
             if(!confirm(`确认取回该物品吗?`)){
                 return;
             }
+            actionName = '取回';
         }else{
-            let price = prompt("请输入价格", "0");
+            let price = prompt("请输入价格", "1");
             price = parseFloat(price);
             if(!_.isNumber(price) || price <= 0){
                 alert(`请输入正确的价格!`);
@@ -324,7 +343,7 @@ class App extends React.Component {
             }
             body.uid = this.state.user.account;
         }
-        let sellUrl = 'http://192.168.246.62:8080/cos/lobbyplatform/user/User/Sell';
+        let sellUrl = `${BASE_LP_URL}/Sell`;
         fetch(sellUrl, {
             method: 'POST',
             headers: {
@@ -333,11 +352,12 @@ class App extends React.Component {
             body: JSON.stringify(body)
         }).then(function (response) {
             return response.json();
-        }).then(function (json) {
-            self.addOpenSnackbar('出售成功: ', json);
+        }).then(function () {
+            self.addOpenSnackbar(`${actionName}成功: `);
         }).catch(function (e) {
-            self.addOpenSnackbar('出售失败: ', e);
+            self.addOpenSnackbar(`${actionName}失败: `, e);
         });
+        self.handleSubmit();
     }
     isSelled = (itemId) => {
         let find = _.find(this.state.sellList, (item) => {
@@ -436,7 +456,7 @@ class App extends React.Component {
                                 loading="lazy"
                                 onError={this.addDefaultSrc}
                             />
-                            <Box  sx={{ display:'flex', justifyContent:'space-between'}}>
+                            <Box  sx={{ display:'flex', justifyContent:'space-around', m:1}}>
                             <Button name={item.title} variant="contained" endIcon={<CardGiftCardIcon/>}
                                     onClick={this.openSendGiftDialog}>
                                 赠送
