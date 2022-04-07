@@ -20,6 +20,7 @@ import Web3 from "web3";
 import './App.css';
 import abiJson from './config/abi.json';
 import SendGiftFormDialog from "./SendGiftFormDialog";
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 
 const jsonInterface = abiJson.nftAbi;
 const USER_LOGIN_URL = abiJson.userLoginUrl;
@@ -461,7 +462,7 @@ class App extends React.Component {
                                     onClick={this.openSendGiftDialog}>
                                 赠送
                             </Button>
-                            <Button name={item.title} variant="contained" endIcon={<ShoppingCartCheckoutIcon/>}
+                            <Button name={item.title} variant="contained" endIcon={this.isSelled(item.title) ? <ShoppingCartCheckoutIcon/> : <ShoppingCartIcon/>}
                                     onClick={this.openSellDialog}  color={this.isSelled(item.title) ? 'secondary' : 'success'}>
                                 {this.isSelled(item.title) ? '取回' : '出售'}
                             </Button>
