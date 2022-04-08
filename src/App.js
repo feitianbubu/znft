@@ -27,7 +27,6 @@ const USER_LOGIN_URL = abiJson.userLoginUrl;
 const BASE_LP_URL = abiJson.baseLpUrl;
 
 const AppName = 'Z-NFT';
-const CONTRACT_OWNER_ADDRESS = '0xf7c5921DAa96F045851509a62a005Af19dADEe23';
 let web3;
 let user = {};
 let connectBtnName = '连接钱包';
@@ -197,6 +196,10 @@ class App extends React.Component {
         } catch (e) {
             this.addOpenSnackbar("交易列表获取失败", e);
         }
+
+        // 获取合约所有人
+        let contractOwner = await myContract.methods.owner().call();
+        self.setState({contractOwner});
 
         let totalSupply = await myContract.methods.totalSupply().call();
         self.setState({totalSupply: `总量: ${totalSupply}`});
@@ -482,7 +485,7 @@ class App extends React.Component {
                     </ImageList>
                     <SendGiftFormDialog open={this.state.dialogOpen} onOpenChange={this.onOpenChange}
                                         onChange={this.handleChange} onClick={this.handleSendGift}/>
-                    {this.state.user.account === CONTRACT_OWNER_ADDRESS ? <form>
+                    {(this.state.user.account && (this.state.user.account === this.state.contractOwner)) ? <form>
                         <FormControl>
                             <div><TextField id="mintToAddress" label="空投地址" value={this.state.mintToAddress}
                                             required
