@@ -73,16 +73,50 @@ class App extends React.Component {
         console.log('handleClick', connectBtnName);
         this.setState({connectBtnDisabled: true});
         if (user.account) {
+            // 断开连接
             console.log('disconnect', user);
-            user = {};
             connectBtnName = '连接钱包';
             this.setState({connectBtnDisabled: false});
+            user = {};
             this.setState({user})
             this.forceUpdate();
             return;
         }
         connectBtnName = '正在连接...';
         web3 = new Web3(Web3.givenProvider);
+
+        if (!window.ethereum || !web3.currentProvider?.isMetaMask) {
+            this.addOpenSnackbar('请先安装MetaMask');
+            return;
+        }
+
+        const permissions = await window.ethereum.request({
+            method: 'wallet_getPermissions',
+        })
+
+        console.log({permissions}, web3.eth.accounts)
+
+        // 判断是否已授权
+        if (!permissions.length) {
+            this.addOpenSnackbar('请先授权MetaMask');
+            window.ethereum.request({
+                method: 'wallet_requestPermissions', params: [{
+                    'eth_accounts': {
+                        requiredMethods: ['signTypedData_v4']
+                    }
+                }]
+            }).then((permissions) => {
+                const granted = permissions.find((permission) => permission.parentCapability === 'eth_accounts');
+                if (granted) {
+                    this.addOpenSnackbar('授权成功!');
+                }
+            }).catch((error) => {
+                if (error.code === 4001) {
+                }
+                this.addOpenSnackbar('授权失败!', error);
+            })
+            return;
+        }
         try {
             user.account = (await web3.eth.getAccounts())[0];
         } catch (e) {
@@ -197,9 +231,10 @@ class App extends React.Component {
             this.addOpenSnackbar("交易列表获取失败", e);
         }
 
-        // 获取合约所有人
+        // 获取合约创建者
         let contractOwner = await myContract.methods.owner().call();
         self.setState({contractOwner});
+        console.log('contractOwner', contractOwner);
 
         let totalSupply = await myContract.methods.totalSupply().call();
         self.setState({totalSupply: `总量: ${totalSupply}`});
@@ -491,7 +526,7 @@ class App extends React.Component {
                                             required
                                             sx={{m: 1, width: '25ch'}}
                                             onChange={this.handleChange}/></div>
-                            <div><TextField id="mintUri" label="uri" value={this.state.mintUri} required
+                            <div><TextField id="mintUri" label="tokenUri" value={this.state.mintUri} required
                                             sx={{m: 1, width: '25ch'}}
                                             onChange={this.handleChange}/></div>
                             <div><Button type="button" variant="contained" disabled={this.state.mintBtnDisabled}
