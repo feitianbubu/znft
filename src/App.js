@@ -105,14 +105,14 @@ class App extends React.Component {
         this.setState({transactionConfirmationBlocks});
 
         // 获取角色信息
-        try{
+        try {
             let userSync = await this.getUserInfo(user.account);
             let userInfo = await userSync.json();
-            user.nickname = userInfo.nickName;
+            user.nickname = userInfo['nickName'];
             let token = userInfo.token;
             this.setState({token});
             this.setState({user});
-        }catch (e) {
+        } catch (e) {
             user['getLpFail'] = e
             this.addOpenSnackbar("lp用户信息获取失败", e);
         }
@@ -144,17 +144,17 @@ class App extends React.Component {
 
         let indexArray = [];
 
-        for (let i = 0; i < balance; i++){
-             let tokenId = await myContract.methods['tokenOfOwnerByIndex'](user.account, i).call();
-             indexArray.push(tokenId);
+        for (let i = 0; i < balance; i++) {
+            let tokenId = await myContract.methods['tokenOfOwnerByIndex'](user.account, i).call();
+            indexArray.push(tokenId);
         }
         indexArray = _.sortBy(indexArray);
-    console.log('indexArray', indexArray);
-    _.each(indexArray, function (index) {
-        let row = {title: index};
-        itemData.push(row);
-    });
-    self.setState({itemData});
+        console.log('indexArray', indexArray);
+        _.each(indexArray, function (index) {
+            let row = {title: index};
+            itemData.push(row);
+        });
+        self.setState({itemData});
 
 
         _.each(indexArray, async function (index) {
@@ -175,7 +175,7 @@ class App extends React.Component {
                 self.forceUpdate();
             }
         });
-        if (balance === '0') {
+        if (balance === 0) {
             self.setState({itemData});
             contractBtnName = '获取信息'
             contractBtnNameDisabled = false;
@@ -190,8 +190,8 @@ class App extends React.Component {
                     'Tevat-Authorization': this.state.token,
                 },
                 body: JSON.stringify({})
-            }).then(res => res.json())
-            sellList = sellList?.Items;
+            }).then(res => res.json());
+            sellList = sellList?.['Items'];
             console.log('sellList', sellList);
             this.setState({sellList});
         } catch (e) {
@@ -209,7 +209,7 @@ class App extends React.Component {
         state[event.target.id] = event.target.value;
         this.setState(state);
 
-        if(event.target.id === 'transactionConfirmationBlocks') {
+        if (event.target.id === 'transactionConfirmationBlocks') {
             web3.eth.transactionConfirmationBlocks = parseInt(event.target.value);
             this.addOpenSnackbar('设置成功: 确认区块数=' + event.target.value);
         }
@@ -278,7 +278,7 @@ class App extends React.Component {
         }
         this.setState({snackbarMsg});
         this.setState({SnackbarOpen: true});
-        if(!user.account){
+        if (!user.account) {
             connectBtnName = '连接钱包';
             this.setState({connectBtnDisabled: false});
         }
@@ -320,26 +320,26 @@ class App extends React.Component {
         await self.handleSubmit();
     };
 
-    openSellDialog = (event) => {
+    openSellDialog = async (event) => {
         let self = this;
         let body = {
             itemId: event.target.name,
         }
         let actionName = '出售';
-        if(this.isSelled(event.target.name)){
+        if (this.isSold(event.target.name)) {
             //取回操作
-            if(!confirm(`确认取回该物品吗?`)){
+            if (!confirm(`确认取回该物品吗?`)) {
                 return;
             }
             actionName = '取回';
-        }else{
+        } else {
             let price = prompt("请输入价格", "1");
             price = parseFloat(price);
-            if(!_.isNumber(price) || price <= 0){
+            if (!_.isNumber(price) || price <= 0) {
                 alert(`请输入正确的价格!`);
                 return;
             }
-            if(!confirm(`确认将该物品以${price}的价格出售吗?`)){
+            if (!confirm(`确认将该物品以${price}的价格出售吗?`)) {
                 return;
             }
             body.uid = this.state.user.account;
@@ -358,12 +358,11 @@ class App extends React.Component {
         }).catch(function (e) {
             self.addOpenSnackbar(`${actionName}失败: `, e);
         });
-        self.handleSubmit();
+        await self.handleSubmit();
     }
-    isSelled = (itemId) => {
+    isSold = (itemId) => {
         let find = _.find(this.state.sellList, (item) => {
-            debugger
-            if(item.itemId === itemId){
+            if (item.itemId === itemId) {
                 return true;
             }
         });
@@ -403,9 +402,10 @@ class App extends React.Component {
                                     {Object.keys(this.state.user).map((key, index) => {
                                         let name = this.state.user[key];
                                         let length = (key === 'account' ? name.length : 10);
-                                        return (<Box component="span" key={index} title={name}><span className="name">{_.startCase(key)}:</span>
+                                        return (<Box component="span" key={index} title={name}><span
+                                            className="name">{_.startCase(key)}:</span>
                                             {_.truncate(name, {length})}
-                                            </Box>);
+                                        </Box>);
                                     })}
                                 </Box>
                                 <Box sx={{display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-end'}}>
@@ -448,30 +448,37 @@ class App extends React.Component {
                             variant="outlined"
                         />
                     </Box>
-                    <ImageList sx={{width: '80%'}} cols={5} rowHeight={'auto'}>
-                        {this.state.itemData.map((item) => (<ImageListItem key={item.title}>
-                            <img
-                                src={`${item.img}?w=164&h=164&fit=crop&auto=format`}
-                                srcSet={`${item.img}?w=164&h=164&fit=crop&auto=format&dpr=2 2x`}
-                                alt={item.title}
-                                loading="lazy"
-                                onError={this.addDefaultSrc}
-                            />
-                            <Box  sx={{ display:'flex', justifyContent:'space-around', m:1}}>
-                            <Button name={item.title} variant="contained" endIcon={<CardGiftCardIcon/>}
-                                    onClick={this.openSendGiftDialog}>
-                                赠送
-                            </Button>
-                            <Button name={item.title} variant="contained" endIcon={this.isSelled(item.title) ? <ShoppingCartCheckoutIcon/> : <ShoppingCartIcon/>}
-                                    onClick={this.openSellDialog}  color={this.isSelled(item.title) ? 'secondary' : 'success'}>
-                                {this.isSelled(item.title) ? '取回' : '出售'}
-                            </Button>
-                            </Box>
-                            <ImageListItemBar
-                                title={`tokenId: ${item.title}`}
-                                position="below"
-                            />
-                        </ImageListItem>))}
+                    <ImageList sx={{width: '80%'}} cols={5}>
+                        {this.state.itemData.map((item) => {
+                            return (<Box><ImageListItem key={item.title}>
+                                    <img
+                                        src={`${item.img}?w=164&h=164&fit=crop&auto=format`}
+                                        srcSet={`${item.img}?w=164&h=164&fit=crop&auto=format&dpr=2 2x`}
+                                        alt={item.title}
+                                        loading="lazy"
+                                        onError={this.addDefaultSrc}
+                                    />
+                                    <ImageListItemBar
+                                        title={`tokenId: ${item.title}`}
+                                    />
+
+                                </ImageListItem>
+                                    <Box sx={{display: 'flex', justifyContent: 'space-around', m: 1}}>
+                                        <Button name={item.title} variant="contained" endIcon={<CardGiftCardIcon/>}
+                                                onClick={this.openSendGiftDialog}>
+                                            赠送
+                                        </Button>
+                                        <Button name={item.title} variant="contained"
+                                                endIcon={this.isSold(item.title) ? <ShoppingCartCheckoutIcon/> :
+                                                    <ShoppingCartIcon/>}
+                                                onClick={this.openSellDialog}
+                                                color={this.isSold(item.title) ? 'secondary' : 'success'}>
+                                            {this.isSold(item.title) ? '取回' : '出售'}
+                                        </Button>
+                                    </Box>
+                                </Box>
+                            )
+                        })}
                     </ImageList>
                     <SendGiftFormDialog open={this.state.dialogOpen} onOpenChange={this.onOpenChange}
                                         onChange={this.handleChange} onClick={this.handleSendGift}/>
@@ -506,7 +513,7 @@ class App extends React.Component {
     }
 
     async getUserInfo(accountId) {
-        return await fetch(`${USER_LOGIN_URL}`, {method:"POST", body: JSON.stringify({accountId})})
+        return await fetch(`${USER_LOGIN_URL}`, {method: "POST", body: JSON.stringify({accountId})})
     }
 }
 
