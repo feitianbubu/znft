@@ -63,10 +63,26 @@ class App extends React.Component {
         this.handleSubmit = this.handleSubmit.bind(this);
         this.handleMint = this.handleMint.bind(this);
         this.openSellDialog = this.openSellDialog.bind(this);
+        this.copyText = this.copyText.bind(this);
     }
 
     componentDidMount() {
         console.log('componentDidMount');
+    }
+
+    copyText(event) {
+        // 复制文本到剪贴板
+        if(event.target.getAttribute('name') !== 'account') {
+            return;
+        }
+        let text = event.target.getAttribute('title')
+        const input = document.createElement('input');
+        input.value = text;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand('copy');
+        document.body.removeChild(input);
+        this.addOpenSnackbar(`复制成功: ${text}`);
     }
 
     handleClick = async () => {
@@ -111,8 +127,6 @@ class App extends React.Component {
                     this.addOpenSnackbar('授权成功!');
                 }
             }).catch((error) => {
-                if (error.code === 4001) {
-                }
                 this.addOpenSnackbar('授权失败!', error);
             })
             return;
@@ -127,7 +141,7 @@ class App extends React.Component {
             this.addOpenSnackbar('请先解锁metamask');
             return;
         }
-        user.balance = web3.utils.fromWei(await web3.eth.getBalance(user.account));
+        user.balance = await web3.eth.getBalance(user.account);
         user.network = await web3.eth.net.getNetworkType();
         connectBtnName = '断开钱包';
         this.setState({connectBtnDisabled: false});
@@ -438,11 +452,18 @@ class App extends React.Component {
                             <Box>
                                 <Box sx={{height: 20}}>
                                     {Object.keys(this.state.user).map((key, index) => {
-                                        let name = this.state.user[key];
-                                        let length = (key === 'account' ? name.length : 10);
-                                        return (<Box component="span" key={index} title={name}><span
+                                        let title = this.state.user[key];
+                                        let name = title;
+                                        if(key === 'account') {
+                                            name = title.substr(0, 6) + '...' + title.substr(name.length - 4);
+                                        }
+                                        if(key === 'balance') {
+                                            // 显示以太币
+                                            name = (title / web3.utils.unitMap.ether).toFixed(4);
+                                        }
+                                        return (<Box component="span" name={key} key={index} title={title} onClick={this.copyText}><span
                                             className="name">{_.startCase(key)}:</span>
-                                            {_.truncate(name, {length})}
+                                            {name}
                                         </Box>);
                                     })}
                                 </Box>
