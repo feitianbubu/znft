@@ -183,7 +183,10 @@ class App extends React.Component {
         let myContract = new web3.eth.Contract(jsonInterface, this.state.contractAddress);
         let balance = await myContract.methods['balanceOf'](user.account).call();
         balance = parseInt(balance);
-        self.setState({contactBalance: `我的NFT: ${balance}`});
+
+        let name = await myContract.methods['name']().call();
+        let symbol = await myContract.methods['symbol']().call();
+        self.setState({contactBalance: `我的${name}: ${balance} ${symbol}`});
 
         let itemData = [];
 
@@ -208,7 +211,7 @@ class App extends React.Component {
             // let index = await myContract.methods['tokenOfOwnerByIndex'](user.account, i).call();
             // console.log('tokenByIndex', index);
             let tokenURI = await myContract.methods['tokenURI'](index).call();
-            console.log('tokenURI', tokenURI);
+            console.log('tokenURI', tokenURI, name, symbol);
             let row = _.find(self.state.itemData, function (item) {
                 return item.title === index;
             });
@@ -509,7 +512,7 @@ class App extends React.Component {
                     </Box>
                     <ImageList sx={{width: '80%'}} cols={5}>
                         {this.state.itemData.map((item) => {
-                            return (<Box><ImageListItem key={item.title}>
+                            return (<Box key={item.title}><ImageListItem>
                                     <img
                                         src={`${item.img}?w=164&h=164&fit=crop&auto=format`}
                                         srcSet={`${item.img}?w=164&h=164&fit=crop&auto=format&dpr=2 2x`}
