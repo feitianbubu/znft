@@ -35,35 +35,41 @@ let mintBtnName = '空投';
 let contractBtnNameDisabled = false;
 
 const theme = createTheme();
+const initState = {
+    value: '',
+    rows: [],
+    contractAddress: '',
+    transactionConfirmationBlocks: '',
+    itemData: [],
+    user: {},
+    snackbarOpen: false,
+    snackbarMsg: '',
+    dialogOpen: false,
+    dialogMsg: '',
+    open: false,
+    tokenId: '',
+    SnackbarOpen: false,
+    mintToAddress: '',
+    mintUri: '',
+    mintBtnDisabled: false,
+    totalSupply: '',
+    sellList: [],
+    nftInfo: {},
+    connectBtnDisabled: false,
+    contactBalance: '',
+};
 
 class App extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {
-            value: '',
-            rows: [],
-            contractAddress: '',
-            transactionConfirmationBlocks: '',
-            itemData: [],
-            user: {},
-            snackbarOpen: false,
-            snackbarMsg: '',
-            dialogOpen: false,
-            dialogMsg: '',
-            open: false,
-            tokenId: '',
-            SnackbarOpen: false,
-            mintToAddress: '',
-            mintUri: '',
-            mintBtnDisabled: false,
-            totalSupply: '',
-            sellList: [],
-        }
+
+        this.state = initState;
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
         this.handleMint = this.handleMint.bind(this);
         this.openSellDialog = this.openSellDialog.bind(this);
         this.copyText = this.copyText.bind(this);
+        this.disconnectWallet = this.disconnectWallet.bind(this);
     }
 
     componentDidMount() {
@@ -96,25 +102,8 @@ class App extends React.Component {
         mintBtnName = '空投';
         contractBtnNameDisabled = false;
         user = {};
-        this.setState({
-            rows: [],
-            contractAddress: '',
-            transactionConfirmationBlocks: '',
-            itemData: [],
-            user: {},
-            snackbarOpen: false,
-            snackbarMsg: '',
-            dialogOpen: false,
-            dialogMsg: '',
-            open: false,
-            tokenId: '',
-            SnackbarOpen: false,
-            mintToAddress: '',
-            mintUri: '',
-            mintBtnDisabled: false,
-            totalSupply: '',
-            sellList: [],
-        });
+        this.setState(initState);
+        this.forceUpdate();
     }
 
     handleClick = async () => {
@@ -218,6 +207,7 @@ class App extends React.Component {
 
         let name = await myContract.methods['name']().call();
         let symbol = await myContract.methods['symbol']().call();
+
         self.setState({contactBalance: `我的${name}: ${balance} ${symbol}`});
 
         let itemData = [];
