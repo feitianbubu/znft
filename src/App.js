@@ -85,17 +85,43 @@ class App extends React.Component {
         this.addOpenSnackbar(`复制成功: ${text}`);
     }
 
+    // 断开钱包
+    disconnectWallet() {
+        // 断开连接
+        console.log('disconnect', user);
+        web3.eth.defaultAccount = null;
+        user = {};
+        connectBtnName = '连接钱包';
+        contractBtnName = '获取信息';
+        mintBtnName = '空投';
+        contractBtnNameDisabled = false;
+        user = {};
+        this.setState({
+            rows: [],
+            contractAddress: '',
+            transactionConfirmationBlocks: '',
+            itemData: [],
+            user: {},
+            snackbarOpen: false,
+            snackbarMsg: '',
+            dialogOpen: false,
+            dialogMsg: '',
+            open: false,
+            tokenId: '',
+            SnackbarOpen: false,
+            mintToAddress: '',
+            mintUri: '',
+            mintBtnDisabled: false,
+            totalSupply: '',
+            sellList: [],
+        });
+    }
+
     handleClick = async () => {
         console.log('handleClick', connectBtnName);
         this.setState({connectBtnDisabled: true});
         if (user.account) {
-            // 断开连接
-            console.log('disconnect', user);
-            connectBtnName = '连接钱包';
-            this.setState({connectBtnDisabled: false});
-            user = {};
-            this.setState({user})
-            this.forceUpdate();
+            this.disconnectWallet();
             return;
         }
         connectBtnName = '正在连接...';
@@ -141,15 +167,21 @@ class App extends React.Component {
             this.addOpenSnackbar('请先解锁metamask');
             return;
         }
-        user.balance = await web3.eth.getBalance(user.account);
-        user.network = await web3.eth.net.getNetworkType();
-        connectBtnName = '断开钱包';
-        this.setState({connectBtnDisabled: false});
-        this.setState({contractAddress: '0x5A73bCA4986592E9B78a64c5392BA9b301CEe70d'});
-        this.setState({user: user});
 
-        let transactionConfirmationBlocks = web3.eth.transactionConfirmationBlocks;
-        this.setState({transactionConfirmationBlocks});
+        try {
+            connectBtnName = '断开钱包';
+            user.balance = await web3.eth.getBalance(user.account);
+            user.network = await web3.eth.net.getNetworkType();
+            this.setState({connectBtnDisabled: false});
+            this.setState({contractAddress: '0x5A73bCA4986592E9B78a64c5392BA9b301CEe70d'});
+            this.setState({user: user});
+            let transactionConfirmationBlocks = web3.eth.transactionConfirmationBlocks;
+            this.setState({transactionConfirmationBlocks});
+        }catch (e) {
+            this.disconnectWallet();
+            this.addOpenSnackbar('metamask连接失败', e);
+            return;
+        }
 
         // 获取角色信息
         try {
@@ -329,7 +361,7 @@ class App extends React.Component {
         }
         console.log('addOpenSnackbar snackbarMsg:', snackbarMsg, json);
         if (json) {
-            snackbarMsg += (json.message || JSON.stringify(json));
+            snackbarMsg += " " +(json.message || JSON.stringify(json));
         }
         this.setState({snackbarMsg});
         this.setState({SnackbarOpen: true});
