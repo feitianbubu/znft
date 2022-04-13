@@ -20,6 +20,7 @@ import Web3 from "web3";
 import './App.css';
 import abiJson from './config/abi.json';
 import heroCoreJson from './config/HeroCore.json';
+import heroClockAuctionJson from './config/HeroClockAuction.json';
 import SendGiftFormDialog from "./SendGiftFormDialog";
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import moment from "moment";
@@ -60,6 +61,7 @@ const initState = {
     nftInfo: {},
     connectBtnDisabled: false,
     contactBalance: '',
+    whitelistedSpawner: false,
 };
 
 class App extends React.Component {
@@ -98,7 +100,6 @@ class App extends React.Component {
     disconnectWallet() {
         // 断开连接
         console.log('disconnect', user);
-        web3.eth.defaultAccount = null;
         user = {};
         connectBtnName = '连接钱包';
         contractBtnName = '获取合约';
@@ -197,8 +198,8 @@ class App extends React.Component {
         self.forceUpdate();
         console.log('handleSubmit', user, this.state);
         if (!user.account) {
-            self.addOpenSnackbar("请先连接钱包");
             self.disconnectWallet();
+            self.addOpenSnackbar("请先连接钱包");
             return;
         }
 
@@ -286,6 +287,10 @@ class App extends React.Component {
         // let contractOwner = await myContract.methods.owner().call().catch(e => self.addOpenSnackbar("合约创建者获取失败", e));
         // self.setState({contractOwner});
         // console.log('contractOwner', contractOwner);
+        // 是否可以空投
+        let whitelistedSpawner = await myContract.methods.whitelistedSpawner(self.state.user.account).call().catch(e => self.addOpenSnackbar("是否可以空投获取失败", e));
+        self.setState({whitelistedSpawner});
+
         self.forceUpdate();
     };
 
@@ -585,7 +590,7 @@ class App extends React.Component {
                     </ImageList>
                     <SendGiftFormDialog open={this.state.dialogOpen} onOpenChange={this.onOpenChange}
                                         onChange={this.handleChange} onClick={this.handleSendGift}/>
-                    {(true || this.state.user.account && (this.state.user.account === this.state.contractOwner)) ?
+                    {this.state.whitelistedSpawner ?
                         <form>
                             <FormControl>
                                 <div><TextField id="mintToAddress" label="空投地址" value={this.state.mintToAddress}
