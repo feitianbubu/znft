@@ -33,7 +33,7 @@ const AppName = 'Z-NFT';
 let web3;
 let user = {};
 let connectBtnName = '连接钱包';
-let contractBtnName = '获取信息';
+let contractBtnName = '获取合约';
 let mintBtnName = '空投';
 let contractBtnNameDisabled = false;
 
@@ -81,7 +81,7 @@ class App extends React.Component {
 
     copyText(event) {
         // 复制文本到剪贴板
-        if(event.target.getAttribute('name') !== 'account') {
+        if (event.target.getAttribute('name') !== 'account') {
             return;
         }
         let text = event.target.getAttribute('title')
@@ -101,7 +101,7 @@ class App extends React.Component {
         web3.eth.defaultAccount = null;
         user = {};
         connectBtnName = '连接钱包';
-        contractBtnName = '获取信息';
+        contractBtnName = '获取合约';
         mintBtnName = '空投';
         contractBtnNameDisabled = false;
         user = {};
@@ -169,7 +169,7 @@ class App extends React.Component {
             this.setState({user: user});
             let transactionConfirmationBlocks = web3.eth.transactionConfirmationBlocks;
             this.setState({transactionConfirmationBlocks});
-        }catch (e) {
+        } catch (e) {
             this.disconnectWallet();
             this.addOpenSnackbar('metamask连接失败', e);
             return;
@@ -197,14 +197,17 @@ class App extends React.Component {
         self.forceUpdate();
         console.log('handleSubmit', user, this.state);
         if (!user.account) {
-            this.setState({snackbarMsg: "请先连接钱包"});
-            this.setState({SnackbarOpen: true});
-            contractBtnName = '获取信息';
-            contractBtnNameDisabled = false;
+            self.addOpenSnackbar("请先连接钱包");
+            self.disconnectWallet();
             return;
         }
 
         let myContract = new web3.eth.Contract(jsonInterface, this.state.contractAddress);
+        let totalSupply = await myContract.methods.totalSupply().call().catch(e => self.addOpenSnackbar("合约总量获取失败", e));
+        totalSupply = parseInt(totalSupply);
+
+        self.setState({totalSupply: `总量: ${totalSupply}`});
+
         let balance = await myContract.methods['balanceOf'](user.account).call();
         balance = parseInt(balance);
 
@@ -219,11 +222,17 @@ class App extends React.Component {
 
         let indexArray = [];
 
-        for (let i = 0; i < balance; i++) {
-            let tokenId = await myContract.methods['tokenOfOwnerByIndex'](user.account, i).call();
-            indexArray.push(tokenId);
+        if (true) {
+            // 显示全部
+            indexArray = _.range(1, totalSupply + 1);
+        } else {
+            // 显示我的
+            for (let i = 0; i < balance; i++) {
+                let tokenId = await myContract.methods['tokenOfOwnerByIndex'](user.account, i).call();
+                indexArray.push(tokenId);
+            }
+            indexArray = _.sortBy(indexArray);
         }
-        indexArray = _.sortBy(indexArray);
         console.log('indexArray', indexArray);
         _.each(indexArray, function (index) {
             let row = {title: index};
@@ -234,6 +243,7 @@ class App extends React.Component {
 
         _.each(indexArray, async function (index) {
             let heroInfo = await myContract.methods['getHero'](index).call();
+            let ownerOf = await myContract.methods['ownerOf'](index).call();
             console.log('heroInfo', heroInfo, name, symbol);
             let row = _.find(self.state.itemData, function (item) {
                 return item.title === index;
@@ -241,18 +251,19 @@ class App extends React.Component {
             row.quantity = heroInfo[0];
             row.createTime = heroInfo[1];
             row.img = row.quantity;
+            row.ownerOf = ownerOf;
             // itemData.push(row);
             // self.setState({itemData});
             self.forceUpdate();
             if (++count === balance) {
-                contractBtnName = '获取信息';
+                contractBtnName = '获取合约';
                 contractBtnNameDisabled = false;
                 self.forceUpdate();
             }
         });
         if (balance === 0) {
             self.setState({itemData});
-            contractBtnName = '获取信息'
+            contractBtnName = '获取合约'
             contractBtnNameDisabled = false;
             self.forceUpdate();
         }
@@ -277,9 +288,6 @@ class App extends React.Component {
         // let contractOwner = await myContract.methods.owner().call().catch(e => self.addOpenSnackbar("合约创建者获取失败", e));
         // self.setState({contractOwner});
         // console.log('contractOwner', contractOwner);
-
-        let totalSupply = await myContract.methods.totalSupply().call().catch(e => self.addOpenSnackbar("合约总量获取失败", e));
-        self.setState({totalSupply: `总量: ${totalSupply}`});
         self.forceUpdate();
     };
 
@@ -354,7 +362,7 @@ class App extends React.Component {
         }
         console.log('addOpenSnackbar snackbarMsg:', snackbarMsg, json);
         if (json) {
-            snackbarMsg += " " +(json.message || JSON.stringify(json));
+            snackbarMsg += " " + (json.message || JSON.stringify(json));
         }
         this.setState({snackbarMsg});
         this.setState({SnackbarOpen: true});
@@ -385,7 +393,6 @@ class App extends React.Component {
         let gasPrice = await web3.eth.getGasPrice();
         console.log('handleMint msg: ', mintToAddress, mintUri, gasPrice);
         this.setState({totalSupply: totalSupply});
-        let toTokenId = parseInt(totalSupply) + 1;
 
         let method = myContract.methods['spawnHero'](mintUri, mintToAddress);
         let gasLimit = await method.estimateGas({from: user.account});
@@ -482,14 +489,15 @@ class App extends React.Component {
                                     {Object.keys(this.state.user).map((key, index) => {
                                         let title = this.state.user[key];
                                         let name = title;
-                                        if(key === 'account') {
+                                        if (key === 'account') {
                                             name = title.substr(0, 6) + '...' + title.substr(name.length - 4);
                                         }
-                                        if(key === 'balance') {
+                                        if (key === 'balance') {
                                             // 显示以太币
                                             name = (title / web3.utils.unitMap.ether).toFixed(4);
                                         }
-                                        return (<Box component="span" name={key} key={index} title={title} onClick={this.copyText}><span
+                                        return (<Box component="span" name={key} key={index} title={title}
+                                                     onClick={this.copyText}><span
                                             className="name">{_.startCase(key)}:</span>
                                             {name}
                                         </Box>);
@@ -538,7 +546,18 @@ class App extends React.Component {
                     <ImageList sx={{width: '80%'}} cols={5}>
                         {this.state.itemData.map((item) => {
                             // 显示格式化时间
-                            let showCreateTime = moment(item.createTime*1000).format('YYYY-MM-DD HH:mm:ss');
+                            let showCreateTime = moment(item.createTime * 1000).format('YYYY-MM-DD HH:mm:ss');
+                            // 显示格式化地址
+                            let ownerOf = '';
+                            if (item.ownerOf) {
+                                ownerOf = item.ownerOf.substr(0, 6) + '...' + item.ownerOf.substr(item.ownerOf.length - 4);
+                                if (item.ownerOf === this.state.user.account) {
+                                    ownerOf = '★' + ownerOf;
+                                } else {
+                                    ownerOf = '@' + ownerOf;
+                                }
+                            }
+                            let buttonDisplay = (this.state.user.account === item.ownerOf)?'flex':'none';
                             return (<Box key={item.title}><ImageListItem>
                                     <img
                                         src={`${item.img}?w=164&h=164&fit=crop&auto=format`}
@@ -549,10 +568,11 @@ class App extends React.Component {
                                     />
                                     <ImageListItemBar
                                         title={`[${item.title}]${item.quantity}星-${showCreateTime}`}
+                                        subtitle={`${ownerOf}`}
                                     />
 
                                 </ImageListItem>
-                                    <Box sx={{display: 'none', justifyContent: 'space-around', m: 1}}>
+                                    <Box sx={{display: buttonDisplay, justifyContent: 'space-around', m: 1}}>
                                         <Button name={item.title} variant="contained" endIcon={<CardGiftCardIcon/>}
                                                 onClick={this.openSendGiftDialog}>
                                             赠送
@@ -571,20 +591,21 @@ class App extends React.Component {
                     </ImageList>
                     <SendGiftFormDialog open={this.state.dialogOpen} onOpenChange={this.onOpenChange}
                                         onChange={this.handleChange} onClick={this.handleSendGift}/>
-                    {(true || this.state.user.account && (this.state.user.account === this.state.contractOwner)) ? <form>
-                        <FormControl>
-                            <div><TextField id="mintToAddress" label="空投地址" value={this.state.mintToAddress}
-                                            required
-                                            sx={{m: 1, width: '25ch'}}
-                                            onChange={this.handleChange}/></div>
-                            <div><TextField id="mintUri" label="quality" value={this.state.mintUri} required
-                                            sx={{m: 1, width: '25ch'}}
-                                            onChange={this.handleChange}/></div>
-                            <div><Button type="button" variant="contained" disabled={this.state.mintBtnDisabled}
-                                         onClick={this.handleMint}>{mintBtnName}({this.state.totalSupply})</Button>
-                            </div>
-                        </FormControl>
-                    </form> : null}
+                    {(true || this.state.user.account && (this.state.user.account === this.state.contractOwner)) ?
+                        <form>
+                            <FormControl>
+                                <div><TextField id="mintToAddress" label="空投地址" value={this.state.mintToAddress}
+                                                required
+                                                sx={{m: 1, width: '25ch'}}
+                                                onChange={this.handleChange}/></div>
+                                <div><TextField id="mintUri" label="quality" value={this.state.mintUri} required
+                                                sx={{m: 1, width: '25ch'}}
+                                                onChange={this.handleChange}/></div>
+                                <div><Button type="button" variant="contained" disabled={this.state.mintBtnDisabled}
+                                             onClick={this.handleMint}>{mintBtnName}({this.state.totalSupply})</Button>
+                                </div>
+                            </FormControl>
+                        </form> : null}
                     <div>
                         <Snackbar
                             open={this.state.SnackbarOpen}
