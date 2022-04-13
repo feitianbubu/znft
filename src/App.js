@@ -26,6 +26,7 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import moment from "moment";
 
 const jsonInterface = heroCoreJson.abi;
+const auctionJsonInterface = heroClockAuctionJson;
 const USER_LOGIN_URL = abiJson.userLoginUrl;
 const BASE_LP_URL = abiJson.baseLpUrl;
 const contractAddress = abiJson.contractAddress;
@@ -429,23 +430,42 @@ class App extends React.Component {
                 alert(`请输入正确的价格!`);
                 return;
             }
-            if (!confirm(`确认将该物品以${price}的价格出售吗?`)) {
-                return;
-            }
+            // if (!confirm(`确认将该物品以${price}的价格出售吗?`)) {
+            //     return;
+            // }
             body.uid = this.state.user.account;
+            body.price = price;
         }
-        let sellUrl = `${BASE_LP_URL}/Sell`;
-        fetch(sellUrl, {
-            method: 'POST', headers: {
-                'Tevat-Authorization': this.state.token,
-            }, body: JSON.stringify(body)
-        }).then(function (response) {
-            return response.json();
-        }).then(function () {
-            self.addOpenSnackbar(`${actionName}成功: `);
-        }).catch(function (e) {
-            self.addOpenSnackbar(`${actionName}失败: `, e);
+
+        let auctionContract = new web3.eth.Contract(auctionJsonInterface, abiJson.auctionContractAddress);
+        // createAuction
+        let method = auctionContract.methods['createAuction'](this.state.contractAddress, body.itemId, body.price, body.price, 0);
+        console.log(this.state.contractAddress, body.itemId, body.price, body.price, 0);
+        let gasLimit = await method.estimateGas({from: user.account});
+        let gasPrice = await web3.eth.getGasPrice();
+        console.log('gasPrice', gasPrice);
+        console.log('gasLimit', gasLimit);
+        let tx = await method.send({
+            from: user.account, gasPrice: gasPrice, gas: gasLimit
+        }).catch(e => {
+            self.addOpenSnackbar(`${actionName}失败:`, e);
         });
+        console.log('tx', tx);
+        self.addOpenSnackbar(`${actionName}成功`);
+
+
+        // let sellUrl = `${BASE_LP_URL}/Sell`;
+        // fetch(sellUrl, {
+        //     method: 'POST', headers: {
+        //         'Tevat-Authorization': this.state.token,
+        //     }, body: JSON.stringify(body)
+        // }).then(function (response) {
+        //     return response.json();
+        // }).then(function () {
+        //     self.addOpenSnackbar(`${actionName}成功: `);
+        // }).catch(function (e) {
+        //     self.addOpenSnackbar(`${actionName}失败: `, e);
+        // });
         await self.handleSubmit();
     }
     isSold = (itemId) => {
