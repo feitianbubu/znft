@@ -1,7 +1,7 @@
 import CardGiftCardIcon from '@mui/icons-material/CardGiftcard';
 import CloseIcon from '@mui/icons-material/Close';
 import ShoppingCartCheckoutIcon from '@mui/icons-material/ShoppingCartCheckout';
-import {Box, Chip, FormControl} from '@mui/material';
+import {Box, Checkbox, Chip, FormControl, FormControlLabel} from '@mui/material';
 import AppBar from '@mui/material/AppBar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -222,7 +222,7 @@ class App extends React.Component {
 
         let indexArray = [];
 
-        if (true) {
+        if (!document.getElementById('onlyMineChecked').checked) {
             // 显示全部
             indexArray = _.range(1, totalSupply + 1);
         } else {
@@ -271,11 +271,9 @@ class App extends React.Component {
         // 获取交易列表
         try {
             let sellList = await fetch(BASE_LP_URL + '/SellList', {
-                method: 'POST',
-                headers: {
+                method: 'POST', headers: {
                     'Tevat-Authorization': this.state.token,
-                },
-                body: JSON.stringify({})
+                }, body: JSON.stringify({})
             }).then(res => res.json());
             sellList = sellList?.['Items'];
             console.log('sellList', sellList);
@@ -433,11 +431,9 @@ class App extends React.Component {
         }
         let sellUrl = `${BASE_LP_URL}/Sell`;
         fetch(sellUrl, {
-            method: 'POST',
-            headers: {
+            method: 'POST', headers: {
                 'Tevat-Authorization': this.state.token,
-            },
-            body: JSON.stringify(body)
+            }, body: JSON.stringify(body)
         }).then(function (response) {
             return response.json();
         }).then(function () {
@@ -475,10 +471,7 @@ class App extends React.Component {
                 <AppBar position="relative">
                     <Toolbar>
                         <Box sx={{
-                            display: 'flex',
-                            width: '100%',
-                            justifyContent: 'space-between',
-                            alignItems: 'center'
+                            display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center'
                         }}>
                             <Typography type="title" color="inherit"
                                         sx={{fontSize: 24, fontWeight: 'bold'}}>
@@ -533,6 +526,8 @@ class App extends React.Component {
                             </Box>
                             <div><Button type="button" variant="contained" disabled={contractBtnNameDisabled}
                                          onClick={this.handleSubmit}>{contractBtnName}</Button>
+                                <FormControlLabel control={<Checkbox id="onlyMineChecked"/>} label="仅显示我的"
+                                                  sx={{ml: 1}}/>
                             </div>
                         </FormControl>
                     </form>
@@ -557,7 +552,7 @@ class App extends React.Component {
                                     ownerOf = '@' + ownerOf;
                                 }
                             }
-                            let buttonDisplay = (this.state.user.account === item.ownerOf)?'flex':'none';
+                            let buttonDisplay = (this.state.user.account === item.ownerOf) ? 'flex' : 'none';
                             return (<Box key={item.title}><ImageListItem>
                                     <img
                                         src={`${item.img}?w=164&h=164&fit=crop&auto=format`}
@@ -585,8 +580,7 @@ class App extends React.Component {
                                             {this.isSold(item.title) ? '取回' : '出售'}
                                         </Button>
                                     </Box>
-                                </Box>
-                            )
+                                </Box>)
                         })}
                     </ImageList>
                     <SendGiftFormDialog open={this.state.dialogOpen} onOpenChange={this.onOpenChange}
