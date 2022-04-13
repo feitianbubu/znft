@@ -19,12 +19,15 @@ import React from 'react';
 import Web3 from "web3";
 import './App.css';
 import abiJson from './config/abi.json';
+import heroCoreJson from './config/HeroCore.json';
 import SendGiftFormDialog from "./SendGiftFormDialog";
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import moment from "moment";
 
-const jsonInterface = abiJson.nftAbi;
+const jsonInterface = heroCoreJson.abi;
 const USER_LOGIN_URL = abiJson.userLoginUrl;
 const BASE_LP_URL = abiJson.baseLpUrl;
+const contractAddress = abiJson.contractAddress;
 
 const AppName = 'Z-NFT';
 let web3;
@@ -50,7 +53,7 @@ const initState = {
     tokenId: '',
     SnackbarOpen: false,
     mintToAddress: '',
-    mintUri: '',
+    mintUri: '1',
     mintBtnDisabled: false,
     totalSupply: '',
     sellList: [],
@@ -162,7 +165,7 @@ class App extends React.Component {
             user.balance = await web3.eth.getBalance(user.account);
             user.network = await web3.eth.net.getNetworkType();
             this.setState({connectBtnDisabled: false});
-            this.setState({contractAddress: '0x5A73bCA4986592E9B78a64c5392BA9b301CEe70d'});
+            this.setState({contractAddress});
             this.setState({user: user});
             let transactionConfirmationBlocks = web3.eth.transactionConfirmationBlocks;
             this.setState({transactionConfirmationBlocks});
@@ -230,14 +233,14 @@ class App extends React.Component {
 
 
         _.each(indexArray, async function (index) {
-            // let index = await myContract.methods['tokenOfOwnerByIndex'](user.account, i).call();
-            // console.log('tokenByIndex', index);
-            let tokenURI = await myContract.methods['tokenURI'](index).call();
-            console.log('tokenURI', tokenURI, name, symbol);
+            let heroInfo = await myContract.methods['getHero'](index).call();
+            console.log('heroInfo', heroInfo, name, symbol);
             let row = _.find(self.state.itemData, function (item) {
                 return item.title === index;
             });
-            row.img = tokenURI;
+            row.quantity = heroInfo[0];
+            row.createTime = heroInfo[1];
+            row.img = row.quantity;
             // itemData.push(row);
             // self.setState({itemData});
             self.forceUpdate();
@@ -271,11 +274,11 @@ class App extends React.Component {
         }
 
         // 获取合约创建者
-        let contractOwner = await myContract.methods.owner().call();
-        self.setState({contractOwner});
-        console.log('contractOwner', contractOwner);
+        // let contractOwner = await myContract.methods.owner().call().catch(e => self.addOpenSnackbar("合约创建者获取失败", e));
+        // self.setState({contractOwner});
+        // console.log('contractOwner', contractOwner);
 
-        let totalSupply = await myContract.methods.totalSupply().call();
+        let totalSupply = await myContract.methods.totalSupply().call().catch(e => self.addOpenSnackbar("合约总量获取失败", e));
         self.setState({totalSupply: `总量: ${totalSupply}`});
         self.forceUpdate();
     };
@@ -384,7 +387,7 @@ class App extends React.Component {
         this.setState({totalSupply: totalSupply});
         let toTokenId = parseInt(totalSupply) + 1;
 
-        let method = myContract.methods['safeMint'](mintToAddress, toTokenId, mintUri);
+        let method = myContract.methods['spawnHero'](mintUri, mintToAddress);
         let gasLimit = await method.estimateGas({from: user.account});
         console.log('gasPrice', gasPrice);
         console.log('gasLimit', gasLimit);
@@ -534,6 +537,8 @@ class App extends React.Component {
                     </Box>
                     <ImageList sx={{width: '80%'}} cols={5}>
                         {this.state.itemData.map((item) => {
+                            // 显示格式化时间
+                            let showCreateTime = moment(item.createTime*1000).format('YYYY-MM-DD HH:mm:ss');
                             return (<Box key={item.title}><ImageListItem>
                                     <img
                                         src={`${item.img}?w=164&h=164&fit=crop&auto=format`}
@@ -543,11 +548,11 @@ class App extends React.Component {
                                         onError={this.addDefaultSrc}
                                     />
                                     <ImageListItemBar
-                                        title={`tokenId: ${item.title}`}
+                                        title={`[${item.title}]${item.quantity}星-${showCreateTime}`}
                                     />
 
                                 </ImageListItem>
-                                    <Box sx={{display: 'flex', justifyContent: 'space-around', m: 1}}>
+                                    <Box sx={{display: 'none', justifyContent: 'space-around', m: 1}}>
                                         <Button name={item.title} variant="contained" endIcon={<CardGiftCardIcon/>}
                                                 onClick={this.openSendGiftDialog}>
                                             赠送
@@ -566,13 +571,13 @@ class App extends React.Component {
                     </ImageList>
                     <SendGiftFormDialog open={this.state.dialogOpen} onOpenChange={this.onOpenChange}
                                         onChange={this.handleChange} onClick={this.handleSendGift}/>
-                    {(this.state.user.account && (this.state.user.account === this.state.contractOwner)) ? <form>
+                    {(true || this.state.user.account && (this.state.user.account === this.state.contractOwner)) ? <form>
                         <FormControl>
                             <div><TextField id="mintToAddress" label="空投地址" value={this.state.mintToAddress}
                                             required
                                             sx={{m: 1, width: '25ch'}}
                                             onChange={this.handleChange}/></div>
-                            <div><TextField id="mintUri" label="tokenUri" value={this.state.mintUri} required
+                            <div><TextField id="mintUri" label="quality" value={this.state.mintUri} required
                                             sx={{m: 1, width: '25ch'}}
                                             onChange={this.handleChange}/></div>
                             <div><Button type="button" variant="contained" disabled={this.state.mintBtnDisabled}
