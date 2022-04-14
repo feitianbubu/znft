@@ -2,7 +2,7 @@ import CardGiftCardIcon from '@mui/icons-material/CardGiftcard';
 import CloseIcon from '@mui/icons-material/Close';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import ShoppingCartCheckoutIcon from '@mui/icons-material/ShoppingCartCheckout';
-import {Box, Checkbox, Chip, FormControl, FormControlLabel} from '@mui/material';
+import {Box, Chip, FormControl} from '@mui/material';
 import AppBar from '@mui/material/AppBar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -26,18 +26,19 @@ import SendGiftFormDialog from "./SendGiftFormDialog";
 
 const jsonInterface = heroCoreJson.abi;
 const auctionJsonInterface = heroClockAuctionJson;
-const USER_LOGIN_URL = abiJson.userLoginUrl;
 const contractAddress = abiJson.contractAddress;
 
 const AppName = 'Z-NFT';
 // 定义货币单位
 const CURRENCY_UNIT = 'ETH';
+const pages = [{name: '市场', id: 'market'}, {name: '我的', id: 'my'}];
 let web3;
 let user = {};
 let connectBtnName = '连接钱包';
 let contractBtnName = '获取合约';
 let mintBtnName = '空投';
-let contractBtnNameDisabled = false;
+let contractBtnNameDisabled = false
+let selectPageId = 'market';
 
 const theme = createTheme();
 const initState = {
@@ -63,7 +64,7 @@ const initState = {
     connectBtnDisabled: false,
     contactBalance: '',
     whitelistedSpawner: false,
-    auctionContract: null,
+    selectPageId: selectPageId,
 };
 
 class App extends React.Component {
@@ -77,10 +78,17 @@ class App extends React.Component {
         this.openSellDialog = this.openSellDialog.bind(this);
         this.copyText = this.copyText.bind(this);
         this.disconnectWallet = this.disconnectWallet.bind(this);
+        this.componentDidMount = this.componentDidMount.bind(this);
+        this.handleChangePage = this.handleChangePage.bind(this);
     }
 
     componentDidMount() {
         console.log('componentDidMount');
+        web3 = new Web3(Web3.givenProvider);
+        let auctionContract = new web3.eth.Contract(auctionJsonInterface, abiJson.auctionContractAddress);
+        let heroContract = new web3.eth.Contract(jsonInterface, contractAddress);
+        this.setState({auctionContract});
+        this.setState({heroContract});
     }
 
     copyText(event) {
@@ -172,8 +180,6 @@ class App extends React.Component {
             this.setState({user: user});
             let transactionConfirmationBlocks = web3.eth.transactionConfirmationBlocks;
             this.setState({transactionConfirmationBlocks});
-            let auctionContract = new web3.eth.Contract(auctionJsonInterface, abiJson.auctionContractAddress);
-            this.setState({auctionContract});
         } catch (e) {
             this.disconnectWallet();
             this.addOpenSnackbar('metamask连接失败', e);
@@ -202,39 +208,35 @@ class App extends React.Component {
         contractBtnNameDisabled = true;
         self.forceUpdate();
         console.log('handleSubmit', user, this.state);
-        if (!user.account) {
-            self.disconnectWallet();
-            self.addOpenSnackbar("请先连接钱包");
-            return;
-        }
 
-        let myContract = new web3.eth.Contract(jsonInterface, this.state.contractAddress);
-        let totalSupply = await myContract.methods.totalSupply().call().catch(e => self.addOpenSnackbar("合约总量获取失败", e));
-        totalSupply = parseInt(totalSupply);
-
-        self.setState({totalSupply: `总量: ${totalSupply}`});
-
-        let balance = await myContract.methods['balanceOf'](user.account).call();
-        balance = parseInt(balance);
-
-        let name = await myContract.methods['name']().call();
-        let symbol = await myContract.methods['symbol']().call();
-
-        self.setState({contactBalance: `我的${name}: ${balance} ${symbol}`});
 
         let itemData = [];
-
-        let count = 0;
-
         let indexArray = [];
+        if (selectPageId === 'market') {
+            // 显示auction所有tokenId
+            indexArray = await this.state.heroContract.methods.tokenOf(abiJson.auctionContractAddress).call();
+        } else if (selectPageId === 'my') {
+            if (!user.account) {
+                // self.disconnectWallet();
+                self.addOpenSnackbar("请先连接钱包");
+                return;
+            }
 
-        if (!document.getElementById('onlyMineChecked').checked) {
-            // 显示全部
-            indexArray = _.range(1, totalSupply + 1);
-        } else {
+            let totalSupply = await self.state.heroContract.methods.totalSupply().call().catch(e => self.addOpenSnackbar("合约总量获取失败", e));
+            totalSupply = parseInt(totalSupply);
+
+            self.setState({totalSupply: `总量: ${totalSupply}`});
+
+            let balance = await self.state.heroContract.methods['balanceOf'](user.account).call();
+            balance = parseInt(balance);
+
+            let name = await self.state.heroContract.methods['name']().call();
+            let symbol = await self.state.heroContract.methods['symbol']().call();
+            self.setState({contactBalance: `我的${name}: ${balance} ${symbol}`});
+
             // 显示我的
             for (let i = 0; i < balance; i++) {
-                let tokenId = await myContract.methods['tokenOfOwnerByIndex'](user.account, i).call();
+                let tokenId = await self.state.heroContract.methods['tokenOfOwnerByIndex'](user.account, i).call();
                 indexArray.push(tokenId);
             }
             indexArray = _.sortBy(indexArray);
@@ -247,10 +249,10 @@ class App extends React.Component {
         self.setState({itemData});
 
 
-        _.each(indexArray, async function (index) {
-            let heroInfo = await myContract.methods['getHero'](index).call();
-            let ownerOf = await myContract.methods['ownerOf'](index).call();
-            console.log('heroInfo', heroInfo, name, symbol);
+        _.each(indexArray, async function (index, i) {
+            let heroInfo = await self.state.heroContract.methods['getHero'](index).call();
+            let ownerOf = await self.state.heroContract.methods['ownerOf'](index).call();
+            console.log('heroInfo', heroInfo);
             let row = _.find(self.state.itemData, function (item) {
                 return item.title === index;
             });
@@ -260,35 +262,35 @@ class App extends React.Component {
             row.ownerOf = ownerOf;
             if (row.ownerOf === abiJson.auctionContractAddress) {
                 // 查询拍卖状态
-                let auctions = await self.state.auctionContract.methods['auctions'](self.state.contractAddress, index).call().catch(e => self.addOpenSnackbar("拍卖状态获取失败", e));
+                console.log('========================', self.state.auctionContract);
+                let auctions = await self.state.auctionContract.methods['auctions'](contractAddress, index).call().catch(e => self.addOpenSnackbar("拍卖状态获取失败", e));
                 console.log('getAuction', auctions, index);
                 row.seller = auctions.seller;
-                let currentPrice = await self.state.auctionContract.methods['getCurrentPrice'](self.state.contractAddress, index).call().catch(e => self.addOpenSnackbar("拍卖价格获取失败", e));
-                row.currentPrice = currentPrice;
+                row.currentPrice = await self.state.auctionContract.methods['getCurrentPrice'](contractAddress, index).call().catch(e => self.addOpenSnackbar("拍卖价格获取失败", e));
             }
             // itemData.push(row);
             // self.setState({itemData});
             self.forceUpdate();
-            if (++count === balance) {
+            if (i === (indexArray.length - 1)) {
                 contractBtnName = '获取合约';
                 contractBtnNameDisabled = false;
                 self.forceUpdate();
             }
         });
-        if (balance === 0) {
-            self.setState({itemData});
-            contractBtnName = '获取合约'
-            contractBtnNameDisabled = false;
-            self.forceUpdate();
-        }
+        // if (balance === 0) {
+        //     self.setState({itemData});
+        //     contractBtnName = '获取合约'
+        //     contractBtnNameDisabled = false;
+        //     self.forceUpdate();
+        // }
 
         // 获取合约创建者
         // let contractOwner = await myContract.methods.owner().call().catch(e => self.addOpenSnackbar("合约创建者获取失败", e));
         // self.setState({contractOwner});
         // console.log('contractOwner', contractOwner);
         // 是否可以空投
-        let whitelistedSpawner = await myContract.methods.whitelistedSpawner(self.state.user.account).call().catch(e => self.addOpenSnackbar("是否可以空投获取失败", e));
-        self.setState({whitelistedSpawner});
+        // let whitelistedSpawner = await self.state.heroContract.methods.whitelistedSpawner(self.state.user.account).call().catch(e => self.addOpenSnackbar("是否可以空投获取失败", e));
+        // self.setState({whitelistedSpawner});
 
         self.forceUpdate();
     };
@@ -326,7 +328,7 @@ class App extends React.Component {
             this.addOpenSnackbar('请先连接钱包');
             return;
         }
-        let myContract = new web3.eth.Contract(jsonInterface, this.state.contractAddress);
+        let myContract = new web3.eth.Contract(jsonInterface, contractAddress);
         let to = msg.to;
         let tokenId = this.state.tokenId;
         if (!to || !tokenId) {
@@ -386,7 +388,7 @@ class App extends React.Component {
             this.addOpenSnackbar('请先连接钱包');
             return;
         }
-        let myContract = new web3.eth.Contract(jsonInterface, this.state.contractAddress);
+        let myContract = new web3.eth.Contract(jsonInterface, contractAddress);
         let mintToAddress = this.state.mintToAddress;
         let mintUri = this.state.mintUri;
 
@@ -425,8 +427,8 @@ class App extends React.Component {
         body.price = price;
 
         // createAuction
-        let method = self.state.auctionContract.methods['createAuction'](this.state.contractAddress, body.itemId, body.price, body.price, 6000000);
-        console.log(this.state.contractAddress, body.itemId, body.price, body.price, 0);
+        let method = self.state.auctionContract.methods['createAuction'](contractAddress, body.itemId, body.price, body.price, 6000000);
+        console.log(contractAddress, body.itemId, body.price, body.price, 0);
         let gasLimit = await method.estimateGas({from: user.account});
         let gasPrice = await web3.eth.getGasPrice();
         console.log('gasPrice', gasPrice);
@@ -451,8 +453,8 @@ class App extends React.Component {
             return;
         }
         // cancelAuction
-        let method = self.state.auctionContract.methods['cancelAuction'](this.state.contractAddress, body.itemId);
-        console.log(this.state.contractAddress, body.itemId);
+        let method = self.state.auctionContract.methods['cancelAuction'](contractAddress, body.itemId);
+        console.log(contractAddress, body.itemId);
         let gasLimit = await method.estimateGas({from: user.account});
         let gasPrice = await web3.eth.getGasPrice();
         console.log('gasPrice', gasPrice);
@@ -478,8 +480,8 @@ class App extends React.Component {
         }
 
         // createAuction
-        let method = self.state.auctionContract.methods['bid'](this.state.contractAddress, itemId);
-        console.log(this.state.contractAddress, itemId, price);
+        let method = self.state.auctionContract.methods['bid'](contractAddress, itemId);
+        console.log(contractAddress, itemId, price);
         let tx = await method.send({
             from: user.account, value: price
         }).catch(e => {
@@ -490,6 +492,13 @@ class App extends React.Component {
 
         await self.handleSubmit();
     }
+    handleChangePage = async (event) => {
+        console.log('handleChangePage', event, event.target.id, document.getElementById(event.target.id));
+        selectPageId = event.target.id;
+        this.setState({selectPageId})
+        console.log('this.state.selectPageId', event.target.id, selectPageId);
+        await this.handleSubmit();
+    };
 
     render() {
 
@@ -512,10 +521,33 @@ class App extends React.Component {
                         <Box sx={{
                             display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center'
                         }}>
-                            <Typography type="title" color="inherit"
-                                        sx={{fontSize: 24, fontWeight: 'bold'}}>
+                            <Typography
+                                variant="h6"
+                                noWrap
+                                component="div"
+                                sx={{mr: 2, display: {xs: 'none', md: 'flex'}, fontWeight: 'bold'}}
+                            >
                                 {AppName}
                             </Typography>
+                            <Box sx={{flexGrow: 1, display: {xs: 'none', md: 'flex'}}}>
+                                {pages.map((page) => (
+                                    <Button
+                                        color={this.state.selectPageId === page.id ? 'warning' : 'inherit'}
+                                        key={page.id}
+                                        id={page.id}
+                                        size={'large'}
+                                        sx={{
+                                            fontWeight: 'bold',
+                                            fontSize: '1.2rem',
+                                            mr: 2,
+                                            display: {xs: 'none', md: 'flex'}
+                                        }}
+                                        onClick={this.handleChangePage}
+                                    >
+                                        {page.name}
+                                    </Button>
+                                ))}
+                            </Box>
                             <Box>
                                 <Box sx={{height: 20}}>
                                     {Object.keys(this.state.user).map((key, index) => {
@@ -545,38 +577,12 @@ class App extends React.Component {
                     </Toolbar>
                 </AppBar>
                 <Box className='App-body'>
-                    <form>
-                        <FormControl>
-                            <Box sx={{display: 'flex'}}>
-                                <TextField id="contractAddress" label="合约地址"
-                                           value={this.state.contractAddress}
-                                           required
-                                           sx={{m: 2, width: '30ch'}}
-                                           size="small"
-                                           onChange={this.handleChange}/>
-
-                                <TextField id="transactionConfirmationBlocks" label="确认区块数"
-                                           value={this.state.transactionConfirmationBlocks}
-                                           required
-                                           sx={{m: 2, width: '6ch'}}
-                                           size="small"
-                                           type="number"
-                                           onChange={this.handleChange}/>
-                            </Box>
-                            <Box><Button type="button" variant="contained" disabled={contractBtnNameDisabled}
-                                         onClick={this.handleSubmit}>{contractBtnName}</Button>
-                                <FormControlLabel control={<Checkbox id="onlyMineChecked"/>} label="仅显示我的"
-                                                  onChange={this.handleSubmit}
-                                                  sx={{ml: 1}}/>
-                            </Box>
-                            <Box>
-                                <Chip sx={{display: this.state.contactBalance ? '' : 'none'}}
-                                      label={this.state.contactBalance}
-                                      variant="outlined"
-                                />
-                            </Box>
-                        </FormControl>
-                    </form>
+                    <Box>
+                        <Chip sx={{display: this.state.contactBalance ? '' : 'none'}}
+                              label={this.state.contactBalance}
+                              variant="outlined"
+                        />
+                    </Box>
                     <ImageList sx={{width: '80%'}} cols={5}>
                         {this.state.itemData.map((item) => {
                             // 显示格式化时间
@@ -674,10 +680,6 @@ class App extends React.Component {
 
             </ThemeProvider>
         </div>)
-    }
-
-    async getUserInfo(accountId) {
-        return await fetch(`${USER_LOGIN_URL}`, {method: "POST", body: JSON.stringify({accountId})})
     }
 }
 
