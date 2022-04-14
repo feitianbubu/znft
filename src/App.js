@@ -1,5 +1,6 @@
 import CardGiftCardIcon from '@mui/icons-material/CardGiftcard';
 import CloseIcon from '@mui/icons-material/Close';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import ShoppingCartCheckoutIcon from '@mui/icons-material/ShoppingCartCheckout';
 import {Box, Checkbox, Chip, FormControl, FormControlLabel} from '@mui/material';
 import AppBar from '@mui/material/AppBar';
@@ -19,16 +20,13 @@ import React from 'react';
 import Web3 from "web3";
 import './App.css';
 import abiJson from './config/abi.json';
-import heroCoreJson from './config/HeroCore.json';
 import heroClockAuctionJson from './config/HeroClockAuction.json';
+import heroCoreJson from './config/HeroCore.json';
 import SendGiftFormDialog from "./SendGiftFormDialog";
-import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
-import moment from "moment";
 
 const jsonInterface = heroCoreJson.abi;
 const auctionJsonInterface = heroClockAuctionJson;
 const USER_LOGIN_URL = abiJson.userLoginUrl;
-const BASE_LP_URL = abiJson.baseLpUrl;
 const contractAddress = abiJson.contractAddress;
 
 const AppName = 'Z-NFT';
@@ -283,20 +281,6 @@ class App extends React.Component {
             self.forceUpdate();
         }
 
-        // 获取交易列表
-        // try {
-        //     let sellList = await fetch(BASE_LP_URL + '/SellList', {
-        //         method: 'POST', headers: {
-        //             'Tevat-Authorization': this.state.token,
-        //         }, body: JSON.stringify({})
-        //     }).then(res => res.json());
-        //     sellList = sellList?.['Items'];
-        //     console.log('sellList', sellList);
-        //     this.setState({sellList});
-        // } catch (e) {
-        //     this.addOpenSnackbar("交易列表获取失败", e);
-        // }
-
         // 获取合约创建者
         // let contractOwner = await myContract.methods.owner().call().catch(e => self.addOpenSnackbar("合约创建者获取失败", e));
         // self.setState({contractOwner});
@@ -436,9 +420,6 @@ class App extends React.Component {
             return;
         }
         price = web3.utils.toWei(price.toString(), 'ether');
-        // if (!confirm(`确认将该物品以${price}的价格出售吗?`)) {
-        //     return;
-        // }
         body.uid = this.state.user.account;
         body.price = price;
 
@@ -452,24 +433,11 @@ class App extends React.Component {
         let tx = await method.send({
             from: user.account, gasPrice: gasPrice, gas: gasLimit
         }).catch(e => {
-            self.addOpenSnackbar(`${actionName}失败:`, e);
+            self.addOpenSnackbar(`出售失败:`, e);
         });
         console.log('tx', tx);
-        self.addOpenSnackbar(`${actionName}成功`);
+        self.addOpenSnackbar(`出售成功`);
 
-
-        // let sellUrl = `${BASE_LP_URL}/Sell`;
-        // fetch(sellUrl, {
-        //     method: 'POST', headers: {
-        //         'Tevat-Authorization': this.state.token,
-        //     }, body: JSON.stringify(body)
-        // }).then(function (response) {
-        //     return response.json();
-        // }).then(function () {
-        //     self.addOpenSnackbar(`${actionName}成功: `);
-        // }).catch(function (e) {
-        //     self.addOpenSnackbar(`${actionName}失败: `, e);
-        // });
         await self.handleSubmit();
     }
     handCancelAuction = async (event) => {
