@@ -32,6 +32,8 @@ const BASE_LP_URL = abiJson.baseLpUrl;
 const contractAddress = abiJson.contractAddress;
 
 const AppName = 'Z-NFT';
+// 定义货币单位
+const CURRENCY_UNIT = 'ETH';
 let web3;
 let user = {};
 let connectBtnName = '连接钱包';
@@ -427,27 +429,18 @@ class App extends React.Component {
         let body = {
             itemId: event.target.name,
         }
-        let actionName = '出售';
-        if (this.isSold(event.target.name)) {
-            //取回操作
-            if (!confirm(`确认取回该物品吗?`)) {
-                return;
-            }
-            actionName = '取回';
-        } else {
-            let price = prompt("请输入价格", "1");
-            price = parseFloat(price);
-            if (!_.isNumber(price) || price <= 0) {
-                alert(`请输入正确的价格!`);
-                return;
-            }
-            price = web3.utils.toWei(price.toString(), 'ether');
-            // if (!confirm(`确认将该物品以${price}的价格出售吗?`)) {
-            //     return;
-            // }
-            body.uid = this.state.user.account;
-            body.price = price;
+        let price = prompt("请输入价格", "1");
+        price = parseFloat(price);
+        if (!_.isNumber(price) || price <= 0) {
+            alert(`请输入正确的价格!`);
+            return;
         }
+        price = web3.utils.toWei(price.toString(), 'ether');
+        // if (!confirm(`确认将该物品以${price}的价格出售吗?`)) {
+        //     return;
+        // }
+        body.uid = this.state.user.account;
+        body.price = price;
 
         // createAuction
         let method = self.state.auctionContract.methods['createAuction'](this.state.contractAddress, body.itemId, body.price, body.price, 6000000);
@@ -479,14 +472,6 @@ class App extends React.Component {
         // });
         await self.handleSubmit();
     }
-    isSold = (itemId) => {
-        let find = _.find(this.state.sellList, (item) => {
-            if (item.itemId === itemId) {
-                return true;
-            }
-        });
-        return !!find;
-    }
     handCancelAuction = async (event) => {
         let self = this;
         let body = {
@@ -515,32 +500,19 @@ class App extends React.Component {
     }
     handBid = async (event) => {
         let self = this;
-        let body = {
-            itemId: event.target.name,
-        }
+        let itemId = event.target.name;
         let actionName = '购买';
-        let price = prompt("请输入价格", "1");
-        price = parseFloat(price);
-        if (!_.isNumber(price) || price <= 0) {
-            alert(`请输入正确的价格!`);
+        // 获取event.target的currentPrice
+        let price = event.target.getAttribute('currentprice');
+        if (!confirm(`确认将该物品以${web3.utils.fromWei(price)}${CURRENCY_UNIT}的价格购买吗?`)) {
             return;
         }
-        price = web3.utils.toWei(price.toString(), 'ether');
-        // if (!confirm(`确认将该物品以${price}的价格出售吗?`)) {
-        //     return;
-        // }
-        body.uid = this.state.user.account;
-        body.price = price;
 
         // createAuction
-        let method = self.state.auctionContract.methods['bid'](this.state.contractAddress, body.itemId);
-        console.log(this.state.contractAddress, body.itemId, body.price);
-        let gasLimit = await method.estimateGas({from: user.account});
-        let gasPrice = await web3.eth.getGasPrice();
-        console.log('gasPrice', gasPrice);
-        console.log('gasLimit', gasLimit);
+        let method = self.state.auctionContract.methods['bid'](this.state.contractAddress, itemId);
+        console.log(this.state.contractAddress, itemId, price);
         let tx = await method.send({
-            from: user.account, gasPrice: gasPrice, gas: gasLimit
+            from: user.account, value: price
         }).catch(e => {
             self.addOpenSnackbar(`${actionName}失败:`, e);
         });
@@ -640,11 +612,11 @@ class App extends React.Component {
                         {this.state.itemData.map((item) => {
                             // 显示格式化时间
                             // let showCreateTime = moment(item.createTime * 1000).format('YYYY-MM-DD HH:mm:ss');
-                            if(item.quantity){
+                            if (item.quantity) {
                                 // quantity转化为五星个数
                                 item.star = _.times(Math.max(item.quantity, 5), _.constant('★')).join('');
                             }
-                                //
+                            //
                             // 显示格式化地址
                             let ownerOf = '';
                             if (item.ownerOf) {
@@ -652,7 +624,7 @@ class App extends React.Component {
                                 if (item.ownerOf === this.state.user.account) {
                                     ownerOf = '★我的';
                                 } else if (item.ownerOf === abiJson.auctionContractAddress) {
-                                    ownerOf = '$出售中:' +(item.currentPrice / web3.utils.unitMap.ether).toFixed(4)+' ETH';
+                                    ownerOf = '$出售中:' + (item.currentPrice / web3.utils.unitMap.ether).toFixed(4) + CURRENCY_UNIT;
                                 } else {
                                     ownerOf = '@' + ownerOf;
                                 }
@@ -670,7 +642,7 @@ class App extends React.Component {
                                 />
                                 <ImageListItemBar
                                     title={`${ownerOf}`}
-                                    subtitle={`${item.title}.${item.star??''}`}
+                                    subtitle={`${item.title}.${item.star ?? ''}`}
                                 />
 
                             </ImageListItem>
@@ -680,23 +652,25 @@ class App extends React.Component {
                                         赠送
                                     </Button>
                                     <Button name={item.title} variant="contained"
-                                            endIcon={this.isSold(item.title) ? <ShoppingCartCheckoutIcon/> :
-                                                <ShoppingCartIcon/>}
+                                            endIcon={<ShoppingCartIcon/>}
                                             onClick={this.openSellDialog}
-                                            color={this.isSold(item.title) ? 'secondary' : 'success'}>
-                                        {this.isSold(item.title) ? '取回' : '出售'}
+                                            color={'secondary'}>
+                                        出售
                                     </Button>
                                 </Box>
                                 {isSeller ?
-                                    <Button name={item.title} variant="contained" endIcon={<CardGiftCardIcon/>}
+                                    <Button name={item.title} variant="contained" endIcon={<ShoppingCartCheckoutIcon/>}
+                                            color={'warning'}
                                             onClick={this.handCancelAuction}>
                                         取回
-                                    </Button>: null}
+                                    </Button> : null}
                                 {isBuyer ?
-                                    <Button name={item.title} variant="contained" endIcon={<CardGiftCardIcon/>}
+                                    <Button name={item.title} currentprice={item.currentPrice} variant="contained"
+                                            endIcon={<CardGiftCardIcon/>}
+                                            color={'success'}
                                             onClick={this.handBid}>
                                         购买
-                                    </Button>: null}
+                                    </Button> : null}
                             </Box>)
                         })}
                     </ImageList>
