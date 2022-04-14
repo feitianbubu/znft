@@ -63,6 +63,7 @@ const initState = {
     connectBtnDisabled: false,
     contactBalance: '',
     whitelistedSpawner: false,
+    auctionContract: null,
 };
 
 class App extends React.Component {
@@ -171,6 +172,8 @@ class App extends React.Component {
             this.setState({user: user});
             let transactionConfirmationBlocks = web3.eth.transactionConfirmationBlocks;
             this.setState({transactionConfirmationBlocks});
+            let auctionContract = new web3.eth.Contract(auctionJsonInterface, abiJson.auctionContractAddress);
+            this.setState({auctionContract});
         } catch (e) {
             this.disconnectWallet();
             this.addOpenSnackbar('metamask连接失败', e);
@@ -178,17 +181,17 @@ class App extends React.Component {
         }
 
         // 获取角色信息
-        try {
-            let userSync = await this.getUserInfo(user.account);
-            let userInfo = await userSync.json();
-            user.nickname = userInfo['nickName'];
-            let token = userInfo.token;
-            this.setState({token});
-            this.setState({user});
-        } catch (e) {
-            user['getLpFail'] = e
-            this.addOpenSnackbar("lp用户信息获取失败", e);
-        }
+        // try {
+        //     let userSync = await this.getUserInfo(user.account);
+        //     let userInfo = await userSync.json();
+        //     user.nickname = userInfo['nickName'];
+        //     let token = userInfo.token;
+        //     this.setState({token});
+        //     this.setState({user});
+        // } catch (e) {
+        //     user['getLpFail'] = e
+        //     this.addOpenSnackbar("lp用户信息获取失败", e);
+        // }
 
         this.forceUpdate();
     };
@@ -254,6 +257,14 @@ class App extends React.Component {
             row.createTime = heroInfo[1];
             row.img = row.quantity;
             row.ownerOf = ownerOf;
+            if (row.ownerOf === abiJson.auctionContractAddress) {
+                // 查询拍卖状态
+                let auctions = await self.state.auctionContract.methods['auctions'](self.state.contractAddress, index).call().catch(e => self.addOpenSnackbar("拍卖状态获取失败", e));
+                console.log('getAuction', auctions, index);
+                row.seller = auctions.seller;
+                let currentPrice = await self.state.auctionContract.methods['getCurrentPrice'](self.state.contractAddress, index).call().catch(e => self.addOpenSnackbar("拍卖价格获取失败", e));
+                row.currentPrice = currentPrice;
+            }
             // itemData.push(row);
             // self.setState({itemData});
             self.forceUpdate();
@@ -271,18 +282,18 @@ class App extends React.Component {
         }
 
         // 获取交易列表
-        try {
-            let sellList = await fetch(BASE_LP_URL + '/SellList', {
-                method: 'POST', headers: {
-                    'Tevat-Authorization': this.state.token,
-                }, body: JSON.stringify({})
-            }).then(res => res.json());
-            sellList = sellList?.['Items'];
-            console.log('sellList', sellList);
-            this.setState({sellList});
-        } catch (e) {
-            this.addOpenSnackbar("交易列表获取失败", e);
-        }
+        // try {
+        //     let sellList = await fetch(BASE_LP_URL + '/SellList', {
+        //         method: 'POST', headers: {
+        //             'Tevat-Authorization': this.state.token,
+        //         }, body: JSON.stringify({})
+        //     }).then(res => res.json());
+        //     sellList = sellList?.['Items'];
+        //     console.log('sellList', sellList);
+        //     this.setState({sellList});
+        // } catch (e) {
+        //     this.addOpenSnackbar("交易列表获取失败", e);
+        // }
 
         // 获取合约创建者
         // let contractOwner = await myContract.methods.owner().call().catch(e => self.addOpenSnackbar("合约创建者获取失败", e));
@@ -430,6 +441,7 @@ class App extends React.Component {
                 alert(`请输入正确的价格!`);
                 return;
             }
+            price = web3.utils.toWei(price.toString(), 'ether');
             // if (!confirm(`确认将该物品以${price}的价格出售吗?`)) {
             //     return;
             // }
@@ -437,9 +449,8 @@ class App extends React.Component {
             body.price = price;
         }
 
-        let auctionContract = new web3.eth.Contract(auctionJsonInterface, abiJson.auctionContractAddress);
         // createAuction
-        let method = auctionContract.methods['createAuction'](this.state.contractAddress, body.itemId, body.price, body.price, 0);
+        let method = self.state.auctionContract.methods['createAuction'](this.state.contractAddress, body.itemId, body.price, body.price, 6000000);
         console.log(this.state.contractAddress, body.itemId, body.price, body.price, 0);
         let gasLimit = await method.estimateGas({from: user.account});
         let gasPrice = await web3.eth.getGasPrice();
@@ -475,6 +486,68 @@ class App extends React.Component {
             }
         });
         return !!find;
+    }
+    handCancelAuction = async (event) => {
+        let self = this;
+        let body = {
+            itemId: event.target.name,
+        }
+        let actionName = '取消拍卖';
+        if (!confirm(`确认取消拍卖该物品吗?`)) {
+            return;
+        }
+        // cancelAuction
+        let method = self.state.auctionContract.methods['cancelAuction'](this.state.contractAddress, body.itemId);
+        console.log(this.state.contractAddress, body.itemId);
+        let gasLimit = await method.estimateGas({from: user.account});
+        let gasPrice = await web3.eth.getGasPrice();
+        console.log('gasPrice', gasPrice);
+        console.log('gasLimit', gasLimit);
+        let tx = await method.send({
+            from: user.account, gasPrice: gasPrice, gas: gasLimit
+        }).catch(e => {
+            self.addOpenSnackbar(`${actionName}失败:`, e);
+        });
+        console.log('tx', tx);
+        self.addOpenSnackbar(`${actionName}成功`);
+
+        await self.handleSubmit();
+    }
+    handBid = async (event) => {
+        let self = this;
+        let body = {
+            itemId: event.target.name,
+        }
+        let actionName = '购买';
+        let price = prompt("请输入价格", "1");
+        price = parseFloat(price);
+        if (!_.isNumber(price) || price <= 0) {
+            alert(`请输入正确的价格!`);
+            return;
+        }
+        price = web3.utils.toWei(price.toString(), 'ether');
+        // if (!confirm(`确认将该物品以${price}的价格出售吗?`)) {
+        //     return;
+        // }
+        body.uid = this.state.user.account;
+        body.price = price;
+
+        // createAuction
+        let method = self.state.auctionContract.methods['bid'](this.state.contractAddress, body.itemId);
+        console.log(this.state.contractAddress, body.itemId, body.price);
+        let gasLimit = await method.estimateGas({from: user.account});
+        let gasPrice = await web3.eth.getGasPrice();
+        console.log('gasPrice', gasPrice);
+        console.log('gasLimit', gasLimit);
+        let tx = await method.send({
+            from: user.account, gasPrice: gasPrice, gas: gasLimit
+        }).catch(e => {
+            self.addOpenSnackbar(`${actionName}失败:`, e);
+        });
+        console.log('tx', tx);
+        self.addOpenSnackbar(`${actionName}成功`);
+
+        await self.handleSubmit();
     }
 
     render() {
@@ -566,46 +639,65 @@ class App extends React.Component {
                     <ImageList sx={{width: '80%'}} cols={5}>
                         {this.state.itemData.map((item) => {
                             // 显示格式化时间
-                            let showCreateTime = moment(item.createTime * 1000).format('YYYY-MM-DD HH:mm:ss');
+                            // let showCreateTime = moment(item.createTime * 1000).format('YYYY-MM-DD HH:mm:ss');
+                            if(item.quantity){
+                                // quantity转化为五星个数
+                                item.star = _.times(Math.max(item.quantity, 5), _.constant('★')).join('');
+                            }
+                                //
                             // 显示格式化地址
                             let ownerOf = '';
                             if (item.ownerOf) {
                                 ownerOf = item.ownerOf.substr(0, 6) + '...' + item.ownerOf.substr(item.ownerOf.length - 4);
                                 if (item.ownerOf === this.state.user.account) {
-                                    ownerOf = '★' + ownerOf;
+                                    ownerOf = '★我的';
+                                } else if (item.ownerOf === abiJson.auctionContractAddress) {
+                                    ownerOf = '$出售中:' +(item.currentPrice / web3.utils.unitMap.ether).toFixed(4)+' ETH';
                                 } else {
                                     ownerOf = '@' + ownerOf;
                                 }
                             }
+                            let isSeller = item.currentPrice && (item.seller === this.state.user.account);
+                            let isBuyer = item.currentPrice && !isSeller;
                             let buttonDisplay = (this.state.user.account === item.ownerOf) ? 'flex' : 'none';
                             return (<Box key={item.title}><ImageListItem>
-                                    <img
-                                        src={`${item.img}?w=164&h=164&fit=crop&auto=format`}
-                                        srcSet={`${item.img}?w=164&h=164&fit=crop&auto=format&dpr=2 2x`}
-                                        alt={item.title}
-                                        loading="lazy"
-                                        onError={this.addDefaultSrc}
-                                    />
-                                    <ImageListItemBar
-                                        title={`[${item.title}]${item.quantity}星-${showCreateTime}`}
-                                        subtitle={`${ownerOf}`}
-                                    />
+                                <img
+                                    src={`${item.img}?w=164&h=164&fit=crop&auto=format`}
+                                    srcSet={`${item.img}?w=164&h=164&fit=crop&auto=format&dpr=2 2x`}
+                                    alt={item.title}
+                                    loading="lazy"
+                                    onError={this.addDefaultSrc}
+                                />
+                                <ImageListItemBar
+                                    title={`${ownerOf}`}
+                                    subtitle={`${item.title}.${item.star??''}`}
+                                />
 
-                                </ImageListItem>
-                                    <Box sx={{display: buttonDisplay, justifyContent: 'space-around', m: 1}}>
-                                        <Button name={item.title} variant="contained" endIcon={<CardGiftCardIcon/>}
-                                                onClick={this.openSendGiftDialog}>
-                                            赠送
-                                        </Button>
-                                        <Button name={item.title} variant="contained"
-                                                endIcon={this.isSold(item.title) ? <ShoppingCartCheckoutIcon/> :
-                                                    <ShoppingCartIcon/>}
-                                                onClick={this.openSellDialog}
-                                                color={this.isSold(item.title) ? 'secondary' : 'success'}>
-                                            {this.isSold(item.title) ? '取回' : '出售'}
-                                        </Button>
-                                    </Box>
-                                </Box>)
+                            </ImageListItem>
+                                <Box sx={{display: buttonDisplay, justifyContent: 'space-around', m: 1}}>
+                                    <Button name={item.title} variant="contained" endIcon={<CardGiftCardIcon/>}
+                                            onClick={this.openSendGiftDialog}>
+                                        赠送
+                                    </Button>
+                                    <Button name={item.title} variant="contained"
+                                            endIcon={this.isSold(item.title) ? <ShoppingCartCheckoutIcon/> :
+                                                <ShoppingCartIcon/>}
+                                            onClick={this.openSellDialog}
+                                            color={this.isSold(item.title) ? 'secondary' : 'success'}>
+                                        {this.isSold(item.title) ? '取回' : '出售'}
+                                    </Button>
+                                </Box>
+                                {isSeller ?
+                                    <Button name={item.title} variant="contained" endIcon={<CardGiftCardIcon/>}
+                                            onClick={this.handCancelAuction}>
+                                        取回
+                                    </Button>: null}
+                                {isBuyer ?
+                                    <Button name={item.title} variant="contained" endIcon={<CardGiftCardIcon/>}
+                                            onClick={this.handBid}>
+                                        购买
+                                    </Button>: null}
+                            </Box>)
                         })}
                     </ImageList>
                     <SendGiftFormDialog open={this.state.dialogOpen} onOpenChange={this.onOpenChange}
