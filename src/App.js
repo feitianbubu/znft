@@ -192,6 +192,7 @@ class App extends React.Component {
         //     user['getLpFail'] = e
         //     this.addOpenSnackbar("lp用户信息获取失败", e);
         // }
+        await this.handleSubmit();
 
         this.forceUpdate();
     };
@@ -562,20 +563,20 @@ class App extends React.Component {
                                            type="number"
                                            onChange={this.handleChange}/>
                             </Box>
-                            <div><Button type="button" variant="contained" disabled={contractBtnNameDisabled}
+                            <Box><Button type="button" variant="contained" disabled={contractBtnNameDisabled}
                                          onClick={this.handleSubmit}>{contractBtnName}</Button>
                                 <FormControlLabel control={<Checkbox id="onlyMineChecked"/>} label="仅显示我的"
+                                                  onChange={this.handleSubmit}
                                                   sx={{ml: 1}}/>
-                            </div>
+                            </Box>
+                            <Box>
+                                <Chip sx={{display: this.state.contactBalance ? '' : 'none'}}
+                                      label={this.state.contactBalance}
+                                      variant="outlined"
+                                />
+                            </Box>
                         </FormControl>
                     </form>
-
-                    <Box sx={{width: '80%', display: this.state.contactBalance ? '' : 'none'}}>
-                        <Chip
-                            label={this.state.contactBalance}
-                            variant="outlined"
-                        />
-                    </Box>
                     <ImageList sx={{width: '80%'}} cols={5}>
                         {this.state.itemData.map((item) => {
                             // 显示格式化时间
