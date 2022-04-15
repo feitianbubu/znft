@@ -2,7 +2,7 @@ import CardGiftCardIcon from '@mui/icons-material/CardGiftcard';
 import CloseIcon from '@mui/icons-material/Close';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import ShoppingCartCheckoutIcon from '@mui/icons-material/ShoppingCartCheckout';
-import {Box, Chip, FormControl} from '@mui/material';
+import {Box, FormControl} from '@mui/material';
 import AppBar from '@mui/material/AppBar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -354,7 +354,7 @@ class App extends React.Component {
         console.log('gasLimit', gasLimit);
         try {
             let tx = await method.send({
-                from: user.account, gasPrice: gasPrice, gas: gasLimit
+                from: user.account, gasPrice: gasPrice, gas: gasLimit, value:0
             });
             self.addOpenSnackbar("赠送成功:", tx);
             await self.handleSubmit();
@@ -406,7 +406,8 @@ class App extends React.Component {
         console.log('handleMint msg: ', mintToAddress, mintUri, gasPrice);
         this.setState({totalSupply: totalSupply});
 
-        let method = myContract.methods['spawnHero'](mintUri, mintToAddress);
+        let tokenUri = 'https://img7.99.com/yhkd/image/data/hero//big-head/21001.jpg';
+        let method = myContract.methods['spawnHero'](mintUri, mintToAddress, tokenUri);
         let gasLimit = await method.estimateGas({from: user.account});
         console.log('gasPrice', gasPrice);
         console.log('gasLimit', gasLimit);
@@ -507,7 +508,7 @@ class App extends React.Component {
         console.log('this.state.selectPageId', event.target.id, selectPageId);
         await this.handleSubmit();
     };
-    handleWithdrawBalance = async (event) => {
+    handleWithdrawBalance = async () => {
         let self = this;
         // 余额
         let balance = await web3.eth.getBalance(abiJson.auctionContractAddress);

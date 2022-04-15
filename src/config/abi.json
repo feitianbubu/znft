@@ -1,8 +1,8 @@
 {
   "userLoginUrl": "http://192.168.246.62:8080/989998",
   "baseLpUrl": "http://192.168.246.62:8080/cos/lobbyplatform/user/User",
-  "contractAddress": "0x8FC9af9067Fd60eB33D0011D6083855d694578be",
-  "auctionContractAddress": "0x01faE9e0E27820c18B0Ad9dB6ad2699875540838",
+  "contractAddress": "0x6353D6B1b74D54E7117F5D6e37b45d4Ffe003443",
+  "auctionContractAddress": "0x69C23cc39798a21D3b57F6f473abc78D467e6C7D",
   "nftAbi": [
     {
       "inputs": [],
