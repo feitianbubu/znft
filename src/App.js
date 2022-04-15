@@ -216,6 +216,7 @@ class App extends React.Component {
         self.setState({itemData});
         self.forceUpdate();
         let indexArray = [];
+        self.setState({whitelistedSpawner:false});
         if (selectPageId === 'mint') {
             if (!user.account) {
                 await self.handleClick();
@@ -506,6 +507,28 @@ class App extends React.Component {
         console.log('this.state.selectPageId', event.target.id, selectPageId);
         await this.handleSubmit();
     };
+    handleWithdrawBalance = async (event) => {
+        let self = this;
+        // 余额
+        let balance = await web3.eth.getBalance(abiJson.auctionContractAddress);
+        console.log('balance', balance);
+        let showBalance = web3.utils.fromWei(balance, 'ether');
+        showBalance = parseFloat(showBalance).toFixed(4);
+        if (!confirm(`确认提取${showBalance}${CURRENCY_UNIT}吗?`)) {
+            return;
+        }
+        // withdrawBalance
+        let method = auctionContract.methods['withdrawBalance']();
+        let tx = await method.send({
+            from: user.account
+        }).catch(e => {
+            self.addOpenSnackbar(`提取失败:`, e);
+        });
+        console.log('tx', tx);
+        self.addOpenSnackbar(`提取成功`);
+
+        await self.handleSubmit();
+    }
 
     render() {
 
@@ -662,8 +685,11 @@ class App extends React.Component {
                                 <div><TextField id="mintUri" label="quality" value={this.state.mintUri} required
                                                 sx={{m: 1, width: '25ch'}}
                                                 onChange={this.handleChange}/></div>
-                                <div><Button type="button" variant="contained" disabled={this.state.mintBtnDisabled}
+                                <div>
+                                    <Button type="button" variant="contained" disabled={this.state.mintBtnDisabled}
                                              onClick={this.handleMint}>{mintBtnName}({this.state.totalSupply})</Button>
+                                    <Button type="button" variant="contained" sx={{ml: 1}}
+                                             onClick={this.handleWithdrawBalance}>取出</Button>
                                 </div>
                             </FormControl>
                         </form> : null}
