@@ -272,8 +272,9 @@ class App extends React.Component {
             });
             row.quantity = heroInfo[0];
             row.createTime = heroInfo[1];
-            row.img = row.quantity;
+            row.img = await heroContract.methods['tokenURI'](index).call();
             row.ownerOf = ownerOf;
+
             if (row.ownerOf === abiJson.auctionContractAddress) {
                 // 查询拍卖状态
                 let auctions = await auctionContract.methods['auctions'](contractAddress, index).call().catch(e => self.addOpenSnackbar("拍卖状态获取失败", e));
