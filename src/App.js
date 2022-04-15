@@ -59,7 +59,7 @@ const initState = {
     tokenId: '',
     SnackbarOpen: false,
     mintToAddress: '',
-    mintUri: '1',
+    mintUri: '',
     mintBtnDisabled: false,
     totalSupply: '',
     sellList: [],
@@ -270,9 +270,14 @@ class App extends React.Component {
             let row = _.find(self.state.itemData, function (item) {
                 return item.title === index;
             });
-            row.quantity = heroInfo[0];
+            row.quality = heroInfo[0];
             row.createTime = heroInfo[1];
             row.img = await heroContract.methods['tokenURI'](index).call();
+            // if row.img 能转化成数字
+            if (row.img.match(/^[0-9]+$/)) {
+                row.img = `https://img7.99.com/yhkd/image/data/hero//big-head/${row.img}.jpg`;
+            }
+
             row.ownerOf = ownerOf;
 
             if (row.ownerOf === abiJson.auctionContractAddress) {
@@ -395,21 +400,16 @@ class App extends React.Component {
         }
         let myContract = new web3.eth.Contract(jsonInterface, contractAddress);
         let mintToAddress = this.state.mintToAddress;
-        let mintUri = this.state.mintUri;
+        let mintUri = this.state.mintUri || _.random(1, 5).toString();
 
         let totalSupply = await myContract.methods.totalSupply().call();
-        console.log('totalSupply', totalSupply);
-        let gasPrice = await web3.eth.getGasPrice();
-        console.log('handleMint msg: ', mintToAddress, mintUri, gasPrice);
         this.setState({totalSupply: totalSupply});
 
-        let tokenUri = 'https://img7.99.com/yhkd/image/data/hero//big-head/21001.jpg';
+        let tokenUri = abiJson.heads[_.random(abiJson.heads.length - 1)]?.toString();
         let method = myContract.methods['spawnHero'](mintUri, mintToAddress, tokenUri);
-        let gasLimit = await method.estimateGas({from: user.account});
-        console.log('gasPrice', gasPrice);
-        console.log('gasLimit', gasLimit);
+        console.log('spawnHero', totalSupply, mintUri, mintToAddress, tokenUri);
         let tx = await method.send({
-            from: user.account, gasPrice: gasPrice, gas: gasLimit
+            from: user.account
         });
         console.log('tx', tx);
         self.setState({snackbarMsg: "空投成功"});
@@ -420,7 +420,8 @@ class App extends React.Component {
     openSellDialog = async (item) => {
         let self = this;
         let tokenId = item.title;
-        let price = prompt("请输入价格", "1");
+        let defaultPrice = (Math.min(parseFloat(item.quality), 1)/100).toString();
+        let price = prompt("请输入价格", defaultPrice);
         price = parseFloat(price);
         if (!_.isNumber(price) || price <= 0) {
             alert(`请输入正确的价格!`);
@@ -599,9 +600,9 @@ class App extends React.Component {
                             let account = this.state.user.account;
                             // 显示格式化时间
                             // let showCreateTime = moment(item.createTime * 1000).format('YYYY-MM-DD HH:mm:ss');
-                            if (item.quantity) {
-                                // quantity转化为五星个数
-                                item.star = _.times(Math.max(item.quantity, 5), _.constant('★')).join('');
+                            if (item.quality) {
+                                // quality转化为五星个数
+                                item.star = _.times(Math.max(Math.min(item.quality, 5), 1), _.constant('★')).join('');
                             }
                             //
                             // 显示格式化地址
@@ -671,7 +672,7 @@ class App extends React.Component {
                                                 required
                                                 sx={{m: 1, width: '25ch'}}
                                                 onChange={this.handleChange}/></div>
-                                <div><TextField id="mintUri" label="quality" value={this.state.mintUri} required
+                                <div><TextField id="mintUri" label="星级 空为随机1-5星" value={this.state.mintUri}
                                                 sx={{m: 1, width: '25ch'}}
                                                 onChange={this.handleChange}/></div>
                                 <div>
