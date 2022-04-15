@@ -216,7 +216,7 @@ class App extends React.Component {
         self.setState({itemData});
         self.forceUpdate();
         let indexArray = [];
-        self.setState({whitelistedSpawner:false});
+        self.setState({whitelistedSpawner: false});
         if (selectPageId === 'mint') {
             if (!user.account) {
                 await self.handleClick();
@@ -228,7 +228,7 @@ class App extends React.Component {
                 self.addOpenSnackbar("您没有空投权限");
                 return;
             }
-        }else if (selectPageId === 'market') {
+        } else if (selectPageId === 'market') {
             // 显示auction所有tokenId
             indexArray = await heroContract.methods.tokenOf(abiJson.auctionContractAddress).call();
         } else if (selectPageId === 'my') {
@@ -320,12 +320,8 @@ class App extends React.Component {
         ev.target.src = 'img/empty.jpg';
     }
 
-    openSendGiftDialog = (event) => {
-        let tokenId = event.target.name;
-        if (!tokenId) {
-            return;
-        }
-        console.log('openSendGiftDialog', tokenId);
+    openSendGiftDialog = (item) => {
+        let tokenId = item.title;
         this.setState({dialogOpen: true});
         this.setState({tokenId: tokenId});
         this.forceUpdate();
@@ -355,7 +351,7 @@ class App extends React.Component {
         console.log('gasLimit', gasLimit);
         try {
             let tx = await method.send({
-                from: user.account, gasPrice: gasPrice, gas: gasLimit, value:0
+                from: user.account, gasPrice: gasPrice, gas: gasLimit, value: 0
             });
             self.addOpenSnackbar("赠送成功:", tx);
             await self.handleSubmit();
@@ -421,11 +417,9 @@ class App extends React.Component {
         await self.handleSubmit();
     };
 
-    openSellDialog = async (event) => {
+    openSellDialog = async (item) => {
         let self = this;
-        let body = {
-            itemId: event.target.name,
-        }
+        let tokenId = item.title;
         let price = prompt("请输入价格", "1");
         price = parseFloat(price);
         if (!_.isNumber(price) || price <= 0) {
@@ -433,12 +427,10 @@ class App extends React.Component {
             return;
         }
         price = web3.utils.toWei(price.toString(), 'ether');
-        body.uid = this.state.user.account;
-        body.price = price;
 
         // createAuction
-        let method = auctionContract.methods['createAuction'](contractAddress, body.itemId, body.price, body.price, 6000000);
-        console.log(contractAddress, body.itemId, body.price, body.price, 0);
+        let method = auctionContract.methods['createAuction'](contractAddress, tokenId, price, price, 6000000);
+        console.log(contractAddress, tokenId, price, price, 0);
         let gasLimit = await method.estimateGas({from: user.account});
         let gasPrice = await web3.eth.getGasPrice();
         console.log('gasPrice', gasPrice);
@@ -453,24 +445,18 @@ class App extends React.Component {
 
         await self.handleSubmit();
     }
-    handCancelAuction = async (event) => {
+    handCancelAuction = async (item) => {
         let self = this;
-        let body = {
-            itemId: event.target.name,
-        }
+        let tokenId = item.title;
         let actionName = '取消拍卖';
         if (!confirm(`确认取消拍卖该物品吗?`)) {
             return;
         }
         // cancelAuction
-        let method = auctionContract.methods['cancelAuction'](contractAddress, body.itemId);
-        console.log(contractAddress, body.itemId);
-        let gasLimit = await method.estimateGas({from: user.account});
-        let gasPrice = await web3.eth.getGasPrice();
-        console.log('gasPrice', gasPrice);
-        console.log('gasLimit', gasLimit);
+        let method = auctionContract.methods['cancelAuction'](contractAddress, tokenId);
+        console.log(contractAddress, tokenId);
         let tx = await method.send({
-            from: user.account, gasPrice: gasPrice, gas: gasLimit
+            from: user.account
         }).catch(e => {
             self.addOpenSnackbar(`${actionName}失败:`, e);
         });
@@ -479,19 +465,18 @@ class App extends React.Component {
 
         await self.handleSubmit();
     }
-    handBid = async (event) => {
+    handBid = async (item) => {
         let self = this;
-        let itemId = event.target.name;
+        let tokenId = item.title;
         let actionName = '购买';
-        // 获取event.target的currentPrice
-        let price = event.target.getAttribute('currentprice');
+        let price = item.currentPrice;
         if (!confirm(`确认将该物品以${web3.utils.fromWei(price)}${CURRENCY_UNIT}的价格购买吗?`)) {
             return;
         }
 
         // createAuction
-        let method = auctionContract.methods['bid'](contractAddress, itemId);
-        console.log(contractAddress, itemId, price);
+        let method = auctionContract.methods['bid'](contractAddress, tokenId);
+        console.log(contractAddress, tokenId, price);
         let tx = await method.send({
             from: user.account, value: price
         }).catch(e => {
@@ -611,6 +596,7 @@ class App extends React.Component {
                 <Box className='App-body'>
                     <ImageList sx={{width: '80%'}} cols={5}>
                         {this.state.itemData.map((item) => {
+                            let account = this.state.user.account;
                             // 显示格式化时间
                             // let showCreateTime = moment(item.createTime * 1000).format('YYYY-MM-DD HH:mm:ss');
                             if (item.quantity) {
@@ -622,7 +608,7 @@ class App extends React.Component {
                             let ownerOf = '';
                             if (item.ownerOf) {
                                 ownerOf = item.ownerOf.substr(0, 6) + '...' + item.ownerOf.substr(item.ownerOf.length - 4);
-                                if (item.ownerOf === this.state.user.account) {
+                                if (item.ownerOf === account) {
                                     ownerOf = '★我的';
                                 } else if (item.ownerOf === abiJson.auctionContractAddress) {
                                     ownerOf = '$出售中:' + (item.currentPrice / web3.utils.unitMap.ether).toFixed(4) + CURRENCY_UNIT;
@@ -630,9 +616,9 @@ class App extends React.Component {
                                     ownerOf = '@' + ownerOf;
                                 }
                             }
-                            let isSeller = item.currentPrice && (item.seller === this.state.user.account);
-                            let isBuyer = item.currentPrice && !isSeller;
-                            let buttonDisplay = (item.ownerOf && (this.state.user.account === item.ownerOf)) ? 'flex' : 'none';
+                            let isSeller = account && item.currentPrice && (item.seller === account);
+                            let isBuyer = account && item.currentPrice && !isSeller;
+                            let buttonDisplay = (item.ownerOf && (account === item.ownerOf)) ? 'flex' : 'none';
                             return (<Box key={item.title}><ImageListItem>
                                 <img
                                     src={`${item.img}?w=164&h=164&fit=crop&auto=format`}
@@ -649,27 +635,28 @@ class App extends React.Component {
                             </ImageListItem>
                                 <Box sx={{display: buttonDisplay, justifyContent: 'space-around', m: 1}}>
                                     <Button name={item.title} variant="contained" endIcon={<CardGiftCardIcon/>}
-                                            onClick={this.openSendGiftDialog}>
+                                            onClick={() => this.openSendGiftDialog(item)}>
                                         赠送
                                     </Button>
                                     <Button name={item.title} variant="contained"
                                             endIcon={<ShoppingCartIcon/>}
-                                            onClick={this.openSellDialog}
+                                            onClick={() => this.openSellDialog(item)}
                                             color={'secondary'}>
                                         出售
                                     </Button>
                                 </Box>
                                 {isSeller ?
-                                    <Button name={item.title} variant="contained" endIcon={<ShoppingCartCheckoutIcon/>}
+                                    <Button name={item.title} variant="contained"
+                                            endIcon={<ShoppingCartCheckoutIcon/>}
                                             color={'warning'}
-                                            onClick={this.handCancelAuction}>
+                                            onClick={() => this.handCancelAuction(item)}>
                                         取回
                                     </Button> : null}
                                 {isBuyer ?
                                     <Button name={item.title} currentprice={item.currentPrice} variant="contained"
                                             endIcon={<CardGiftCardIcon/>}
                                             color={'success'}
-                                            onClick={this.handBid}>
+                                            onClick={() => this.handBid(item)}>
                                         购买
                                     </Button> : null}
                             </Box>)
@@ -689,9 +676,9 @@ class App extends React.Component {
                                                 onChange={this.handleChange}/></div>
                                 <div>
                                     <Button type="button" variant="contained" disabled={this.state.mintBtnDisabled}
-                                             onClick={this.handleMint}>{mintBtnName}({this.state.totalSupply})</Button>
+                                            onClick={this.handleMint}>{mintBtnName}({this.state.totalSupply})</Button>
                                     <Button type="button" variant="contained" sx={{ml: 1}}
-                                             onClick={this.handleWithdrawBalance}>取出</Button>
+                                            onClick={this.handleWithdrawBalance}>取出</Button>
                                 </div>
                             </FormControl>
                         </form> : null}
