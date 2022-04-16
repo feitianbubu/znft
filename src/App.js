@@ -23,6 +23,10 @@ import abiJson from './config/abi.json';
 import heroClockAuctionJson from './config/HeroClockAuction.json';
 import heroCoreJson from './config/HeroCore.json';
 import SendGiftFormDialog from "./SendGiftFormDialog";
+import Radio from '@mui/material/Radio';
+import RadioGroup from '@mui/material/RadioGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import FormLabel from '@mui/material/FormLabel';
 
 const jsonInterface = heroCoreJson.abi;
 const auctionJsonInterface = heroClockAuctionJson;
@@ -518,6 +522,23 @@ class App extends React.Component {
         await self.handleSubmit();
     }
 
+    handleSortChange = async (event) => {
+        console.log('handleSortChange', event.target.value);
+        let sortByValue = event.target.value;
+        let itemData = this.state.itemData;
+        console.log('itemData:', itemData);
+        let sortByDesc = !this.state.sortByDesc;
+        this.setState({sortByDesc});
+
+        itemData = _.sortBy(itemData, function(item){
+            let value = item?.[sortByValue];
+            value = parseFloat(value);
+            return sortByDesc? value: -value;
+        });
+        this.setState({itemData});
+        this.forceUpdate();
+    }
+
     render() {
 
         const action = (<React.Fragment>
@@ -595,6 +616,15 @@ class App extends React.Component {
                     </Toolbar>
                 </AppBar>
                 <Box className='App-body'>
+
+                    <FormControl sx={{display: 'inline', width: '80%'}}>
+                        <FormLabel sx={{display: 'inline', width: '200px'}}>Sort By: </FormLabel>
+                        <RadioGroup sx={{display: 'inline', width: '300px'}} row onClick={this.handleSortChange}>
+                            <FormControlLabel value="title" control={<Radio/>} label="tokenId"/>
+                            <FormControlLabel value="currentPrice" control={<Radio/>} label="售价"/>
+                            <FormControlLabel value="quality" control={<Radio/>} label="星级"/>
+                        </RadioGroup>
+                    </FormControl>
                     <ImageList sx={{width: '80%'}} cols={5}>
                         {this.state.itemData.map((item) => {
                             let account = this.state.user.account;
