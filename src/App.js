@@ -269,19 +269,34 @@ class App extends React.Component {
         self.setState({itemData});
 
 
-        _.each(indexArray, async function (index, i) {
-            let heroInfo = await heroContract.methods['getHero'](index).call();
-            let ownerOf = await heroContract.methods['ownerOf'](index).call();
+        _.each(indexArray, async function (index) {
+            // 查询耗时
+            let startTime = new Date().getTime();
+            let results = await Promise.all([
+                heroContract.methods['getHero'](index).call(),
+                heroContract.methods['ownerOf'](index).call(),
+                heroContract.methods['tokenURI'](index).call()
+            ]);
+
+            let endTime = new Date().getTime();
+            let time = endTime - startTime;
+            console.log('getHero cost:', time);
+            // let hero = result[0];
+            // let owner = result[1];
+
+            console.log('results', results);
+            let heroInfo = results[0];
+            let ownerOf = results[1];
             console.log('heroInfo', heroInfo);
             let row = _.find(self.state.itemData, function (item) {
                 return item.title === index;
             });
             row.quality = heroInfo[0];
             row.createTime = heroInfo[1];
-            row.img = await heroContract.methods['tokenURI'](index).call();
+            row.img = results[2];
             // if row.img 能转化成数字
-            if (row.img.match(/^[0-9]+$/)) {
-                row.name = _.find(abiJson.heroesJson, (item) => item.bsID == row.img)?.name;
+            if (row.img.match(/^\d+$/)) {
+                row.name = _.find(abiJson.heroesJson, (item) => item['bsID'] == row.img)?.name;
                 row.img = `https://img7.99.com/yhkd/image/data/hero//big-head/${row.img}.jpg`;
             }
 
@@ -326,10 +341,6 @@ class App extends React.Component {
             web3.eth.transactionConfirmationBlocks = parseInt(event.target.value);
             this.addOpenSnackbar('设置成功: 确认区块数=' + event.target.value);
         }
-    }
-
-    addDefaultSrc(ev) {
-        ev.target.src = 'img/empty.jpg';
     }
 
     openSendGiftDialog = (item) => {
