@@ -281,6 +281,7 @@ class App extends React.Component {
             row.img = await heroContract.methods['tokenURI'](index).call();
             // if row.img 能转化成数字
             if (row.img.match(/^[0-9]+$/)) {
+                row.name = _.find(abiJson.heroesJson, (item) => item.bsID == row.img)?.name;
                 row.img = `https://img7.99.com/yhkd/image/data/hero//big-head/${row.img}.jpg`;
             }
 
@@ -411,7 +412,8 @@ class App extends React.Component {
         let totalSupply = await myContract.methods.totalSupply().call();
         this.setState({totalSupply: totalSupply});
 
-        let tokenUri = abiJson.heads[_.random(abiJson.heads.length - 1)]?.toString();
+        let heroesJson = abiJson.heroesJson[_.random(abiJson.heads.length - 1)]?.toString();
+        let tokenUri = heroesJson.bsID;
         let method = myContract.methods['spawnHero'](mintUri, mintToAddress, tokenUri);
         console.log('spawnHero', totalSupply, mintUri, mintToAddress, tokenUri);
         let tx = await method.send({
@@ -662,7 +664,7 @@ class App extends React.Component {
                                 />
                                 <ImageListItemBar
                                     title={`${ownerOf}`}
-                                    subtitle={`${item.title}.${item.star ?? ''}`}
+                                    subtitle={`${item.title} ${item.name ?? ''} ${item.star ?? ''}`}
                                 />
 
                             </ImageListItem>
