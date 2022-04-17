@@ -232,6 +232,11 @@ class App extends React.Component {
                 self.addOpenSnackbar("您没有空投权限");
                 return;
             }
+
+            let totalSupply = await heroContract.methods.totalSupply().call().catch(e => self.addOpenSnackbar("合约总量获取失败", e));
+            totalSupply = parseInt(totalSupply);
+
+            self.setState({totalSupply: `总量: ${totalSupply}`});
         } else if (selectPageId === 'market') {
             // 显示auction所有tokenId
             indexArray = await heroContract.methods.tokenOf(abiJson.auctionContractAddress).call();
@@ -240,24 +245,21 @@ class App extends React.Component {
                 await self.handleClick();
             }
 
-            let totalSupply = await heroContract.methods.totalSupply().call().catch(e => self.addOpenSnackbar("合约总量获取失败", e));
-            totalSupply = parseInt(totalSupply);
+            // let balance = await heroContract.methods['balanceOf'](user.account).call();
+            // balance = parseInt(balance);
+            //
+            // let name = await heroContract.methods['name']().call();
+            // let symbol = await heroContract.methods['symbol']().call();
+            // self.setState({contactBalance: `我的${name}: ${balance} ${symbol}`});
+            //
+            // // 显示我的
+            // for (let i = 0; i < balance; i++) {
+            //     let tokenId = await heroContract.methods['tokenOfOwnerByIndex'](user.account, i).call();
+            //     indexArray.push(tokenId);
+            // }
+            // indexArray = _.sortBy(indexArray);
 
-            self.setState({totalSupply: `总量: ${totalSupply}`});
-
-            let balance = await heroContract.methods['balanceOf'](user.account).call();
-            balance = parseInt(balance);
-
-            let name = await heroContract.methods['name']().call();
-            let symbol = await heroContract.methods['symbol']().call();
-            self.setState({contactBalance: `我的${name}: ${balance} ${symbol}`});
-
-            // 显示我的
-            for (let i = 0; i < balance; i++) {
-                let tokenId = await heroContract.methods['tokenOfOwnerByIndex'](user.account, i).call();
-                indexArray.push(tokenId);
-            }
-            indexArray = _.sortBy(indexArray);
+            indexArray = await heroContract.methods.tokenOf(user.account).call();
         }
         console.log('indexArray', indexArray);
         _.each(indexArray, function (index) {
@@ -292,11 +294,11 @@ class App extends React.Component {
                 row.currentPrice = await auctionContract.methods['getCurrentPrice'](contractAddress, index).call().catch(e => self.addOpenSnackbar("拍卖价格获取失败", e));
             }
             self.forceUpdate();
-            if (i === (indexArray.length - 1)) {
-                contractBtnName = '获取合约';
-                contractBtnNameDisabled = false;
-                self.forceUpdate();
-            }
+            // if (i === (indexArray.length - 1)) {
+            //     contractBtnName = '获取合约';
+            //     contractBtnNameDisabled = false;
+            //     self.forceUpdate();
+            // }
         });
         // if (balance === 0) {
         //     self.setState({itemData});
