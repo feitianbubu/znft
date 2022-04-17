@@ -656,11 +656,10 @@ class App extends React.Component {
                             let buttonDisplay = (item.ownerOf && (account === item.ownerOf)) ? 'flex' : 'none';
                             return (<Box key={item.title}><ImageListItem>
                                 <img
-                                    src={`${item.img}?w=164&h=164&fit=crop&auto=format`}
-                                    srcSet={`${item.img}?w=164&h=164&fit=crop&auto=format&dpr=2 2x`}
+                                    src={item.img?`${item.img}?w=164&h=164&fit=crop&auto=format`:`img/empty.jpg`}
+                                    srcSet={item.img?`${item.img}?w=164&h=164&fit=crop&auto=format&dpr=2 2x`:`img/empty.jpg`}
                                     alt={item.title}
                                     loading="lazy"
-                                    onError={this.addDefaultSrc}
                                 />
                                 <ImageListItemBar
                                     title={`${ownerOf}`}
