@@ -633,7 +633,7 @@ class App extends React.Component {
                 <Box className='App-body'>
 
                     <FormControl sx={{display: 'inline', width: '80%'}}>
-                        <FormLabel sx={{display: 'inline', width: '200px'}}>Sort By: </FormLabel>
+                        <FormLabel sx={{display: 'inline', width: '200px'}}>排序: </FormLabel>
                         <RadioGroup sx={{display: 'inline', width: '300px'}} row onClick={this.handleSortChange}>
                             <FormControlLabel value="title" control={<Radio/>} label="tokenId"/>
                             <FormControlLabel value="currentPrice" control={<Radio/>} label="售价"/>
