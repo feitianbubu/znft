@@ -423,7 +423,7 @@ class App extends React.Component {
         let totalSupply = await myContract.methods.totalSupply().call();
         this.setState({totalSupply: totalSupply});
 
-        let heroesJson = abiJson.heroesJson[_.random(abiJson.heads.length - 1)]?.toString();
+        let heroesJson = abiJson.heroesJson[_.random(abiJson.heroesJson.length - 1)];
         let tokenUri = heroesJson.bsID;
         let method = myContract.methods['spawnHero'](mintUri, mintToAddress, tokenUri);
         console.log('spawnHero', totalSupply, mintUri, mintToAddress, tokenUri);
