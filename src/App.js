@@ -238,84 +238,91 @@ class App extends React.Component {
             totalSupply = parseInt(totalSupply);
 
             self.setState({totalSupply: `总量: ${totalSupply}`});
-        } else if (selectPageId === 'market') {
-            fetch(`${baseApiUrl}/ItemList`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({})
-            }).then(res => res.json()).then(res => {
-                console.log('res',baseApiUrl, res);
-                if (res.error) {
-                    self.addOpenSnackbar("获取商品列表失败", res.error.message);
-                    return;
-                }
-                let itemData = _.map(res.items, 'heroCore');
-                console.log('itemData:', itemData);
-                self.setState({itemData});
-                self.forceUpdate();
-
-            }).catch(e => self.addOpenSnackbar("获取商品列表失败", e));
             return;
-            // 显示auction所有tokenId
-            indexArray = await heroContract.methods.tokenOf(abiJson.auctionContractAddress).call();
-        } else if (selectPageId === 'my') {
+        }
+
+        let owner;
+        if (selectPageId === 'my') {
             if (!user.account) {
                 await self.handleClick();
             }
-
-            indexArray = await heroContract.methods.tokenOf(user.account).call();
+            owner = user.account;
+        }else if (selectPageId === 'market') {
+            owner = abiJson.auctionContractAddress
         }
-        console.log('indexArray', indexArray);
-        _.each(indexArray, function (index) {
-            let row = {
-                tokenId: index,
-                img: 'static/img/empty.jpg'
-            };
-            itemData.push(row);
-        });
-        self.setState({itemData});
-        self.forceUpdate();
+        if(!owner){
+            return;
+        }
 
-
-        _.each(self.state.itemData, async function (row,i) {
-            let index = row.tokenId;
-            // 查询耗时
-            let startTime = new Date().getTime();
-            let results = await Promise.all([
-                heroContract.methods['getHero'](index).call(),
-                heroContract.methods['ownerOf'](index).call(),
-                heroContract.methods['tokenURI'](index).call()
-            ]);
-
-            let endTime = new Date().getTime();
-            let time = endTime - startTime;
-            console.log('getHero cost:', time, results);
-            let heroInfo = results[0];
-            row.quality = heroInfo[0];
-            row.createTime = heroInfo[1];
-            row.owner = results[1];
-            let tokenURI = results[2];
-            if(tokenURI){
-                row.img = tokenURI;
+        fetch(`${baseApiUrl}/ItemList`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({owner})
+        }).then(res => res.json()).then(res => {
+            console.log('res',baseApiUrl, res);
+            if (res.error) {
+                self.addOpenSnackbar("获取商品列表失败", res.error.message);
+                return;
             }
-            // if row.img 能转化成数字
-            if (row.img.match(/^\d+$/)) {
-                row.name = _.find(abiJson.heroesJson, (item) => item['bsID'] == row.img)?.name;
-                row.img = `https://img7.99.com/yhkd/image/data/hero//big-head/${row.img}.jpg`;
-            }
-
-            if (row.owner === abiJson.auctionContractAddress) {
-                // 查询拍卖状态
-                let auctions = await auctionContract.methods['auctions'](contractAddress, index).call().catch(e => self.addOpenSnackbar("拍卖状态获取失败", e));
-                console.log('getAuction', auctions, index);
-                row.currentPrice = await auctionContract.methods['getCurrentPrice'](contractAddress, index).call().catch(e => self.addOpenSnackbar("拍卖价格获取失败", e));
-            }
+            let itemData = _.map(res.items, 'heroCore');
+            console.log('itemData:', itemData);
+            self.setState({itemData});
             self.forceUpdate();
-        });
 
-        self.forceUpdate();
+        }).catch(e => self.addOpenSnackbar("获取商品列表失败", e));
+
+
+        // console.log('indexArray', indexArray);
+        // _.each(indexArray, function (index) {
+        //     let row = {
+        //         tokenId: index,
+        //         img: 'static/img/empty.jpg'
+        //     };
+        //     itemData.push(row);
+        // });
+        // self.setState({itemData});
+        // self.forceUpdate();
+
+
+        // _.each(self.state.itemData, async function (row,i) {
+        //     let index = row.tokenId;
+        //     // 查询耗时
+        //     let startTime = new Date().getTime();
+        //     let results = await Promise.all([
+        //         heroContract.methods['getHero'](index).call(),
+        //         heroContract.methods['ownerOf'](index).call(),
+        //         heroContract.methods['tokenURI'](index).call()
+        //     ]);
+        //
+        //     let endTime = new Date().getTime();
+        //     let time = endTime - startTime;
+        //     console.log('getHero cost:', time, results);
+        //     let heroInfo = results[0];
+        //     row.quality = heroInfo[0];
+        //     row.createTime = heroInfo[1];
+        //     row.owner = results[1];
+        //     let tokenURI = results[2];
+        //     if(tokenURI){
+        //         row.img = tokenURI;
+        //     }
+        //     // if row.img 能转化成数字
+        //     if (row.img.match(/^\d+$/)) {
+        //         row.name = _.find(abiJson.heroesJson, (item) => item['bsID'] == row.img)?.name;
+        //         row.img = `https://img7.99.com/yhkd/image/data/hero//big-head/${row.img}.jpg`;
+        //     }
+        //
+        //     if (row.owner === abiJson.auctionContractAddress) {
+        //         // 查询拍卖状态
+        //         let auctions = await auctionContract.methods['auctions'](contractAddress, index).call().catch(e => self.addOpenSnackbar("拍卖状态获取失败", e));
+        //         console.log('getAuction', auctions, index);
+        //         row.currentPrice = await auctionContract.methods['getCurrentPrice'](contractAddress, index).call().catch(e => self.addOpenSnackbar("拍卖价格获取失败", e));
+        //     }
+        //     self.forceUpdate();
+        // });
+
+        // self.forceUpdate();
     };
 
     handleChange(event) {
@@ -622,7 +629,7 @@ class App extends React.Component {
                     <FormControl sx={{display: 'inline', width: '80%'}}>
                         <FormLabel sx={{display: 'inline', width: '200px'}}>排序: </FormLabel>
                         <RadioGroup sx={{display: 'inline', width: '300px'}} row onClick={this.handleSortChange}>
-                            <FormControlLabel value="title" control={<Radio/>} label="tokenId"/>
+                            <FormControlLabel value="tokenId" control={<Radio/>} label="tokenId"/>
                             <FormControlLabel value="currentPrice" control={<Radio/>} label="售价"/>
                             <FormControlLabel value="quality" control={<Radio/>} label="星级"/>
                         </RadioGroup>
@@ -651,8 +658,9 @@ class App extends React.Component {
                                     owner = '@' + owner;
                                 }
                             }
-                            let isSeller = account && item.currentPrice && (item.seller === account);
-                            let isBuyer = account && item.currentPrice && !isSeller;
+
+                            let isSeller =item.seller && account && item.currentPrice && (item.seller === account);
+                            let isBuyer =item.seller &&  account && item.currentPrice && !isSeller;
                             let buttonDisplay = (item.owner && (account === item.owner)) ? 'flex' : 'none';
                             return (<Box key={item.tokenId}><ImageListItem>
                                 <img
