@@ -218,8 +218,8 @@ class App extends React.Component {
 
         let itemData = [];
         self.setState({itemData});
-        self.forceUpdate();
         let indexArray = [];
+        self.forceUpdate();
         self.setState({whitelistedSpawner: false});
         if (selectPageId === 'mint') {
             if (!user.account) {
@@ -263,13 +263,18 @@ class App extends React.Component {
         }
         console.log('indexArray', indexArray);
         _.each(indexArray, function (index) {
-            let row = {title: index};
+            let row = {
+                title: index,
+                img: 'static/img/empty.jpg'
+            };
             itemData.push(row);
         });
         self.setState({itemData});
+        self.forceUpdate();
 
 
-        _.each(indexArray, async function (index) {
+        _.each(self.state.itemData, async function (row,i) {
+            let index = row.title;
             // 查询耗时
             let startTime = new Date().getTime();
             let results = await Promise.all([
@@ -280,27 +285,20 @@ class App extends React.Component {
 
             let endTime = new Date().getTime();
             let time = endTime - startTime;
-            console.log('getHero cost:', time);
-            // let hero = result[0];
-            // let owner = result[1];
-
-            console.log('results', results);
+            console.log('getHero cost:', time, results);
             let heroInfo = results[0];
-            let ownerOf = results[1];
-            console.log('heroInfo', heroInfo);
-            let row = _.find(self.state.itemData, function (item) {
-                return item.title === index;
-            });
             row.quality = heroInfo[0];
             row.createTime = heroInfo[1];
-            row.img = results[2];
+            row.ownerOf = results[1];
+            let tokenURI = results[2];
+            if(tokenURI){
+                row.img = tokenURI;
+            }
             // if row.img 能转化成数字
             if (row.img.match(/^\d+$/)) {
                 row.name = _.find(abiJson.heroesJson, (item) => item['bsID'] == row.img)?.name;
                 row.img = `https://img7.99.com/yhkd/image/data/hero//big-head/${row.img}.jpg`;
             }
-
-            row.ownerOf = ownerOf;
 
             if (row.ownerOf === abiJson.auctionContractAddress) {
                 // 查询拍卖状态
@@ -310,23 +308,7 @@ class App extends React.Component {
                 row.currentPrice = await auctionContract.methods['getCurrentPrice'](contractAddress, index).call().catch(e => self.addOpenSnackbar("拍卖价格获取失败", e));
             }
             self.forceUpdate();
-            // if (i === (indexArray.length - 1)) {
-            //     contractBtnName = '获取合约';
-            //     contractBtnNameDisabled = false;
-            //     self.forceUpdate();
-            // }
         });
-        // if (balance === 0) {
-        //     self.setState({itemData});
-        //     contractBtnName = '获取合约'
-        //     contractBtnNameDisabled = false;
-        //     self.forceUpdate();
-        // }
-
-        // 获取合约创建者
-        // let contractOwner = await myContract.methods.owner().call().catch(e => self.addOpenSnackbar("合约创建者获取失败", e));
-        // self.setState({contractOwner});
-        // console.log('contractOwner', contractOwner);
 
         self.forceUpdate();
     };
@@ -439,7 +421,7 @@ class App extends React.Component {
     openSellDialog = async (item) => {
         let self = this;
         let tokenId = item.title;
-        let defaultPrice = (Math.min(parseFloat(item.quality), 1)/100).toString();
+        let defaultPrice = (Math.min(parseFloat(item.quality), 1) / 100).toString();
         let price = prompt("请输入价格", defaultPrice);
         price = parseFloat(price);
         if (!_.isNumber(price) || price <= 0) {
@@ -545,10 +527,10 @@ class App extends React.Component {
         let sortByDesc = !this.state.sortByDesc;
         this.setState({sortByDesc});
 
-        itemData = _.sortBy(itemData, function(item){
+        itemData = _.sortBy(itemData, function (item) {
             let value = item?.[sortByValue];
             value = parseFloat(value);
-            return sortByDesc? value: -value;
+            return sortByDesc ? value : -value;
         });
         this.setState({itemData});
         this.forceUpdate();
@@ -667,8 +649,8 @@ class App extends React.Component {
                             let buttonDisplay = (item.ownerOf && (account === item.ownerOf)) ? 'flex' : 'none';
                             return (<Box key={item.title}><ImageListItem>
                                 <img
-                                    src={item.img?`${item.img}?w=164&h=164&fit=crop&auto=format`:`img/empty.jpg`}
-                                    srcSet={item.img?`${item.img}?w=164&h=164&fit=crop&auto=format&dpr=2 2x`:`img/empty.jpg`}
+                                    src={`${item.img}?w=164&h=164&fit=crop&auto=format`}
+                                    srcSet={`${item.img}?w=164&h=164&fit=crop&auto=format&dpr=2 2x`}
                                     alt={item.title}
                                     loading="lazy"
                                 />
