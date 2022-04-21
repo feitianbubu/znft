@@ -28,6 +28,7 @@ import RadioGroup from '@mui/material/RadioGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormLabel from '@mui/material/FormLabel';
 
+const baseApiUrl = abiJson.baseApiUrl;
 const jsonInterface = heroCoreJson.abi;
 const auctionJsonInterface = heroClockAuctionJson;
 const contractAddress = abiJson.contractAddress;
@@ -238,6 +239,25 @@ class App extends React.Component {
 
             self.setState({totalSupply: `总量: ${totalSupply}`});
         } else if (selectPageId === 'market') {
+            fetch(`${baseApiUrl}/ItemList`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({})
+            }).then(res => res.json()).then(res => {
+                console.log('res',baseApiUrl, res);
+                if (res.error) {
+                    self.addOpenSnackbar("获取商品列表失败", res.error.message);
+                    return;
+                }
+                let itemData = _.map(res.items, 'heroCore');
+                console.log('itemData:', itemData);
+                self.setState({itemData});
+                self.forceUpdate();
+
+            }).catch(e => self.addOpenSnackbar("获取商品列表失败", e));
+            return;
             // 显示auction所有tokenId
             indexArray = await heroContract.methods.tokenOf(abiJson.auctionContractAddress).call();
         } else if (selectPageId === 'my') {
@@ -245,26 +265,12 @@ class App extends React.Component {
                 await self.handleClick();
             }
 
-            // let balance = await heroContract.methods['balanceOf'](user.account).call();
-            // balance = parseInt(balance);
-            //
-            // let name = await heroContract.methods['name']().call();
-            // let symbol = await heroContract.methods['symbol']().call();
-            // self.setState({contactBalance: `我的${name}: ${balance} ${symbol}`});
-            //
-            // // 显示我的
-            // for (let i = 0; i < balance; i++) {
-            //     let tokenId = await heroContract.methods['tokenOfOwnerByIndex'](user.account, i).call();
-            //     indexArray.push(tokenId);
-            // }
-            // indexArray = _.sortBy(indexArray);
-
             indexArray = await heroContract.methods.tokenOf(user.account).call();
         }
         console.log('indexArray', indexArray);
         _.each(indexArray, function (index) {
             let row = {
-                title: index,
+                tokenId: index,
                 img: 'static/img/empty.jpg'
             };
             itemData.push(row);
@@ -274,7 +280,7 @@ class App extends React.Component {
 
 
         _.each(self.state.itemData, async function (row,i) {
-            let index = row.title;
+            let index = row.tokenId;
             // 查询耗时
             let startTime = new Date().getTime();
             let results = await Promise.all([
@@ -289,7 +295,7 @@ class App extends React.Component {
             let heroInfo = results[0];
             row.quality = heroInfo[0];
             row.createTime = heroInfo[1];
-            row.ownerOf = results[1];
+            row.owner = results[1];
             let tokenURI = results[2];
             if(tokenURI){
                 row.img = tokenURI;
@@ -300,11 +306,10 @@ class App extends React.Component {
                 row.img = `https://img7.99.com/yhkd/image/data/hero//big-head/${row.img}.jpg`;
             }
 
-            if (row.ownerOf === abiJson.auctionContractAddress) {
+            if (row.owner === abiJson.auctionContractAddress) {
                 // 查询拍卖状态
                 let auctions = await auctionContract.methods['auctions'](contractAddress, index).call().catch(e => self.addOpenSnackbar("拍卖状态获取失败", e));
                 console.log('getAuction', auctions, index);
-                row.seller = auctions.seller;
                 row.currentPrice = await auctionContract.methods['getCurrentPrice'](contractAddress, index).call().catch(e => self.addOpenSnackbar("拍卖价格获取失败", e));
             }
             self.forceUpdate();
@@ -326,7 +331,7 @@ class App extends React.Component {
     }
 
     openSendGiftDialog = (item) => {
-        let tokenId = item.title;
+        let tokenId = item.tokenId;
         this.setState({dialogOpen: true});
         this.setState({tokenId: tokenId});
         this.forceUpdate();
@@ -420,7 +425,7 @@ class App extends React.Component {
 
     openSellDialog = async (item) => {
         let self = this;
-        let tokenId = item.title;
+        let tokenId = item.tokenId;
         let defaultPrice = (Math.min(parseFloat(item.quality), 1) / 100).toString();
         let price = prompt("请输入价格", defaultPrice);
         price = parseFloat(price);
@@ -449,7 +454,7 @@ class App extends React.Component {
     }
     handCancelAuction = async (item) => {
         let self = this;
-        let tokenId = item.title;
+        let tokenId = item.tokenId;
         let actionName = '取消拍卖';
         if (!confirm(`确认取消拍卖该物品吗?`)) {
             return;
@@ -469,7 +474,7 @@ class App extends React.Component {
     }
     handBid = async (item) => {
         let self = this;
-        let tokenId = item.title;
+        let tokenId = item.tokenId;
         let actionName = '购买';
         let price = item.currentPrice;
         if (!confirm(`确认将该物品以${web3.utils.fromWei(price)}${CURRENCY_UNIT}的价格购买吗?`)) {
@@ -625,47 +630,49 @@ class App extends React.Component {
                     <ImageList sx={{width: '80%'}} cols={5}>
                         {this.state.itemData.map((item) => {
                             let account = this.state.user.account;
-                            // 显示格式化时间
-                            // let showCreateTime = moment(item.createTime * 1000).format('YYYY-MM-DD HH:mm:ss');
                             if (item.quality) {
                                 // quality转化为五星个数
                                 item.star = _.times(Math.max(Math.min(item.quality, 5), 1), _.constant('★')).join('');
                             }
-                            //
+                            item.img = item.img || 'static/img/empty.jpg';
+                            if (item.tokenUri?.match(/^\d+$/)) {
+                                item.name = _.find(abiJson.heroesJson, (heroJson) => heroJson['bsID'] == item.tokenUri)?.name;
+                                item.img = `https://img7.99.com/yhkd/image/data/hero//big-head/${item.tokenUri}.jpg`;
+                            }
                             // 显示格式化地址
-                            let ownerOf = '';
-                            if (item.ownerOf) {
-                                ownerOf = item.ownerOf.substr(0, 6) + '...' + item.ownerOf.substr(item.ownerOf.length - 4);
-                                if (item.ownerOf === account) {
-                                    ownerOf = '★我的';
-                                } else if (item.ownerOf === abiJson.auctionContractAddress) {
-                                    ownerOf = '$出售中:' + (item.currentPrice / web3.utils.unitMap.ether).toFixed(4) + CURRENCY_UNIT;
+                            let owner = '';
+                            if (item.owner) {
+                                owner = item.owner.substr(0, 6) + '...' + item.owner.substr(item.owner.length - 4);
+                                if (item.owner === account) {
+                                    owner = '★我的';
+                                } else if (item.owner === abiJson.auctionContractAddress) {
+                                    owner = '$出售中:' + (item.currentPrice / web3.utils.unitMap.ether).toFixed(4) + CURRENCY_UNIT;
                                 } else {
-                                    ownerOf = '@' + ownerOf;
+                                    owner = '@' + owner;
                                 }
                             }
                             let isSeller = account && item.currentPrice && (item.seller === account);
                             let isBuyer = account && item.currentPrice && !isSeller;
-                            let buttonDisplay = (item.ownerOf && (account === item.ownerOf)) ? 'flex' : 'none';
-                            return (<Box key={item.title}><ImageListItem>
+                            let buttonDisplay = (item.owner && (account === item.owner)) ? 'flex' : 'none';
+                            return (<Box key={item.tokenId}><ImageListItem>
                                 <img
                                     src={`${item.img}?w=164&h=164&fit=crop&auto=format`}
                                     srcSet={`${item.img}?w=164&h=164&fit=crop&auto=format&dpr=2 2x`}
-                                    alt={item.title}
+                                    alt={item.tokenId}
                                     loading="lazy"
                                 />
                                 <ImageListItemBar
-                                    title={`${ownerOf}`}
-                                    subtitle={`${item.title} ${item.name ?? ''} ${item.star ?? ''}`}
+                                    title={`${owner}`}
+                                    subtitle={`${item.tokenId} ${item.name ?? ''} ${item.star ?? ''}`}
                                 />
 
                             </ImageListItem>
                                 <Box sx={{display: buttonDisplay, justifyContent: 'space-around', m: 1}}>
-                                    <Button name={item.title} variant="contained" endIcon={<CardGiftCardIcon/>}
+                                    <Button name={item.tokenId} variant="contained" endIcon={<CardGiftCardIcon/>}
                                             onClick={() => this.openSendGiftDialog(item)}>
                                         赠送
                                     </Button>
-                                    <Button name={item.title} variant="contained"
+                                    <Button name={item.tokenId} variant="contained"
                                             endIcon={<ShoppingCartIcon/>}
                                             onClick={() => this.openSellDialog(item)}
                                             color={'secondary'}>
@@ -673,14 +680,14 @@ class App extends React.Component {
                                     </Button>
                                 </Box>
                                 {isSeller ?
-                                    <Button name={item.title} variant="contained"
+                                    <Button name={item.tokenId} variant="contained"
                                             endIcon={<ShoppingCartCheckoutIcon/>}
                                             color={'warning'}
                                             onClick={() => this.handCancelAuction(item)}>
                                         取回
                                     </Button> : null}
                                 {isBuyer ?
-                                    <Button name={item.title} currentprice={item.currentPrice} variant="contained"
+                                    <Button name={item.tokenId} currentprice={item.currentPrice} variant="contained"
                                             endIcon={<CardGiftCardIcon/>}
                                             color={'success'}
                                             onClick={() => this.handBid(item)}>
