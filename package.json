@@ -6,6 +6,7 @@
   "scripts": {
     "start": "react-app-rewired start",
     "build": "react-app-rewired build",
+    "release": "set BUILD_PATH=./../../go/lobbyplatfrom/bin/proxy/build&&set PUBLIC_URL=web&&react-app-rewired build",
     "test": "react-app-rewired test",
     "eject": "react-scripts eject"
   },
