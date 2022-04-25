@@ -28,7 +28,13 @@ import RadioGroup from '@mui/material/RadioGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormLabel from '@mui/material/FormLabel';
 
-const baseApiUrl = abiJson.baseApiUrl;
+let baseApiUrl = abiJson.baseApiUrl;
+const location = document.location.href;
+// 本地测试url切换
+if(location.indexOf('localhost:3000') > -1) {
+  baseApiUrl = 'http://localhost:3080'+abiJson.baseApiUrl;
+}
+console.log(location);
 const jsonInterface = heroCoreJson.abi;
 const auctionJsonInterface = heroClockAuctionJson;
 const contractAddress = abiJson.contractAddress;
@@ -219,7 +225,6 @@ class App extends React.Component {
 
         let itemData = [];
         self.setState({itemData});
-        let indexArray = [];
         self.forceUpdate();
         self.setState({whitelistedSpawner: false});
         if (selectPageId === 'mint') {
@@ -269,60 +274,11 @@ class App extends React.Component {
             let itemData = _.map(res.items, 'heroCore');
             console.log('itemData:', itemData);
             self.setState({itemData});
-            self.forceUpdate();
+            // self.forceUpdate();
+            self.setState({sortByDesc:false});
+            self.handleSortChange();
 
         }).catch(e => self.addOpenSnackbar("获取商品列表失败", e));
-
-
-        // console.log('indexArray', indexArray);
-        // _.each(indexArray, function (index) {
-        //     let row = {
-        //         tokenId: index,
-        //         img: 'static/img/empty.jpg'
-        //     };
-        //     itemData.push(row);
-        // });
-        // self.setState({itemData});
-        // self.forceUpdate();
-
-
-        // _.each(self.state.itemData, async function (row,i) {
-        //     let index = row.tokenId;
-        //     // 查询耗时
-        //     let startTime = new Date().getTime();
-        //     let results = await Promise.all([
-        //         heroContract.methods['getHero'](index).call(),
-        //         heroContract.methods['ownerOf'](index).call(),
-        //         heroContract.methods['tokenURI'](index).call()
-        //     ]);
-        //
-        //     let endTime = new Date().getTime();
-        //     let time = endTime - startTime;
-        //     console.log('getHero cost:', time, results);
-        //     let heroInfo = results[0];
-        //     row.quality = heroInfo[0];
-        //     row.createTime = heroInfo[1];
-        //     row.owner = results[1];
-        //     let tokenURI = results[2];
-        //     if(tokenURI){
-        //         row.img = tokenURI;
-        //     }
-        //     // if row.img 能转化成数字
-        //     if (row.img.match(/^\d+$/)) {
-        //         row.name = _.find(abiJson.heroesJson, (item) => item['bsID'] == row.img)?.name;
-        //         row.img = `https://img7.99.com/yhkd/image/data/hero//big-head/${row.img}.jpg`;
-        //     }
-        //
-        //     if (row.owner === abiJson.auctionContractAddress) {
-        //         // 查询拍卖状态
-        //         let auctions = await auctionContract.methods['auctions'](contractAddress, index).call().catch(e => self.addOpenSnackbar("拍卖状态获取失败", e));
-        //         console.log('getAuction', auctions, index);
-        //         row.currentPrice = await auctionContract.methods['getCurrentPrice'](contractAddress, index).call().catch(e => self.addOpenSnackbar("拍卖价格获取失败", e));
-        //     }
-        //     self.forceUpdate();
-        // });
-
-        // self.forceUpdate();
     };
 
     handleChange(event) {
@@ -531,14 +487,13 @@ class App extends React.Component {
         await self.handleSubmit();
     }
 
-    handleSortChange = async (event) => {
-        console.log('handleSortChange', event.target.value);
-        let sortByValue = event.target.value;
-        let itemData = this.state.itemData;
-        console.log('itemData:', itemData);
+    handleSortChange = async () => {
+        let sortByValue = document.querySelector("input[name='sort']:checked")?.value || 'tokenId';
         let sortByDesc = !this.state.sortByDesc;
         this.setState({sortByDesc});
 
+        let itemData = this.state.itemData;
+        console.log('itemData:', itemData);
         itemData = _.sortBy(itemData, function (item) {
             let value = item?.[sortByValue];
             value = parseFloat(value);
@@ -628,10 +583,10 @@ class App extends React.Component {
 
                     <FormControl sx={{display: 'inline', width: '80%'}}>
                         <FormLabel sx={{display: 'inline', width: '200px'}}>排序: </FormLabel>
-                        <RadioGroup sx={{display: 'inline', width: '300px'}} row onClick={this.handleSortChange}>
-                            <FormControlLabel value="tokenId" control={<Radio/>} label="tokenId"/>
-                            <FormControlLabel value="currentPrice" control={<Radio/>} label="售价"/>
-                            <FormControlLabel value="quality" control={<Radio/>} label="星级"/>
+                        <RadioGroup id="sortRadioGroup" sx={{display: 'inline', width: '300px'}} row onClick={this.handleSortChange} defaultValue="tokenId">
+                            <FormControlLabel name="sort" value="tokenId" control={<Radio/>} label="tokenId"/>
+                            <FormControlLabel name="sort" value="currentPrice" control={<Radio/>} label="售价"/>
+                            <FormControlLabel name="sort" value="quality" control={<Radio/>} label="星级"/>
                         </RadioGroup>
                     </FormControl>
                     <ImageList sx={{width: '80%'}} cols={5}>
