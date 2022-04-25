@@ -17,4 +17,6 @@ let tokenIds = async function(){
     console.log(res, myres);
 }
 
-tokenIds();
+// tokenIds();
+
+console.log(web3.utils.fromWei('500000', 'ether'));

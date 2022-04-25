@@ -27,6 +27,9 @@ import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormLabel from '@mui/material/FormLabel';
+import OutboxIcon from '@mui/icons-material/Outbox';
+
+import mintBoxAbi from './config/mintBox.json';
 
 let baseApiUrl = abiJson.baseApiUrl;
 const location = document.location.href;
@@ -36,7 +39,7 @@ if(location.indexOf('localhost:3000') > -1) {
 }
 console.log(location);
 const jsonInterface = heroCoreJson.abi;
-const auctionJsonInterface = heroClockAuctionJson;
+const auctionJsonInterface = heroClockAuctionJson;;
 const contractAddress = abiJson.contractAddress;
 
 const AppName = 'Z-NFT';
@@ -53,6 +56,7 @@ let selectPageId = 'market';
 
 let auctionContract;
 let heroContract;
+let mintBoxContract;
 
 const theme = createTheme();
 const initState = {
@@ -81,6 +85,10 @@ const initState = {
     selectPageId: selectPageId,
 };
 
+let isMintBox = function(item){
+  return item.creator === abiJson.mintBoxContractAddress;
+}
+
 class App extends React.Component {
     constructor(props) {
         super(props);
@@ -101,6 +109,7 @@ class App extends React.Component {
         web3 = new Web3(Web3.givenProvider);
         auctionContract = new web3.eth.Contract(auctionJsonInterface, abiJson.auctionContractAddress);
         heroContract = new web3.eth.Contract(jsonInterface, contractAddress);
+        mintBoxContract = new web3.eth.Contract(mintBoxAbi, abiJson.mintBoxContractAddress);
         await this.handleSubmit();
     }
 
@@ -385,6 +394,23 @@ class App extends React.Component {
         self.setState({SnackbarOpen: true});
         await self.handleSubmit();
     };
+    openMintBoxDialog = async (item) => {
+        let self = this;
+        let tokenId = item.tokenId;
+        let method = mintBoxContract.methods['usageBox'](tokenId);
+        try {
+            let tx = await method.send({
+                from: user.account
+            })
+            console.log('tx', tx);
+            self.addOpenSnackbar(`打开成功`);
+            await self.handleSubmit();
+        } catch (e) {
+            self.addOpenSnackbar(`打开失败:`, e);
+            return;
+        }
+
+    };
 
     openSellDialog = async (item) => {
         let self = this;
@@ -444,8 +470,13 @@ class App extends React.Component {
             return;
         }
 
-        // createAuction
-        let method = auctionContract.methods['bid'](contractAddress, tokenId);
+        let method;
+        if(isMintBox(item)){
+            method= mintBoxContract.methods['mintBox']();
+        }else{
+            // createAuction
+            method = auctionContract.methods['bid'](contractAddress, tokenId);
+        }
         console.log(contractAddress, tokenId, price);
         let tx = await method.send({
             from: user.account, value: price
@@ -599,7 +630,11 @@ class App extends React.Component {
                             item.img = item.img || 'static/img/empty.jpg';
                             if (item.tokenUri?.match(/^\d+$/)) {
                                 item.name = _.find(abiJson.heroesJson, (heroJson) => heroJson['bsID'] == item.tokenUri)?.name;
-                                item.img = `https://img7.99.com/yhkd/image/data/hero//big-head/${item.tokenUri}.jpg`;
+                                if(isMintBox(item)){
+                                    item.img = 'static/img/mintBox.jpg';
+                                }else{
+                                    item.img = `https://img7.99.com/yhkd/image/data/hero//big-head/${item.tokenUri}.jpg`;
+                                }
                             }
                             // 显示格式化地址
                             let owner = '';
@@ -631,26 +666,34 @@ class App extends React.Component {
 
                             </ImageListItem>
                                 <Box sx={{display: buttonDisplay, justifyContent: 'space-around', m: 1}}>
-                                    <Button name={item.tokenId} variant="contained" endIcon={<CardGiftCardIcon/>}
-                                            onClick={() => this.openSendGiftDialog(item)}>
-                                        赠送
-                                    </Button>
-                                    <Button name={item.tokenId} variant="contained"
-                                            endIcon={<ShoppingCartIcon/>}
-                                            onClick={() => this.openSellDialog(item)}
-                                            color={'secondary'}>
-                                        出售
-                                    </Button>
+                                    {isMintBox(item) ?
+                                        <div><Button name={item.tokenId} variant="outlined" endIcon={<CardGiftCardIcon/>}
+                                                onClick={() => this.openMintBoxDialog(item)}>
+                                            打开
+                                        </Button></div> :
+                                        <div><Button name={item.tokenId} variant="outlined"
+                                                     endIcon={<OutboxIcon/>}
+                                                     onClick={() => this.openSendGiftDialog(item)}>
+                                            赠送
+                                        </Button>
+                                            <Button name={item.tokenId} variant="outlined"
+                                                    sx={{marginLeft: 1}}
+                                                    endIcon={<ShoppingCartIcon/>}
+                                                    onClick={() => this.openSellDialog(item)}
+                                                    color={'secondary'}>
+                                                出售
+                                            </Button></div>
+                                    }
                                 </Box>
                                 {isSeller ?
-                                    <Button name={item.tokenId} variant="contained"
+                                    <Button name={item.tokenId} variant="outlined"
                                             endIcon={<ShoppingCartCheckoutIcon/>}
                                             color={'warning'}
                                             onClick={() => this.handCancelAuction(item)}>
                                         取回
                                     </Button> : null}
                                 {isBuyer ?
-                                    <Button name={item.tokenId} currentprice={item.currentPrice} variant="contained"
+                                    <Button name={item.tokenId} currentprice={item.currentPrice} variant="outlined"
                                             endIcon={<CardGiftCardIcon/>}
                                             color={'success'}
                                             onClick={() => this.handBid(item)}>
@@ -672,9 +715,9 @@ class App extends React.Component {
                                                 sx={{m: 1, width: '25ch'}}
                                                 onChange={this.handleChange}/></div>
                                 <div>
-                                    <Button type="button" variant="contained" disabled={this.state.mintBtnDisabled}
+                                    <Button type="button" variant="outlined" disabled={this.state.mintBtnDisabled}
                                             onClick={this.handleMint}>{mintBtnName}({this.state.totalSupply})</Button>
-                                    <Button type="button" variant="contained" sx={{ml: 1}}
+                                    <Button type="button" variant="outlined" sx={{ml: 1}}
                                             onClick={this.handleWithdrawBalance}>取出</Button>
                                 </div>
                             </FormControl>
