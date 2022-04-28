@@ -37,10 +37,15 @@ const location = document.location.href;
 if(location.indexOf('localhost:3000') > -1) {
   baseApiUrl = 'http://localhost:3080'+abiJson.baseApiUrl;
 }
-console.log(location);
+
+let configData = {};
 const jsonInterface = heroCoreJson.abi;
 const auctionJsonInterface = heroClockAuctionJson;
-const contractAddress = abiJson.contractAddress;
+let contractAddress
+let getConfig = () => {
+    let chainID = user.chainID;
+    return configData?.Chain?.[chainID] || {};
+};
 
 const AppName = 'Z-NFT';
 // 定义货币单位
@@ -62,8 +67,6 @@ const theme = createTheme();
 const initState = {
     value: '',
     rows: [],
-    contractAddress: '',
-    transactionConfirmationBlocks: '',
     itemData: [],
     user: {},
     snackbarOpen: false,
@@ -86,7 +89,7 @@ const initState = {
 };
 
 let isMintBox = function(item){
-  return item.creator === abiJson.mintBoxContractAddress;
+  return item.creator === getConfig().MintBoxContractAddress;
 }
 
 class App extends React.Component {
@@ -106,10 +109,29 @@ class App extends React.Component {
 
     async componentDidMount() {
         console.log('componentDidMount');
-        web3 = new Web3(Web3.givenProvider);
-        auctionContract = new web3.eth.Contract(auctionJsonInterface, abiJson.auctionContractAddress);
-        heroContract = new web3.eth.Contract(jsonInterface, contractAddress);
-        mintBoxContract = new web3.eth.Contract(mintBoxAbi, abiJson.mintBoxContractAddress);
+        web3 = new Web3(Web3.givenProvider)
+
+        fetch(baseApiUrl + '/Config', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({})
+        }).then(res => {
+            console.log('res', res);
+            let json = res.json();
+            console.log('json', json);
+            return json;
+        }).then(res => {
+            if (res.code) {
+                console.error('获取配置失败', res);
+                return;
+            }
+            console.log('获取配置成功', res);
+            configData = JSON.parse(res.data);
+        }).catch(err => {
+            console.error('获取配置失败', err);
+        });
         await this.handleSubmit();
     }
 
@@ -202,16 +224,20 @@ class App extends React.Component {
             user.chainID = user.chainID?.toString();
 
             this.setState({connectBtnDisabled: false});
-            this.setState({contractAddress});
             this.setState({user: user});
-            let transactionConfirmationBlocks = web3.eth.transactionConfirmationBlocks;
-            this.setState({transactionConfirmationBlocks});
+
+            contractAddress = getConfig().HeroContractAddress;;
+            auctionContract = new web3.eth.Contract(auctionJsonInterface, getConfig().AuctionContractAddress);
+            heroContract = new web3.eth.Contract(jsonInterface, contractAddress);
+            mintBoxContract = new web3.eth.Contract(mintBoxAbi, getConfig().MintBoxContractAddress);
+
         } catch (e) {
             this.disconnectWallet();
             this.addOpenSnackbar('metamask连接失败', e);
             return;
         }
 
+        console.log('configData',configData, user.chainID, getConfig());
         // 获取角色信息
         // try {
         //     let userSync = await this.getUserInfo(user.account);
@@ -263,7 +289,7 @@ class App extends React.Component {
         if (selectPageId === 'my') {
             owner = user.account;
         }else if (selectPageId === 'market') {
-            owner = abiJson.auctionContractAddress
+            owner = getConfig().AuctionContractAddress
         }
         if(!owner){
             return;
@@ -291,7 +317,7 @@ class App extends React.Component {
                 self.addOpenSnackbar("获取商品列表失败", res.error.message);
                 return;
             }
-            let itemData = res.items;
+            let itemData = res.items || [];
             console.log('itemData:', itemData);
             self.setState({itemData});
             // self.forceUpdate();
@@ -309,11 +335,6 @@ class App extends React.Component {
         let state = {};
         state[event.target.id] = event.target.value;
         this.setState(state);
-
-        if (event.target.id === 'transactionConfirmationBlocks') {
-            web3.eth.transactionConfirmationBlocks = parseInt(event.target.value);
-            this.addOpenSnackbar('设置成功: 确认区块数=' + event.target.value);
-        }
     }
 
     openSendGiftDialog = (item) => {
@@ -527,7 +548,7 @@ class App extends React.Component {
     handleWithdrawBalance = async () => {
         let self = this;
         // 余额
-        let balance = await web3.eth.getBalance(abiJson.auctionContractAddress);
+        let balance = await web3.eth.getBalance(getConfig().AuctionContractAddress);
         console.log('balance', balance);
         let showBalance = web3.utils.fromWei(balance, 'ether');
         showBalance = parseFloat(showBalance).toFixed(4);
@@ -650,7 +671,7 @@ class App extends React.Component {
                         </RadioGroup>
                     </FormControl>
                     <ImageList sx={{width: '80%'}} cols={5}>
-                        {this.state.itemData?.map((item) => {
+                        {this.state.itemData?.map((item, i) => {
                             let account = this.state.user.account;
                             if (item.quality) {
                                 // quality转化为五星个数
@@ -671,7 +692,7 @@ class App extends React.Component {
                                 owner = item.owner.substr(0, 6) + '...' + item.owner.substr(item.owner.length - 4);
                                 if (item.owner === account) {
                                     owner = '★我的';
-                                } else if (item.owner === abiJson.auctionContractAddress) {
+                                } else if (item.owner === getConfig().AuctionContractAddress) {
                                     owner = '$出售中:' + (item.currentPrice / web3.utils.unitMap.ether).toFixed(4) + CURRENCY_UNIT;
                                 } else {
                                     owner = '@' + owner;
@@ -681,7 +702,7 @@ class App extends React.Component {
                             let isSeller =item.seller && account && item.currentPrice && (item.seller === account);
                             let isBuyer =item.seller &&  account && item.currentPrice && !isSeller;
                             let buttonDisplay = (item.owner && (account === item.owner)) ? 'flex' : 'none';
-                            return (<Box key={item.tokenId}><ImageListItem>
+                            return (<Box key={item.tokenId+'-'+i}><ImageListItem>
                                 <img
                                     src={`${item.img}?w=164&h=164&fit=crop&auto=format`}
                                     srcSet={`${item.img}?w=164&h=164&fit=crop&auto=format&dpr=2 2x`}
