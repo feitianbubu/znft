@@ -692,8 +692,8 @@ class App extends React.Component {
                                 owner = item.owner.substr(0, 6) + '...' + item.owner.substr(item.owner.length - 4);
                                 if (item.owner === account) {
                                     owner = '★我的';
-                                } else if (item.owner === getConfig().AuctionContractAddress) {
-                                    owner = '$出售中:' + (item.currentPrice / web3.utils.unitMap.ether).toFixed(4) + CURRENCY_UNIT;
+                                } else if (item.owner === getConfig().AuctionContractAddress || item.owner === getConfig().MintBoxContractAddress) {
+                                    owner = '' + (item.currentPrice / web3.utils.unitMap.ether).toFixed(4) + CURRENCY_UNIT;
                                 } else {
                                     owner = '@' + owner;
                                 }
