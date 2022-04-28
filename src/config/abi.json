@@ -2,7 +2,7 @@
   "baseApiUrl": "/cos/lobbyplatform/api/Api",
   "contractAddress": "0x6353D6B1b74D54E7117F5D6e37b45d4Ffe003443",
   "auctionContractAddress": "0x69C23cc39798a21D3b57F6f473abc78D467e6C7D",
-  "mintBoxContractAddress": "0xB734D01F0fBF96581Dc7Bc846Dbe46cF19320cD7",
+  "mintBoxContractAddress": "0xeC7fCD8642986d0BAfcc17b50D70f14DE50dfa5a",
   "heroesJson": [
     {
       "bsID": "10000",

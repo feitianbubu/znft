@@ -18,5 +18,5 @@ let tokenIds = async function(){
 }
 
 // tokenIds();
-
-console.log(web3.utils.fromWei('500000', 'ether'));
+let wei = web3.utils.toWei('346981', 'gwei');
+console.log(web3.utils.fromWei(wei, 'ether'));

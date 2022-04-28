@@ -39,7 +39,7 @@ if(location.indexOf('localhost:3000') > -1) {
 }
 console.log(location);
 const jsonInterface = heroCoreJson.abi;
-const auctionJsonInterface = heroClockAuctionJson;;
+const auctionJsonInterface = heroClockAuctionJson;
 const contractAddress = abiJson.contractAddress;
 
 const AppName = 'Z-NFT';
@@ -198,6 +198,9 @@ class App extends React.Component {
             connectBtnName = '断开钱包';
             user.balance = await web3.eth.getBalance(user.account);
             user.network = await web3.eth.net.getNetworkType();
+            user.chainID = await web3.eth.net.getId();
+            user.chainID = user.chainID?.toString();
+
             this.setState({connectBtnDisabled: false});
             this.setState({contractAddress});
             this.setState({user: user});
@@ -227,6 +230,9 @@ class App extends React.Component {
     };
     handleSubmit = async () => {
         let self = this;
+        if (!user.account) {
+            await self.handleClick();
+        }
         contractBtnName = '正在获取...';
         contractBtnNameDisabled = true;
         console.log('handleSubmit', user, this.state);
@@ -237,9 +243,6 @@ class App extends React.Component {
         self.forceUpdate();
         self.setState({whitelistedSpawner: false});
         if (selectPageId === 'mint') {
-            if (!user.account) {
-                await self.handleClick();
-            }
             // 是否可以空投
             let whitelistedSpawner = await heroContract.methods.whitelistedSpawner(self.state.user.account).call().catch(e => self.addOpenSnackbar("是否可以空投获取失败", e));
             self.setState({whitelistedSpawner});
@@ -256,10 +259,8 @@ class App extends React.Component {
         }
 
         let owner;
+        let chainID = user.chainID
         if (selectPageId === 'my') {
-            if (!user.account) {
-                await self.handleClick();
-            }
             owner = user.account;
         }else if (selectPageId === 'market') {
             owner = abiJson.auctionContractAddress
@@ -267,27 +268,40 @@ class App extends React.Component {
         if(!owner){
             return;
         }
-
+        let body = {
+            owner,
+            chainID
+        };
         fetch(`${baseApiUrl}/ItemList`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({owner})
-        }).then(res => res.json()).then(res => {
+            body: JSON.stringify(body)
+        }).then(res => {
+            return res.json();
+        }).then(res => {
             console.log('res',baseApiUrl, res);
+            if(res.reason === 12002){
+                self.addOpenSnackbar(`请检查钱包对应网络[${user.network}-${user.chainID}]是否正确`, res);
+                return;
+            }
             if (res.error) {
+                console.log('res.error', body);
                 self.addOpenSnackbar("获取商品列表失败", res.error.message);
                 return;
             }
-            let itemData = _.map(res.items, 'heroCore');
+            let itemData = res.items;
             console.log('itemData:', itemData);
             self.setState({itemData});
             // self.forceUpdate();
             self.setState({sortByDesc:false});
             self.handleSortChange();
 
-        }).catch(e => self.addOpenSnackbar("获取商品列表失败", e));
+        }).catch(e =>{
+            console.log('e', e, body);
+            self.addOpenSnackbar("获取商品列表失败", e+JSON.stringify(body))
+        });
     };
 
     handleChange(event) {
@@ -399,15 +413,30 @@ class App extends React.Component {
         let tokenId = item.tokenId;
         let method = mintBoxContract.methods['usageBox'](tokenId);
         try {
+            // 计算gasLimit
+            let usageBoxgasLimit = await method.estimateGas({from: user.account});
+            console.log('usageBoxgasLimit', usageBoxgasLimit);
+
+            // let burnMethod = mintBoxContract.methods['_burn'](tokenId);
+            // let BurnGasLimit = await method.estimateGas({from: user.account, value: 0});
+            // console.log('BurnGasLimit', BurnGasLimit);
+            let mintMethod = heroContract.methods['spawnHero']('1', user.account, '');
+            let mintGasLimit = await mintMethod.estimateGas({from: user.account});
+            console.log('mintGasLimit', mintGasLimit);
+
+            let gasLimit = usageBoxgasLimit + mintGasLimit;
+            console.log('gasLimit', gasLimit);
+            let gasPrice = await web3.eth.getGasPrice();
+            console.log('gasPrice', gasPrice);
+
             let tx = await method.send({
-                from: user.account
+                from: user.account, gasLimit: gasLimit*2, gasPrice: gasPrice
             })
             console.log('tx', tx);
             self.addOpenSnackbar(`打开成功`);
             await self.handleSubmit();
         } catch (e) {
             self.addOpenSnackbar(`打开失败:`, e);
-            return;
         }
 
     };
@@ -621,20 +650,20 @@ class App extends React.Component {
                         </RadioGroup>
                     </FormControl>
                     <ImageList sx={{width: '80%'}} cols={5}>
-                        {this.state.itemData.map((item) => {
+                        {this.state.itemData?.map((item) => {
                             let account = this.state.user.account;
                             if (item.quality) {
                                 // quality转化为五星个数
                                 item.star = _.times(Math.max(Math.min(item.quality, 5), 1), _.constant('★')).join('');
                             }
                             item.img = item.img || 'static/img/empty.jpg';
+                            if(isMintBox(item)){
+                                item.name = '盲盒';
+                                item.img = 'static/img/mintBox.jpg';
+                            }
                             if (item.tokenUri?.match(/^\d+$/)) {
-                                item.name = _.find(abiJson.heroesJson, (heroJson) => heroJson['bsID'] == item.tokenUri)?.name;
-                                if(isMintBox(item)){
-                                    item.img = 'static/img/mintBox.jpg';
-                                }else{
-                                    item.img = `https://img7.99.com/yhkd/image/data/hero//big-head/${item.tokenUri}.jpg`;
-                                }
+                                item.name = _.find(abiJson.heroesJson, (heroJson) => heroJson['bsID'] === parseInt(item.tokenUri))?.name;
+                                item.img = `https://img7.99.com/yhkd/image/data/hero//big-head/${item.tokenUri}.jpg`;
                             }
                             // 显示格式化地址
                             let owner = '';
@@ -667,12 +696,12 @@ class App extends React.Component {
                             </ImageListItem>
                                 <Box sx={{display: buttonDisplay, justifyContent: 'space-around', m: 1}}>
                                     {isMintBox(item) ?
-                                        <div><Button name={item.tokenId} variant="outlined" endIcon={<CardGiftCardIcon/>}
+                                        <div><Button name={item.tokenId} variant="outlined" endIcon={<OutboxIcon/>}
                                                 onClick={() => this.openMintBoxDialog(item)}>
                                             打开
                                         </Button></div> :
                                         <div><Button name={item.tokenId} variant="outlined"
-                                                     endIcon={<OutboxIcon/>}
+                                                     endIcon={<CardGiftCardIcon/>}
                                                      onClick={() => this.openSendGiftDialog(item)}>
                                             赠送
                                         </Button>
