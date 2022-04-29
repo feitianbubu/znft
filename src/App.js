@@ -77,6 +77,7 @@ const initState = {
     open: false,
     tokenId: '',
     SnackbarOpen: false,
+    mintToAddress: '',
     mintUri: '',
     mintBtnDisabled: false,
     totalSupply: '',
@@ -417,7 +418,7 @@ class App extends React.Component {
             return;
         }
         let myContract = new web3.eth.Contract(jsonInterface, contractAddress);
-        let mintToAddress = getConfig().MintBoxContractAddress;
+        let mintToAddress = this.state.mintToAddress;
         let mintUri = this.state.mintUri || _.random(1, 5).toString();
 
         let totalSupply = await myContract.methods.totalSupply().call();
