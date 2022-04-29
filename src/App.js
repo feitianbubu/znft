@@ -49,7 +49,8 @@ let getConfig = () => {
 
 const AppName = 'Z-NFT';
 // 定义货币单位
-const CURRENCY_UNIT = 'ETH';
+let CURRENCY_UNIT = 'ETH';
+
 const pages = [{name: '市场', id: 'market'}, {name: '我的', id: 'my'}, {name: '空投', id: 'mint'}];
 let web3;
 let user = {};
@@ -76,7 +77,6 @@ const initState = {
     open: false,
     tokenId: '',
     SnackbarOpen: false,
-    mintToAddress: '',
     mintUri: '',
     mintBtnDisabled: false,
     totalSupply: '',
@@ -220,13 +220,19 @@ class App extends React.Component {
             connectBtnName = '断开钱包';
             user.balance = await web3.eth.getBalance(user.account);
             user.network = await web3.eth.net.getNetworkType();
-            user.chainID = await web3.eth.net.getId();
-            user.chainID = user.chainID?.toString();
+            let chainID = await web3.eth.net.getId();
+            user.chainID = chainID?.toString();
 
             this.setState({connectBtnDisabled: false});
             this.setState({user: user});
 
-            contractAddress = getConfig().HeroContractAddress;;
+            let config = getConfig();
+            if(_.isEmpty(config)){
+                this.addOpenSnackbar(`平台暂不支持的该链[${user.network}:${user.chainID}], 请检查钱包对应网络是否正确`);
+            }
+
+            CURRENCY_UNIT = config.Symbol;
+            contractAddress = getConfig().HeroContractAddress;
             auctionContract = new web3.eth.Contract(auctionJsonInterface, getConfig().AuctionContractAddress);
             heroContract = new web3.eth.Contract(jsonInterface, contractAddress);
             mintBoxContract = new web3.eth.Contract(mintBoxAbi, getConfig().MintBoxContractAddress);
@@ -263,7 +269,6 @@ class App extends React.Component {
         contractBtnNameDisabled = true;
         console.log('handleSubmit', user, this.state);
 
-
         let itemData = [];
         self.setState({itemData});
         self.forceUpdate();
@@ -298,6 +303,7 @@ class App extends React.Component {
             owner,
             chainID
         };
+        console.log('start fetch itemlist', body);
         fetch(`${baseApiUrl}/ItemList`, {
             method: 'POST',
             headers: {
@@ -309,7 +315,7 @@ class App extends React.Component {
         }).then(res => {
             console.log('res',baseApiUrl, res);
             if(res.reason === 12002){
-                self.addOpenSnackbar(`请检查钱包对应网络[${user.network}-${user.chainID}]是否正确`, res);
+                self.addOpenSnackbar(`请检查钱包对应网络[${user.network}:${user.chainID}]是否正确`, res);
                 return;
             }
             if (res.error) {
@@ -411,7 +417,7 @@ class App extends React.Component {
             return;
         }
         let myContract = new web3.eth.Contract(jsonInterface, contractAddress);
-        let mintToAddress = this.state.mintToAddress;
+        let mintToAddress = getConfig().MintBoxContractAddress;
         let mintUri = this.state.mintUri || _.random(1, 5).toString();
 
         let totalSupply = await myContract.methods.totalSupply().call();
@@ -574,7 +580,6 @@ class App extends React.Component {
         this.setState({sortByDesc});
 
         let itemData = this.state.itemData;
-        console.log('itemData:', itemData);
         itemData = _.sortBy(itemData, function (item) {
             let value = item?.[sortByValue];
             value = parseFloat(value);
@@ -678,10 +683,6 @@ class App extends React.Component {
                                 item.star = _.times(Math.max(Math.min(item.quality, 5), 1), _.constant('★')).join('');
                             }
                             item.img = item.img || 'static/img/empty.jpg';
-                            if(isMintBox(item)){
-                                item.name = '盲盒';
-                                item.img = 'static/img/mintBox.jpg';
-                            }
                             if (item.tokenUri?.match(/^\d+$/)) {
                                 item.name = _.find(abiJson.heroesJson, (heroJson) => heroJson['bsID'] === parseInt(item.tokenUri))?.name;
                                 item.img = `https://img7.99.com/yhkd/image/data/hero//big-head/${item.tokenUri}.jpg`;
@@ -699,6 +700,15 @@ class App extends React.Component {
                                 }
                             }
 
+                            let subtitle = `${item.tokenId} ${item.name ?? ''} ${item.star ?? ''}`;
+                            if(isMintBox(item)){
+                                item.name = '盲盒';
+                                item.img = 'static/img/mintBox.jpg';
+                                if(this.state.selectPageId === 'market'){
+                                    subtitle = `剩余:${item.num} ${item.name}`
+                                }
+                            }
+
                             let isSeller =item.seller && account && item.currentPrice && (item.seller === account);
                             let isBuyer =item.seller &&  account && item.currentPrice && !isSeller;
                             let buttonDisplay = (item.owner && (account === item.owner)) ? 'flex' : 'none';
@@ -711,7 +721,7 @@ class App extends React.Component {
                                 />
                                 <ImageListItemBar
                                     title={`${owner}`}
-                                    subtitle={`${item.tokenId} ${item.name ?? ''} ${item.star ?? ''}`}
+                                    subtitle={subtitle}
                                 />
 
                             </ImageListItem>
