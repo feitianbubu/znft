@@ -16,6 +16,7 @@ import TextField from '@mui/material/TextField';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import _ from 'lodash';
+import moment from "moment";
 import React from 'react';
 import Web3 from "web3";
 import './App.css';
@@ -52,10 +53,7 @@ const AppName = 'Z-NFT';
 // 定义货币单位
 let CURRENCY_UNIT = 'ETH';
 
-const pages = [{name: '市场', id: 'market'}, {name: '我的', id: 'my'}, {name: '空投', id: 'mint'}, {
-    name: '预售',
-    id: 'preSale'
-}];
+const pages = [{name: '市场', id: 'market'}, {name: '我的', id: 'my'}, {name: '空投', id: 'mint'}];
 let web3;
 let user = {};
 let connectBtnName = '连接钱包';
@@ -747,7 +745,7 @@ class App extends React.Component {
                                 item.name = '预售';
                                 item.img = 'static/img/preSale.jpg';
                                 if (this.state.selectPageId === 'market') {
-                                    subtitle = `剩余:${item.num} ${item.name}`
+                                    subtitle = `剩余:${item.num} 截止:${moment(item.preSale?.endTime*1000).format('MM-DD HH:mm:ss')}`
                                 }
                             }
 
