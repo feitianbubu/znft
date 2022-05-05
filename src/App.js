@@ -30,12 +30,13 @@ import FormLabel from '@mui/material/FormLabel';
 import OutboxIcon from '@mui/icons-material/Outbox';
 
 import mintBoxAbi from './config/mintBox.json';
+import preSaleAbi from './config/preSale.json';
 
 let baseApiUrl = abiJson.baseApiUrl;
 const location = document.location.href;
 // 本地测试url切换
-if(location.indexOf('localhost:3000') > -1) {
-  baseApiUrl = 'http://localhost:3080'+abiJson.baseApiUrl;
+if (location.indexOf('localhost:3000') > -1) {
+    baseApiUrl = 'http://localhost:3080' + abiJson.baseApiUrl;
 }
 
 let configData = {};
@@ -51,7 +52,10 @@ const AppName = 'Z-NFT';
 // 定义货币单位
 let CURRENCY_UNIT = 'ETH';
 
-const pages = [{name: '市场', id: 'market'}, {name: '我的', id: 'my'}, {name: '空投', id: 'mint'}];
+const pages = [{name: '市场', id: 'market'}, {name: '我的', id: 'my'}, {name: '空投', id: 'mint'}, {
+    name: '预售',
+    id: 'preSale'
+}];
 let web3;
 let user = {};
 let connectBtnName = '连接钱包';
@@ -63,6 +67,7 @@ let selectPageId = 'market';
 let auctionContract;
 let heroContract;
 let mintBoxContract;
+let preSaleContract;
 
 const theme = createTheme();
 const initState = {
@@ -89,8 +94,11 @@ const initState = {
     selectPageId: selectPageId,
 };
 
-let isMintBox = function(item){
-  return item.creator === getConfig().MintBoxContractAddress;
+let isMintBox = function (item) {
+    return item.creator === getConfig().MintBoxContractAddress;
+}
+let isPreSale = function (item) {
+    return item.creator === getConfig().PreSaleContractAddress;
 }
 
 class App extends React.Component {
@@ -98,6 +106,7 @@ class App extends React.Component {
         super(props);
 
         this.state = initState;
+        this.componentDidMount = this.componentDidMount.bind(this);
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
         this.handleMint = this.handleMint.bind(this);
@@ -109,6 +118,7 @@ class App extends React.Component {
     }
 
     async componentDidMount() {
+        let self = this;
         console.log('componentDidMount');
         web3 = new Web3(Web3.givenProvider)
 
@@ -125,13 +135,12 @@ class App extends React.Component {
             return json;
         }).then(res => {
             if (res.code) {
-                console.error('获取配置失败', res);
-                return;
+                return self.addOpenSnackbar('获取配置失败', res);
             }
             console.log('获取配置成功', res);
             configData = JSON.parse(res.data);
         }).catch(err => {
-            console.error('获取配置失败', err);
+            self.addOpenSnackbar('获取配置失败', err);
         });
         await this.handleSubmit();
     }
@@ -227,8 +236,11 @@ class App extends React.Component {
             this.setState({connectBtnDisabled: false});
             this.setState({user: user});
 
+            if(_.isEmpty(configData)) {
+                return this.addOpenSnackbar('获取服务端配置失败');
+            }
             let config = getConfig();
-            if(_.isEmpty(config)){
+            if (_.isEmpty(config)) {
                 this.addOpenSnackbar(`平台暂不支持的该链[${user.network}:${user.chainID}], 请检查钱包对应网络是否正确`);
             }
 
@@ -237,6 +249,7 @@ class App extends React.Component {
             auctionContract = new web3.eth.Contract(auctionJsonInterface, getConfig().AuctionContractAddress);
             heroContract = new web3.eth.Contract(jsonInterface, contractAddress);
             mintBoxContract = new web3.eth.Contract(mintBoxAbi, getConfig().MintBoxContractAddress);
+            preSaleContract = new web3.eth.Contract(preSaleAbi, getConfig().PreSaleContractAddress);
 
         } catch (e) {
             this.disconnectWallet();
@@ -244,7 +257,7 @@ class App extends React.Component {
             return;
         }
 
-        console.log('configData',configData, user.chainID, getConfig());
+        console.log('configData', configData, user.chainID, getConfig());
         // 获取角色信息
         // try {
         //     let userSync = await this.getUserInfo(user.account);
@@ -294,10 +307,10 @@ class App extends React.Component {
         let chainID = user.chainID
         if (selectPageId === 'my') {
             owner = user.account;
-        }else if (selectPageId === 'market') {
+        } else if (selectPageId === 'market') {
             owner = getConfig().AuctionContractAddress
         }
-        if(!owner){
+        if (!owner) {
             return;
         }
         let body = {
@@ -314,8 +327,8 @@ class App extends React.Component {
         }).then(res => {
             return res.json();
         }).then(res => {
-            console.log('res',baseApiUrl, res);
-            if(res.reason === 12002){
+            console.log('res', baseApiUrl, res);
+            if (res.reason === 12002) {
                 self.addOpenSnackbar(`请检查钱包对应网络[${user.network}:${user.chainID}]是否正确`, res);
                 return;
             }
@@ -328,12 +341,12 @@ class App extends React.Component {
             console.log('itemData:', itemData);
             self.setState({itemData});
             // self.forceUpdate();
-            self.setState({sortByDesc:false});
+            self.setState({sortByDesc: false});
             self.handleSortChange();
 
-        }).catch(e =>{
+        }).catch(e => {
             console.log('e', e, body);
-            self.addOpenSnackbar("获取商品列表失败", e+JSON.stringify(body))
+            self.addOpenSnackbar("获取商品列表失败", e + JSON.stringify(body))
         });
     };
 
@@ -397,6 +410,10 @@ class App extends React.Component {
         if (json) {
             snackbarMsg += " " + (json.message || JSON.stringify(json));
         }
+        const maxLength = 200;
+        if (snackbarMsg.length > maxLength) {
+            snackbarMsg = snackbarMsg.substring(0, maxLength) + "...";
+        }
         this.setState({snackbarMsg});
         this.setState({SnackbarOpen: true});
         if (!user.account) {
@@ -458,7 +475,7 @@ class App extends React.Component {
             console.log('gasPrice', gasPrice);
 
             let tx = await method.send({
-                from: user.account, gasLimit: gasLimit*2, gasPrice: gasPrice
+                from: user.account, gasLimit: gasLimit * 2, gasPrice: gasPrice
             })
             console.log('tx', tx);
             self.addOpenSnackbar(`打开成功`);
@@ -521,27 +538,43 @@ class App extends React.Component {
     handBid = async (item) => {
         let self = this;
         let tokenId = item.tokenId;
-        let actionName = '购买';
+        let actionMsg = '购买成功';
         let price = item.currentPrice;
         if (!confirm(`确认将该物品以${web3.utils.fromWei(price)}${CURRENCY_UNIT}的价格购买吗?`)) {
             return;
         }
 
         let method;
-        if(isMintBox(item)){
-            method= mintBoxContract.methods['mintBox']();
-        }else{
+        if (isMintBox(item)) {
+            method = mintBoxContract.methods['mintBox']();
+        } else if (isPreSale(item)) {
+            // 判断是否开始
+            let isStart = await preSaleContract.methods['isStart']().call();
+            if (!isStart) {
+                return self.addOpenSnackbar(`预售未开始`);
+            }
+            // 判断是否结束
+            let isFinish = await preSaleContract.methods['isFinish']().call();
+            if (isFinish) {
+                return self.addOpenSnackbar(`预售已结束`);
+            }
+
+            method = preSaleContract.methods['Support']();
+        } else {
             // createAuction
             method = auctionContract.methods['bid'](contractAddress, tokenId);
         }
         console.log(contractAddress, tokenId, price);
-        let tx = await method.send({
-            from: user.account, value: price
-        }).catch(e => {
-            self.addOpenSnackbar(`${actionName}失败:`, e);
-        });
-        console.log('tx', tx);
-        self.addOpenSnackbar(`${actionName}成功`);
+        let tx;
+        try {
+            tx = await method.send({
+                from: user.account, value: price
+            });
+            console.log('tx', tx);
+        } catch (e) {
+            actionMsg = '购买失败' + e;
+        }
+        self.addOpenSnackbar(`${actionMsg}`);
 
         await self.handleSubmit();
     }
@@ -666,11 +699,12 @@ class App extends React.Component {
                         </Box>
                     </Toolbar>
                 </AppBar>
-                <Box className='App-body'>
-
+                <Box className='App-body'
+                     display={_.indexOf(['market', 'my', 'mint'], this.state.selectPageId) !== -1 ? '' : 'none'}>
                     <FormControl sx={{display: 'inline', width: '80%'}}>
                         <FormLabel sx={{display: 'inline', width: '200px'}}>排序: </FormLabel>
-                        <RadioGroup id="sortRadioGroup" sx={{display: 'inline', width: '300px'}} row onClick={this.handleSortChange} defaultValue="tokenId">
+                        <RadioGroup id="sortRadioGroup" sx={{display: 'inline', width: '300px'}} row
+                                    onClick={this.handleSortChange} defaultValue="tokenId">
                             <FormControlLabel name="sort" value="tokenId" control={<Radio/>} label="tokenId"/>
                             <FormControlLabel name="sort" value="currentPrice" control={<Radio/>} label="售价"/>
                             <FormControlLabel name="sort" value="quality" control={<Radio/>} label="星级"/>
@@ -694,7 +728,7 @@ class App extends React.Component {
                                 owner = item.owner.substr(0, 6) + '...' + item.owner.substr(item.owner.length - 4);
                                 if (item.owner === account) {
                                     owner = '★我的';
-                                } else if (item.owner === getConfig().AuctionContractAddress || item.owner === getConfig().MintBoxContractAddress) {
+                                } else if (_.indexOf([getConfig().AuctionContractAddress, getConfig().MintBoxContractAddress, getConfig().PreSaleContractAddress], item.owner) !== -1) {
                                     owner = '' + (item.currentPrice / web3.utils.unitMap.ether).toFixed(4) + CURRENCY_UNIT;
                                 } else {
                                     owner = '@' + owner;
@@ -702,18 +736,25 @@ class App extends React.Component {
                             }
 
                             let subtitle = `${item.tokenId} ${item.name ?? ''} ${item.star ?? ''}`;
-                            if(isMintBox(item)){
+                            if (isMintBox(item)) {
                                 item.name = '盲盒';
                                 item.img = 'static/img/mintBox.jpg';
-                                if(this.state.selectPageId === 'market'){
+                                if (this.state.selectPageId === 'market') {
+                                    subtitle = `剩余:${item.num} ${item.name}`
+                                }
+                            }
+                            if (isPreSale(item)) {
+                                item.name = '预售';
+                                item.img = 'static/img/preSale.jpg';
+                                if (this.state.selectPageId === 'market') {
                                     subtitle = `剩余:${item.num} ${item.name}`
                                 }
                             }
 
-                            let isSeller =item.seller && account && item.currentPrice && (item.seller === account);
-                            let isBuyer =item.seller &&  account && item.currentPrice && !isSeller;
+                            let isSeller = item.seller && account && item.currentPrice && (item.seller === account);
+                            let isBuyer = item.seller && account && item.currentPrice && !isSeller;
                             let buttonDisplay = (item.owner && (account === item.owner)) ? 'flex' : 'none';
-                            return (<Box key={item.tokenId+'-'+i}><ImageListItem>
+                            return (<Box key={item.tokenId + '-' + i}><ImageListItem>
                                 <img
                                     src={`${item.img}?w=164&h=164&fit=crop&auto=format`}
                                     srcSet={`${item.img}?w=164&h=164&fit=crop&auto=format&dpr=2 2x`}
@@ -729,7 +770,7 @@ class App extends React.Component {
                                 <Box sx={{display: buttonDisplay, justifyContent: 'space-around', m: 1}}>
                                     {isMintBox(item) ?
                                         <div><Button name={item.tokenId} variant="outlined" endIcon={<OutboxIcon/>}
-                                                onClick={() => this.openMintBoxDialog(item)}>
+                                                     onClick={() => this.openMintBoxDialog(item)}>
                                             打开
                                         </Button></div> :
                                         <div><Button name={item.tokenId} variant="outlined"
@@ -758,7 +799,7 @@ class App extends React.Component {
                                             endIcon={<CardGiftCardIcon/>}
                                             color={'success'}
                                             onClick={() => this.handBid(item)}>
-                                        购买
+                                        {isPreSale(item) ? '预购' : '购买'}
                                     </Button> : null}
                             </Box>)
                         })}
@@ -794,7 +835,6 @@ class App extends React.Component {
                         />
                     </div>
                 </Box>
-
             </ThemeProvider>
         </div>)
     }
