@@ -248,7 +248,7 @@ class App extends React.Component {
             this.setState({connectBtnDisabled: false});
             this.setState({user: user});
 
-            if(_.isEmpty(configData)) {
+            if (_.isEmpty(configData)) {
                 return this.addOpenSnackbar('获取服务端配置失败');
             }
             let config = getConfig();
@@ -343,7 +343,7 @@ class App extends React.Component {
             body: JSON.stringify(body)
         }).then(res => {
             return res.json();
-        }).then(res => {
+        }).then(async res => {
             console.log('res', baseApiUrl, res);
             if (res.reason === 12002) {
                 self.addOpenSnackbar(`请检查钱包对应网络[${user.network}:${user.chainID}]是否正确`, res);
@@ -356,10 +356,19 @@ class App extends React.Component {
             }
             let itemData = res.items || [];
             console.log('itemData:', itemData);
+
+            if (selectPageId === 'market') {
+                let isSupported = await preSaleContract.methods['IsSupported'](user.account).call();
+                let preSaleItem = _.find(itemData, item => isPreSale(item));
+                if (preSaleItem) {
+                    preSaleItem.isSupported = isSupported;
+                }
+            }
+
             self.setState({itemData});
             // self.forceUpdate();
             self.setState({sortByDesc: false});
-            self.handleSortChange();
+            await self.handleSortChange();
 
         }).catch(e => {
             console.log('e', e, body);
@@ -760,11 +769,34 @@ class App extends React.Component {
                                     subtitle = `剩余:${item.num} ${item.name}`
                                 }
                             }
+                            let disabledBidButton = false;
+                            let bidButtonName = '购买'
                             if (isPreSale(item)) {
+                                bidButtonName = '预购'
+                                disabledBidButton = true;
                                 item.name = '预售';
                                 item.img = 'static/img/preSale.jpg';
                                 if (this.state.selectPageId === 'market') {
-                                    subtitle = `剩余:${item.num} 截止:${moment(item.preSale?.endTime*1000).format('MM-DD HH:mm:ss')}`
+                                    let preSale = item.preSale || {};
+                                    let startTime = parseInt(preSale.startTime) * 1000;
+                                    let endTime = parseInt(preSale.endTime) * 1000;
+                                    let now = _.now();
+
+                                    if (!startTime) {
+                                        subtitle = `准备中`;
+                                    } else if (!preSale.isFinish) {
+                                        subtitle = `待开奖`;
+                                    } else if (!preSale.isStart) {
+                                        subtitle = `待开始 ${moment(startTime).format('MM-DD HH:mm')}`;
+                                    } else if (startTime && now >= startTime || (endTime && now < endTime)) {
+                                        subtitle = `剩余:${item.num} 倒计时:${moment(endTime).format('MM-DD HH:mm')}`;
+                                        if(item.isSupported){
+                                            disabledBidButton = true;
+                                            bidButtonName = '已购';
+                                        }
+                                    } else {
+                                        subtitle = `已结束`;
+                                    }
                                 }
                             }
 
@@ -813,10 +845,11 @@ class App extends React.Component {
                                     </Button> : null}
                                 {isBuyer ?
                                     <Button name={item.tokenId} currentprice={item.currentPrice} variant="outlined"
+                                            disabled={disabledBidButton}
                                             endIcon={<CardGiftCardIcon/>}
                                             color={'success'}
                                             onClick={() => this.handBid(item)}>
-                                        {isPreSale(item) ? '预购' : '购买'}
+                                        {bidButtonName}
                                     </Button> : null}
                             </Box>)
                         })}
