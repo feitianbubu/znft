@@ -21,8 +21,6 @@ import React from 'react';
 import Web3 from "web3";
 import './App.css';
 import abiJson from './config/abi.json';
-import heroClockAuctionJson from './config/HeroClockAuction.json';
-import heroCoreJson from './config/HeroCore.json';
 import SendGiftFormDialog from "./SendGiftFormDialog";
 import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
@@ -30,19 +28,22 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import FormLabel from '@mui/material/FormLabel';
 import OutboxIcon from '@mui/icons-material/Outbox';
 
-import mintBoxAbi from './config/mintBox.json';
-import preSaleAbi from './config/preSale.json';
+
+let preSaleAbi;
+let mintBoxAbi;
+let jsonInterface;
+let auctionJsonInterface
 
 let baseApiUrl = abiJson.baseApiUrl;
+let baseUrl = '';
 const location = document.location.href;
 // 本地测试url切换
 if (location.indexOf('localhost:3000') > -1) {
-    baseApiUrl = 'http://localhost:3080' + abiJson.baseApiUrl;
+    baseUrl = 'http://localhost:3080';
+    baseApiUrl = baseUrl + abiJson.baseApiUrl;
 }
 
 let configData = {};
-const jsonInterface = heroCoreJson.abi;
-const auctionJsonInterface = heroClockAuctionJson;
 let contractAddress
 let getConfig = () => {
     let chainID = user.chainID;
@@ -105,6 +106,7 @@ class App extends React.Component {
 
         this.state = initState;
         this.componentDidMount = this.componentDidMount.bind(this);
+        this.connectWallet = this.connectWallet.bind(this);
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
         this.handleMint = this.handleMint.bind(this);
@@ -118,7 +120,18 @@ class App extends React.Component {
     async componentDidMount() {
         let self = this;
         console.log('componentDidMount');
-        web3 = new Web3(Web3.givenProvider)
+
+        let fetchApi = async (filename) => {
+            let url = `${baseUrl}/static/abi/${filename}.json`;
+            let response = await fetch(url);
+            let data = await response.json();
+            return data;
+        }
+
+        jsonInterface = await fetchApi('heroCore');
+        auctionJsonInterface = await fetchApi('heroClockAuction');
+        mintBoxAbi = await fetchApi('mintBox');
+        preSaleAbi = await fetchApi('preSale');
 
         fetch(baseApiUrl + '/Config', {
             method: 'POST',
@@ -140,6 +153,7 @@ class App extends React.Component {
         }).catch(err => {
             self.addOpenSnackbar('获取配置失败', err);
         });
+        web3 = new Web3(Web3.givenProvider)
         await this.handleSubmit();
     }
 
@@ -173,7 +187,7 @@ class App extends React.Component {
     }
 
     // 连接钱包
-    handleClick = async () => {
+    connectWallet = async () => {
         console.log('handleClick', connectBtnName);
         this.setState({connectBtnDisabled: true});
         if (user.account) {
@@ -243,11 +257,11 @@ class App extends React.Component {
             }
 
             CURRENCY_UNIT = config.Symbol;
-            contractAddress = getConfig().HeroContractAddress;
-            auctionContract = new web3.eth.Contract(auctionJsonInterface, getConfig().AuctionContractAddress);
+            contractAddress = config.HeroContractAddress;
             heroContract = new web3.eth.Contract(jsonInterface, contractAddress);
-            mintBoxContract = new web3.eth.Contract(mintBoxAbi, getConfig().MintBoxContractAddress);
-            preSaleContract = new web3.eth.Contract(preSaleAbi, getConfig().PreSaleContractAddress);
+            auctionContract = new web3.eth.Contract(auctionJsonInterface, config.AuctionContractAddress);
+            mintBoxContract = new web3.eth.Contract(mintBoxAbi, config.MintBoxContractAddress);
+            preSaleContract = new web3.eth.Contract(preSaleAbi, config.PreSaleContractAddress);
 
         } catch (e) {
             this.disconnectWallet();
@@ -268,6 +282,11 @@ class App extends React.Component {
         //     user['getLpFail'] = e
         //     this.addOpenSnackbar("lp用户信息获取失败", e);
         // }
+    }
+
+    // 点击连接钱包
+    handleClick = async () => {
+        await this.connectWallet();
         await this.handleSubmit();
 
         this.forceUpdate();
@@ -275,7 +294,7 @@ class App extends React.Component {
     handleSubmit = async () => {
         let self = this;
         if (!user.account) {
-            await self.handleClick();
+            await self.connectWallet();
         }
         contractBtnName = '正在获取...';
         contractBtnNameDisabled = true;
