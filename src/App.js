@@ -148,7 +148,7 @@ class App extends React.Component {
                 return self.addOpenSnackbar('获取配置失败', res);
             }
             console.log('获取配置成功', res);
-            configData = JSON.parse(res.data);
+            configData = res;
         }).catch(err => {
             self.addOpenSnackbar('获取配置失败', err);
         });
