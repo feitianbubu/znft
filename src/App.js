@@ -124,8 +124,7 @@ class App extends React.Component {
         let fetchApi = async (filename) => {
             let url = `${baseUrl}/static/abi/${filename}.json`;
             let response = await fetch(url);
-            let data = await response.json();
-            return data;
+            return response.json();
         }
 
         jsonInterface = await fetchApi('heroCore');
@@ -328,6 +327,7 @@ class App extends React.Component {
             owner = getConfig().AuctionContractAddress
         }
         if (!owner) {
+            console.warn('owner is null');
             return;
         }
         let body = {
@@ -605,7 +605,7 @@ class App extends React.Component {
         await self.handleSubmit();
     }
     handleChangePage = async (event) => {
-        console.log('handleChangePage', event, event.target.id, document.getElementById(event.target.id));
+        // console.log('handleChangePage', event, event.target.id, document.getElementById(event.target.id));
         selectPageId = event.target.id;
         this.setState({selectPageId})
         console.log('this.state.selectPageId', event.target.id, selectPageId);
@@ -731,6 +731,7 @@ class App extends React.Component {
                         <FormLabel sx={{display: 'inline', width: '200px'}}>排序: </FormLabel>
                         <RadioGroup id="sortRadioGroup" sx={{display: 'inline', width: '300px'}} row
                                     onClick={this.handleSortChange} defaultValue="tokenId">
+                            <FormControlLabel name="sort" value="creator" control={<Radio/>} label="类型"/>
                             <FormControlLabel name="sort" value="tokenId" control={<Radio/>} label="tokenId"/>
                             <FormControlLabel name="sort" value="currentPrice" control={<Radio/>} label="售价"/>
                             <FormControlLabel name="sort" value="quality" control={<Radio/>} label="星级"/>
@@ -761,7 +762,7 @@ class App extends React.Component {
                                 }
                             }
 
-                            let subtitle = `${item.tokenId} ${item.name ?? ''} ${item.star ?? ''}`;
+                            let subtitle = `#${item.tokenId} ${item.name ?? ''} ${item.star ?? ''}`;
                             if (isMintBox(item)) {
                                 item.name = '盲盒';
                                 item.img = 'static/img/mintBox.jpg';
