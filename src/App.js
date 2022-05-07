@@ -49,6 +49,7 @@ let getConfig = () => {
     let chainID = user.chainID;
     return configData?.Chain?.[chainID] || {};
 };
+let config;
 
 const AppName = 'Z-NFT';
 // 定义货币单位
@@ -248,13 +249,14 @@ class App extends React.Component {
             this.setState({user: user});
 
             if (_.isEmpty(configData)) {
-                return this.addOpenSnackbar('获取服务端配置失败');
+                return this.addOpenSnackbar('获取服务端配置失败,请联系服务端管理员');
             }
-            let config = getConfig();
+            config = getConfig();
             if (_.isEmpty(config)) {
-                this.addOpenSnackbar(`平台暂不支持的该链[${user.network}:${user.chainID}], 请检查钱包对应网络是否正确`);
+                this.addOpenSnackbar(`平台暂不支持的该链[${user.network}:${user.chainID}], 目前仅支持[${_.map(configData.Chain, "Name")}], 请检查钱包对应网络是否正确`);
             }
 
+            user.network = config.Name || user.network;
             CURRENCY_UNIT = config.Symbol;
             contractAddress = config.HeroContractAddress;
             heroContract = new web3.eth.Contract(jsonInterface, contractAddress);
@@ -268,7 +270,7 @@ class App extends React.Component {
             return;
         }
 
-        console.log('configData', configData, user.chainID, getConfig());
+        console.log('configData', configData, user.chainID, config);
         // 获取角色信息
         // try {
         //     let userSync = await this.getUserInfo(user.account);
