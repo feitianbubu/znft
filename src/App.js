@@ -98,7 +98,7 @@ let isMintBox = function (item) {
     return item.creator === getConfig().MintBoxContractAddress;
 }
 let isPreSale = function (item) {
-    return item.creator === getConfig().PreSaleContractAddress;
+    return item.creator && item.creator === getConfig().PreSaleContractAddress;
 }
 
 class App extends React.Component {
@@ -302,6 +302,7 @@ class App extends React.Component {
         console.log('handleSubmit', user, this.state);
 
         let itemData = [];
+        let config = getConfig();
         self.setState({itemData});
         self.forceUpdate();
         self.setState({whitelistedSpawner: false});
@@ -326,7 +327,7 @@ class App extends React.Component {
         if (selectPageId === 'my') {
             owner = user.account;
         } else if (selectPageId === 'market') {
-            owner = getConfig().AuctionContractAddress
+            owner = config.AuctionContractAddress
         }
         if (!owner) {
             console.warn('owner is null');
@@ -337,7 +338,8 @@ class App extends React.Component {
             chainID
         };
         console.log('start fetch itemlist', body);
-        fetch(`${baseApiUrl}/ItemList`, {
+        let url = `${baseApiUrl}/ItemList`;
+        fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -346,7 +348,7 @@ class App extends React.Component {
         }).then(res => {
             return res.json();
         }).then(async res => {
-            console.log('res', baseApiUrl, res);
+            console.log('fetch itemlist', url, res);
             if (res.reason === 12002) {
                 self.addOpenSnackbar(`请检查钱包对应网络[${user.network}:${user.chainID}]是否正确`, res);
                 return;
@@ -359,7 +361,7 @@ class App extends React.Component {
             let itemData = res.items || [];
             console.log('itemData:', itemData);
 
-            if (selectPageId === 'market') {
+            if (selectPageId === 'market' && config.PresaleContractAddress) {
                 let isSupported = await preSaleContract.methods['IsSupported'](user.account).call();
                 let preSaleItem = _.find(itemData, item => isPreSale(item));
                 if (preSaleItem) {
@@ -793,7 +795,7 @@ class App extends React.Component {
                                         subtitle = `待开始 ${moment(startTime).format('MM-DD HH:mm')}`;
                                     } else if (startTime && now >= startTime || (endTime && now < endTime)) {
                                         subtitle = `剩余:${item.num} 倒计时:${moment(endTime).format('MM-DD HH:mm')}`;
-                                        if(item.isSupported){
+                                        if (item.isSupported) {
                                             disabledBidButton = true;
                                             bidButtonName = '已购';
                                         }
