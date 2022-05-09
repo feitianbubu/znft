@@ -123,8 +123,8 @@ class App extends React.Component {
 
         let location = document.location.href;
         // 本地测试url切换
-        if (location.indexOf('localhost:3000') > -1) {
-            baseUrl = 'http://localhost:3080';
+        if (location.indexOf(':3080') > -1) {
+            baseUrl = 'http://localhost:3081';
             baseApiUrl = baseUrl + abiJson.baseApiUrl;
         }
 

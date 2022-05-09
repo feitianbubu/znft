@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "next start",
+    "start": "next build&&next start -p 3080",
     "build": "next build",
-    "dev": "next dev"
+    "dev": "next dev -p 3080"
   },
   "devDependencies": {
     "@emotion/react": "^11.4.1",
