@@ -15,6 +15,7 @@ import {createTheme, ThemeProvider} from '@mui/material/styles';
 import TextField from '@mui/material/TextField';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
+import {SwapWidget} from "@uniswap/widgets";
 import _ from 'lodash';
 import moment from "moment";
 import React from 'react';
@@ -26,7 +27,7 @@ import RadioGroup from '@mui/material/RadioGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormLabel from '@mui/material/FormLabel';
 import OutboxIcon from '@mui/icons-material/Outbox';
-
+import '@uniswap/widgets/fonts.css'
 
 let preSaleAbi;
 let mintBoxAbi;
@@ -48,7 +49,12 @@ const AppName = 'Z-NFT';
 // 定义货币单位
 let CURRENCY_UNIT = 'ETH';
 
-const pages = [{name: '市场', id: 'market'}, {name: '我的', id: 'my'}, {name: '空投', id: 'mint'}];
+const pages = [
+    {name: '市场', id: 'market'},
+    {name: '我的', id: 'my'},
+    {name: '空投', id: 'mint'},
+    {name: '兑换', id: 'swap'}
+];
 let web3;
 let user = {};
 let connectBtnName = '连接钱包';
@@ -153,7 +159,7 @@ class App extends React.Component {
         }).catch(err => {
             self.addOpenSnackbar('获取配置失败', err);
         });
-        web3 = new Web3(Web3.givenProvider)
+        // web3 = new Web3(Web3.givenProvider)
         await this.handleSubmit();
     }
 
@@ -729,8 +735,18 @@ class App extends React.Component {
                         </Box>
                     </Toolbar>
                 </AppBar>
-                <Box className='App-body'
-                     display={_.indexOf(['market', 'my', 'mint'], this.state.selectPageId) !== -1 ? '' : 'none'}>
+                <Box display={_.indexOf(['swap'], this.state.selectPageId) === -1 ? 'none' : 'flex'}
+                     className='App-body'>
+                    <Box sx={{justifyContent: 'center', m: 2}}>
+                        <SwapWidget className="Uniswap"
+                                    provider={Web3.givenProvider}
+                                    width={500}
+                        />
+                    </Box>
+                </Box>
+                <Box
+                    sx={{display: _.indexOf(['market', 'my', 'mint'], this.state.selectPageId) === -1 ? 'none' : 'flex'}}
+                    className='App-body'>
                     <FormControl sx={{display: 'inline', width: '80%'}}>
                         <FormLabel sx={{display: 'inline', width: '200px'}}>排序: </FormLabel>
                         <RadioGroup id="sortRadioGroup" sx={{display: 'inline', width: '300px'}} row
