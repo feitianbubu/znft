@@ -19,7 +19,6 @@ import _ from 'lodash';
 import moment from "moment";
 import React from 'react';
 import Web3 from "web3";
-import './App.css';
 import abiJson from './config/abi.json';
 import SendGiftFormDialog from "./SendGiftFormDialog";
 import Radio from '@mui/material/Radio';
@@ -36,12 +35,6 @@ let auctionJsonInterface
 
 let baseApiUrl = abiJson.baseApiUrl;
 let baseUrl = '';
-const location = document.location.href;
-// 本地测试url切换
-if (location.indexOf('localhost:3000') > -1) {
-    baseUrl = 'http://localhost:3080';
-    baseApiUrl = baseUrl + abiJson.baseApiUrl;
-}
 
 let configData = {};
 let contractAddress
@@ -121,6 +114,13 @@ class App extends React.Component {
     async componentDidMount() {
         let self = this;
         console.log('componentDidMount');
+
+        let location = document.location.href;
+        // 本地测试url切换
+        if (location.indexOf('localhost:3000') > -1) {
+            baseUrl = 'http://localhost:3080';
+            baseApiUrl = baseUrl + abiJson.baseApiUrl;
+        }
 
         let fetchApi = async (filename) => {
             let url = `${baseUrl}/static/abi/${filename}.json`;
