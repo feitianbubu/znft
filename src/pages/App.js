@@ -123,8 +123,8 @@ class App extends React.Component {
 
         let location = document.location.href;
         // 本地测试url切换
-        if (location.indexOf(':3080') > -1) {
-            baseUrl = 'http://localhost:3081';
+        if (location.indexOf(':3000') > -1) {
+            baseUrl = 'http://localhost:3080';
             baseApiUrl = baseUrl + abiJson.baseApiUrl;
         }
 
@@ -735,6 +735,7 @@ class App extends React.Component {
                         </Box>
                     </Toolbar>
                 </AppBar>
+                {this.state.selectPageId=== 'swap' ?
                 <Box display={_.indexOf(['swap'], this.state.selectPageId) === -1 ? 'none' : 'flex'}
                      className='App-body'>
                     <Box sx={{justifyContent: 'center', m: 2}}>
@@ -743,7 +744,7 @@ class App extends React.Component {
                                     width={500}
                         />
                     </Box>
-                </Box>
+                </Box>:
                 <Box
                     sx={{display: _.indexOf(['market', 'my', 'mint'], this.state.selectPageId) === -1 ? 'none' : 'flex'}}
                     className='App-body'>
@@ -905,7 +906,7 @@ class App extends React.Component {
                             action={action}
                         />
                     </div>
-                </Box>
+                </Box>}
             </ThemeProvider>
         </div>)
     }
