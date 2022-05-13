@@ -38,6 +38,21 @@ let baseApiUrl = abiJson.baseApiUrl;
 let baseUrl = '';
 
 let configData = {};
+let initConfigData = async () => {
+    if (!_.isEmpty(configData)) {
+        return configData;
+    }
+    let res = await fetch(baseApiUrl + '/Config', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({})
+    });
+    configData = await res.json();
+    return configData;
+}
+
 let contractAddress
 let getConfig = () => {
     let chainID = user.chainID;
@@ -139,27 +154,8 @@ class App extends React.Component {
         mintBoxAbi = await fetchApi('mintBox');
         preSaleAbi = await fetchApi('preSale');
 
-        fetch(baseApiUrl + '/Config', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({})
-        }).then(res => {
-            console.log('res', res);
-            let json = res.json();
-            console.log('json', json);
-            return json;
-        }).then(res => {
-            if (res.code) {
-                return self.addOpenSnackbar('获取配置失败', res);
-            }
-            console.log('获取配置成功', res);
-            configData = res;
-        }).catch(err => {
-            self.addOpenSnackbar('获取配置失败', err);
-        });
-        // web3 = new Web3(Web3.givenProvider)
+
+        await initConfigData();
         await this.handleSubmit();
     }
 
@@ -254,7 +250,7 @@ class App extends React.Component {
             this.setState({connectBtnDisabled: false});
             this.setState({user: user});
 
-            if (_.isEmpty(configData)) {
+            if (_.isEmpty( await initConfigData())) {
                 return this.addOpenSnackbar('获取服务端配置失败,请联系服务端管理员');
             }
             config = getConfig();
