@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "next build&&next start -p 3000",
+    "start": "next dev",
     "build": "next build",
-    "dev": "next dev -p 3000"
+    "release": "next build&&next export -o ../../go/lobbyplatfrom/bin/proxy/build"
   },
   "devDependencies": {
     "@emotion/react": "^11.4.1",

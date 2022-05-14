@@ -20,7 +20,7 @@ import _ from 'lodash';
 import moment from "moment";
 import React from 'react';
 import Web3 from "web3";
-import abiJson from './config/abi.json';
+import {baseApiUrl, heroesJson} from './config/abi.js';
 import SendGiftFormDialog from "./SendGiftFormDialog";
 import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
@@ -34,15 +34,14 @@ let mintBoxAbi;
 let jsonInterface;
 let auctionJsonInterface
 
-let baseApiUrl = abiJson.baseApiUrl;
 let baseUrl = '';
-
+let apiUrl = baseApiUrl();
 let configData = {};
 let initConfigData = async () => {
     if (!_.isEmpty(configData)) {
         return configData;
     }
-    let res = await fetch(baseApiUrl + '/Config', {
+    let res = await fetch(apiUrl + '/Config', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -133,14 +132,15 @@ class App extends React.Component {
     }
 
     async componentDidMount() {
-        let self = this;
         console.log('componentDidMount');
 
         let location = document.location.href;
         // 本地测试url切换
-        if (location.indexOf(':3000') > -1) {
-            baseUrl = 'http://localhost:3080';
-            baseApiUrl = baseUrl + abiJson.baseApiUrl;
+        let localPort = ':3000/';
+        if (location.indexOf(localPort) > -1) {
+            baseUrl = location.replace(localPort,':3080')
+            apiUrl = baseUrl + baseApiUrl;
+            console.log('baseUrl', baseUrl, apiUrl);
         }
 
         let fetchApi = async (filename) => {
@@ -156,7 +156,10 @@ class App extends React.Component {
 
 
         await initConfigData();
-        let version = `v${configData.Version}.${configData.CommitID.substring(0,4)}`
+        let version = 'dev';
+        if(configData.Version){
+            version = `v${configData?.Version}.${configData?.CommitID?.substring(0,4)}`
+        }
         this.setState({version});
         await this.handleSubmit();
     }
@@ -342,7 +345,7 @@ class App extends React.Component {
             chainID
         };
         console.log('start fetch itemlist', body);
-        let url = `${baseApiUrl}/ItemList`;
+        let url = `${apiUrl}/ItemList`;
         fetch(url, {
             method: 'POST',
             headers: {
@@ -475,8 +478,8 @@ class App extends React.Component {
         let totalSupply = await myContract.methods.totalSupply().call();
         this.setState({totalSupply: totalSupply});
 
-        let heroesJson = abiJson.heroesJson[_.random(abiJson.heroesJson.length - 1)];
-        let tokenUri = (heroesJson.bsID ?? '') + '';
+        let heroJson = heroesJson[_.random(heroesJson.length - 1)];
+        let tokenUri = (heroJson.bsID ?? '') + '';
         let method = myContract.methods['spawnHero'](mintUri, mintToAddress, tokenUri);
         console.log('spawnHero', totalSupply, mintUri, mintToAddress, tokenUri);
         let tx = await method.send({
@@ -763,7 +766,7 @@ class App extends React.Component {
                             }
                             item.img = item.img || 'static/img/empty.jpg';
                             if (item.tokenUri?.match(/^\d+$/)) {
-                                item.name = _.find(abiJson.heroesJson, (heroJson) => heroJson['bsID'] === parseInt(item.tokenUri))?.name;
+                                item.name = _.find(heroesJson, (heroJson) => heroJson['bsID'] === parseInt(item.tokenUri))?.name;
                                 item.img = `https://img7.99.com/yhkd/image/data/hero//big-head/${item.tokenUri}.jpg`;
                             }
                             // 显示格式化地址
