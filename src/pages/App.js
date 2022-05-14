@@ -2,7 +2,7 @@ import CardGiftCardIcon from '@mui/icons-material/CardGiftcard';
 import CloseIcon from '@mui/icons-material/Close';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import ShoppingCartCheckoutIcon from '@mui/icons-material/ShoppingCartCheckout';
-import {Box, FormControl} from '@mui/material';
+import {Badge, Box, FormControl} from '@mui/material';
 import AppBar from '@mui/material/AppBar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -156,6 +156,8 @@ class App extends React.Component {
 
 
         await initConfigData();
+        let version = `v${configData.Version}.${configData.CommitID.substring(0,4)}`
+        this.setState({version});
         await this.handleSubmit();
     }
 
@@ -676,32 +678,30 @@ class App extends React.Component {
                         <Box sx={{
                             display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center'
                         }}>
-                            <Typography
-                                variant="h6"
-                                noWrap
-                                component="div"
-                                sx={{mr: 2, display: {xs: 'none', md: 'flex'}, fontWeight: 'bold'}}
-                            >
-                                {AppName}
-                            </Typography>
+                            <Badge
+                                badgeContent={this.state.version}>
+                                <Typography
+                                    variant="h5"
+                                    noWrap
+                                    component="div"
+                                    sx={{mr: 2, display: {xs: 'none', md: 'flex'}, fontWeight: 'bold'}}
+                                >
+                                    {AppName}
+                                </Typography>
+                            </Badge>
                             <Box sx={{flexGrow: 1, display: {xs: 'none', md: 'flex'}}}>
-                                {pages.map((page) => (
-                                    <Button
-                                        color={this.state.selectPageId === page.id ? 'warning' : 'inherit'}
-                                        key={page.id}
-                                        id={page.id}
-                                        size={'large'}
-                                        sx={{
-                                            fontWeight: 'bold',
-                                            fontSize: '1.2rem',
-                                            mr: 2,
-                                            display: {xs: 'none', md: 'flex'}
-                                        }}
-                                        onClick={this.handleChangePage}
-                                    >
-                                        {page.name}
-                                    </Button>
-                                ))}
+                                {pages.map((page) => (<Button
+                                    color={this.state.selectPageId === page.id ? 'warning' : 'inherit'}
+                                    key={page.id}
+                                    id={page.id}
+                                    size={'large'}
+                                    sx={{
+                                        fontWeight: 'bold', fontSize: '1.2rem', mr: 2, display: {xs: 'none', md: 'flex'}
+                                    }}
+                                    onClick={this.handleChangePage}
+                                >
+                                    {page.name}
+                                </Button>))}
                             </Box>
                             <Box>
                                 <Box sx={{height: 20}}>
