@@ -114,6 +114,16 @@ let isPreSale = function (item) {
     return item.creator && item.creator === getConfig().PreSaleContractAddress;
 }
 
+let getSelectOwner = function(){
+    let owner ='';
+    if (selectPageId === 'my') {
+        owner = user.account;
+    } else if (selectPageId === 'market') {
+        owner = config?.AuctionContractAddress
+    }
+    return owner;
+}
+
 class App extends React.Component {
     constructor(props) {
         super(props);
@@ -129,6 +139,7 @@ class App extends React.Component {
         this.disconnectWallet = this.disconnectWallet.bind(this);
         this.componentDidMount = this.componentDidMount.bind(this);
         this.handleChangePage = this.handleChangePage.bind(this);
+        this.handleClearCache = this.handleClearCache.bind(this);
     }
 
     async componentDidMount() {
@@ -329,17 +340,12 @@ class App extends React.Component {
             return;
         }
 
-        let owner;
-        let chainID = user.chainID
-        if (selectPageId === 'my') {
-            owner = user.account;
-        } else if (selectPageId === 'market') {
-            owner = config.AuctionContractAddress
-        }
+        let owner = getSelectOwner();
         if (!owner) {
-            console.warn('owner is null');
+            console.warn('selectOwner is null', selectPageId);
             return;
         }
+        let chainID = user.chainID
         let body = {
             owner,
             chainID
@@ -443,7 +449,7 @@ class App extends React.Component {
         if (!snackbarMsg) {
             return;
         }
-        console.log('addOpenSnackbar snackbarMsg:', snackbarMsg, json);
+        console.log(new Date(), ':addOpenSnackbar snackbarMsg:', snackbarMsg, json||'');
         if (json) {
             snackbarMsg += " " + (json.message || JSON.stringify(json));
         }
@@ -660,6 +666,29 @@ class App extends React.Component {
         this.forceUpdate();
     }
 
+    handleClearCache = async () => {
+        let owner = getSelectOwner();
+        let body = {
+            owner,
+            chainID: user.chainID
+        }
+        this.addOpenSnackbar('正在清除...');
+        try {
+            let res = await fetch(apiUrl + '/ClearCache', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(body)
+            });
+            let json = await res.json();
+            this.addOpenSnackbar('清除成功', json);
+            await this.handleSubmit();
+        } catch (e) {
+            return this.addOpenSnackbar('清除失败', e);
+        }
+    }
+
     render() {
 
         const action = (<React.Fragment>
@@ -726,6 +755,7 @@ class App extends React.Component {
                                     })}
                                 </Box>
                                 <Box sx={{display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-end'}}>
+                                    <Button color="inherit" onClick={this.handleClearCache}>刷新缓存</Button>
                                     <Button id="connectBtn" disabled={this.state.connectBtnDisabled}
                                             color="inherit"
                                             onClick={this.handleClick}>{connectBtnName}</Button>
