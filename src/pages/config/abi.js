@@ -1,5 +1,5 @@
 export function baseApiUrl() {
-    return "/cos/lobbyplatform/user/User";
+    return "/cos/lobbyplatform/chain/Chain";
 }
 
 export function heroesJson() {
