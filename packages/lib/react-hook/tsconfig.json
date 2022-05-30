@@ -1,0 +1,16 @@
+{
+  "extends": "../baseConfig.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "typeRoots": [
+      "node_modules/@types",
+      "../../../node_modules/@types",
+      "typings.d.ts"
+    ]
+  },
+  "include": ["./src/**/*.ts","./src/**/*.tsx",
+    "./typings.d.ts"
+  ],
+  "exclude": [
+    "../node_modules","../../node_modules","./src/**/*.stories.tsx","./src/**/*.stories.ts"]
+}

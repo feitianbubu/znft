@@ -1,0 +1,28 @@
+{
+  "name": "@lib/react-component",
+  "version": "1.0.0",
+  "description": "",
+  "main": "lib/index.js",
+  "module": "es/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint":"eslint ./src/**/*.tsx  --quiet --fix --no-eslintrc -c ./.eslintrc.js && eslint ./src/**/*.ts  --quiet --fix --no-eslintrc -c ./.eslintrc.js",
+    "clean:dist": "rm -rf es && rm -rf lib"
+  },
+
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {},
+  "dependencies": {
+    "@types/react-syntax-highlighter":"15.5.1",
+    "@typescript-eslint/eslint-plugin": "5.26.0",
+    "@typescript-eslint/parser": "5.26.0",
+    "eslint": "7.32.0",
+    "eslint-config-google": "0.14.0",
+    "eslint-plugin-react": "7.30.0",
+    "eslint-plugin-react-hooks": "4.5.0",
+    "react-syntax-highlighter": "15.5.0",
+    "typescript": "4.7.2"
+  }
+}

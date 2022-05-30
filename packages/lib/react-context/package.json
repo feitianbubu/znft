@@ -1,0 +1,26 @@
+{
+  "name": "@lib/react-context",
+  "version": "1.0.0",
+  "description": "",
+  "main": "lib/index.js",
+  "module": "es/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint":"eslint ./src/**/*.tsx  --quiet --fix --no-eslintrc -c ./.eslintrc.js && eslint ./src/**/*.ts  --quiet --fix --no-eslintrc -c ./.eslintrc.js",
+    "clean:dist": "rm -rf es && rm -rf lib"
+  },
+
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "5.26.0",
+    "@typescript-eslint/parser": "5.26.0",
+    "eslint-config-google": "0.14.0",
+    "eslint-plugin-react": "7.29.4",
+    "eslint-plugin-react-hooks": "4.5.0",
+    "eslint": "7.32.0",
+    "typescript": "4.7.2"
+  },
+  "dependencies": {}
+}

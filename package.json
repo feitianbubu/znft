@@ -1,28 +1,89 @@
 {
-  "name": "znft",
-  "version": "1.0.0",
-  "private": true,
-  "scripts": {
-    "start": "next dev",
-    "build": "next build",
-    "release": "next build&&next export -o ../../go/lobbyplatfrom/bin/proxy/build"
-  },
-  "devDependencies": {
-    "@emotion/react": "^11.4.1",
-    "@emotion/styled": "^11.3.0",
-    "@mui/icons-material": "^5.5.1",
-    "@mui/material": "^5.0.0-rc.1",
-    "@uniswap/widgets": "^1.0.10",
-    "lodash": "^4.17.21",
-    "moment": "^2.29.2",
-    "next": "12.1.6",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
-    "eslint": "8.15.0",
-    "eslint-config-next": "12.1.6",
-    "web3": "^1.7.1"
-  },
-  "dependencies": {
-    "react-redux": "^8.0.1"
+    "name": "znft",
+    "version": "1.0.0",
+    "main": "index.js",
+    "license": "MIT",
+    "private": true,
+    "workspaces": {
+      "packages": [
+        "packages/*",
+        "packages/lib/*"
+      ],
+      "nohoist": [
+        "**/react-native/**",
+        "react-native/**",
+        "**/react-native",
+        "**/react-native-**/**",
+        "**/react-native-**",
+        "react-native-**/**",
+        "**/@react-native-**/**",
+        "**/@react-native-**",
+        "@react-native-**/**"
+      ]
+    },
+    "devDependencies": {
+      "@emotion/cache": "11.7.1",
+      "@emotion/react": "11.9.0",
+      "@emotion/server": "11.4.0",
+      "@emotion/styled": "11.8.1",
+      "@mui/material": "5.8.1",
+      "@mui/icons-material": "5.8.0",
+      "@types/node": "17.0.35",
+      "@types/qrcode":"1.4.2",
+      "@types/react": "18.0.9",
+      "@types/react-dom": "18.0.5",
+      "@types/nprogress": "0.2.0",
+      "cross-env":"7.0.3",
+      "dayjs": "1.11.2",
+      "nprogress": "0.2.0",
+      "pre-commit": "1.2.2",
+      "qrcode": "1.5.0",
+      "react": "17.0.2",
+      "react-dom": "17.0.2",
+      "rebound": "0.1.0",
+      "rimraf":"3.0.2"
+    },
+    "engines": {
+      "node": ">=v14.0.0"
+    },
+    "scripts": {
+      "clean:deps": "yarn clean:pc && yarn clean:lib && yarn clean:mobile && yarn clean:app && yarn clean:story && yarn clean:root  || true",
+      "clean:root": "rimraf node_modules",
+      "clean:pc": "rimraf packages/pc/node_modules",
+      "clean:lib": "yarn clean:react:lib",
+      "clean:react:lib": "yarn clean:lib:react:component && yarn clean:lib:react:context && yarn clean:lib:react:hook && yarn clean:lib:react:util && yarn clean:lib:constant && yarn clean:lib:service && yarn clean:lib:util ",
+      "clean:lib:react:component": "rimraf packages/lib/react-component/node_modules",
+      "clean:lib:react:context": "rimraf packages/lib/react-context/node_modules",
+      "clean:lib:react:hook": "rimraf packages/lib/react-hook/node_modules",
+      "clean:lib:react:util": "rimraf packages/lib/react-util/node_modules",
+      "clean:story": "yarn clean:react:story",
+      "clean:react:story": "rimraf packages/react-story/node_modules",
+      "clean:lib:constant": "rimraf packages/lib/constant/node_modules",
+      "clean:lib:service": "rimraf packages/lib/service/node_modules",
+      "clean:lib:util": "rimraf packages/lib/util/node_modules",
+      "clean:mobile": "rimraf packages/mobile/node_modules",
+      "clean:app": "rimraf packages/app/node_modules",
+      "clean:lib:dist":"yarn workspace @lib/constant clean:dist && yarn workspace @lib/react-component clean:dist && yarn workspace @lib/react-context clean:dist && yarn workspace @lib/react-hook clean:dist && yarn workspace @lib/react-no-ssr clean:dist && yarn workspace @lib/react-util clean:dist && yarn workspace @lib/service clean:dist && yarn workspace @lib/util clean:dist",
+      "clean:pc:dist":"yarn workspace pc clean:dist",
+      "clean:dist":"yarn run clean:pc:dist && yarn run clean:lib:dist",
+      "pc:start": "yarn workspace pc dev",
+      "pc:build": "yarn workspace pc build",
+      "pc:prod": "yarn workspace pc start",
+      "pc:docker:build": "docker build . -t fzcode/web/pc",
+      "pc:docker:tag":"docker tag fzcode/web/pc:latest 192.168.31.159/library/fzcode/web/pc:latest",
+      "pc:docker:push": "docker push 192.168.31.159/library/fzcode/web/pc:latest",
+      "pc:docker:clean": "docker rmi fzcode/web/pc||true &&docker rmi 192.168.31.159/library/fzcode/web/pc",
+      "pc:server": "yarn workspace pc start",
+      "pc:test": "yarn workspace pc test",
+      "static:start": "yarn workspace static start",
+      "react:story:start":"yarn workspace react-story storybook",
+      "react:story:build":"yarn workspace react-story build-storybook",
+      "react:story:preview":"yarn workspace react-story preview",
+      "lint:pc":"yarn workspace pc lint",
+      "lint:lib": "yarn workspace @lib/constant lint && yarn workspace @lib/react-component lint && yarn workspace @lib/react-context lint && yarn workspace @lib/react-hook lint && yarn workspace @lib/service lint && yarn workspace @lib/util lint"
+    },
+    "pre-commit": [
+      "lint:pc",
+      "lint:lib"
+    ]
   }
-}
