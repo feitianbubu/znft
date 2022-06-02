@@ -66,7 +66,7 @@
       "clean:lib:dist":"yarn workspace @lib/constant clean:dist && yarn workspace @lib/react-component clean:dist && yarn workspace @lib/react-context clean:dist && yarn workspace @lib/react-hook clean:dist && yarn workspace @lib/react-no-ssr clean:dist && yarn workspace @lib/react-util clean:dist && yarn workspace @lib/service clean:dist && yarn workspace @lib/util clean:dist",
       "clean:pc:dist":"yarn workspace pc clean:dist",
       "clean:dist":"yarn run clean:pc:dist && yarn run clean:lib:dist",
-      "pc:start": "yarn workspace pc dev",
+      "start": "yarn workspace pc dev",
       "pc:build": "yarn workspace pc build",
       "pc:prod": "yarn workspace pc start",
       "pc:docker:build": "docker build . -t fzcode/web/pc",

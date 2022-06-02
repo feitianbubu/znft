@@ -75,6 +75,7 @@ const  Home:React.FC = ()=>{
                        preSaleContract = new ethers.Contract(config.PreSaleContractAddress, preSale,provider);
                    }
                }catch (e:any) {
+                   console.log(e)
                    message.error(e.message)
                }
             }else {
@@ -138,15 +139,14 @@ const  Home:React.FC = ()=>{
         }
 
         return<Grid item={true} key={`${item.tokenUri}${item.tokenId}${item.quality}${item.creator}`}>
-            <CustomCard  sx={{ maxWidth: 345 }}>
+            <CustomCard  sx={{ maxWidth: 250 }}>
                 <CardMedia
                     component="img"
                     alt="green iguana"
-                    height="280"
                     image={image}
                 />
                 <CardContent>
-                    <Typography gutterBottom variant="h5" component="div">
+                    <Typography gutterBottom variant="h6" component="div">
                         {name}
                     </Typography>
                     <Rating name="read-only" value={rate} readOnly />
