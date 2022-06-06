@@ -2,7 +2,6 @@ import React from "react";
 import Filter from './filter'
 import Panel from './panel'
 import {styled} from "@mui/material/styles";
-import FilterContextProvider from "./context/filter-context";
 const FilterDom = styled("div")({
     width: 280,
     padding:24
@@ -16,15 +15,13 @@ const FlexDom = styled("div")({
     width:'100%'
 })
 const Home:React.FC = ()=>{
-    return <FilterContextProvider>
-        <FlexDom>
-            <FilterDom>
-                <Filter/>
-            </FilterDom>
-            <PanelDom>
-                <Panel/>
-            </PanelDom>
-        </FlexDom>
-    </FilterContextProvider>
+    return <FlexDom>
+        <FilterDom>
+            <Filter/>
+        </FilterDom>
+        <PanelDom>
+            <Panel/>
+        </PanelDom>
+    </FlexDom>
 }
 export default Home;

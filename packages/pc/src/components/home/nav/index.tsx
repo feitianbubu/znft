@@ -6,12 +6,16 @@ import {message} from "@lib/util";
 import PersonIcon from '@mui/icons-material/Person';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import TuneIcon from '@mui/icons-material/Tune';
+import {useFilter} from "@/pc/components/home/body/context/filter-context";
+import {EFilter} from "@/pc/constant/enum";
 
 const pages = [
     {name: '市场', id: 'market'},
     {name: '我的', id: 'my'},
-    {name: '空投', id: 'mint'},
-    {name: '兑换', id: 'swap'}
+    {name: '游戏', id: 'game'},
+    {name: '下载', id: 'download'},
+    {name: '文档', id: 'doc'},
+    {name: '联系我们', id: 'contact'},
 ];
 const Banner = styled("div")({
     padding: '5px 5px',
@@ -57,15 +61,17 @@ const Nav: React.FC = () => {
         }
     }, [address, chainId, url]);
     const [selectPageId, setSelectPageId] = React.useState<string>(pages[0].id);
+    let [, setFilter] = useFilter();
     const handleChangePage = useCallback((id: string) => {
         setSelectPageId(id);
-    }, [setSelectPageId]);
+        setFilter(id === 'my' ? EFilter.我的 : EFilter.市场);
+    }, [setFilter]);
 
     return <>
         <AppBar position="relative">
             <Banner>
                 <Logo>
-                    Z-NFT
+                    Z-GAMEFI
                 </Logo>
                 <Box sx={{flexGrow: 1, display: {xs: 'none', md: 'flex'}}}>
                     {pages.map((page) => (<Button
