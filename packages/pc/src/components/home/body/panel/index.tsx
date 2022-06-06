@@ -42,7 +42,8 @@ const  Home:React.FC = ()=>{
     const {chainId,address} = useWallet();
     const [filter,,filterLoading,setFilterLoading] = useFilter()
     const [list,setList] = useState<IChainItem[]>([]);
-    const chainInfoRef = useRef<IChainInfo|undefined>();
+    // const chainInfoRef = useRef<IChainInfo|undefined>();
+    const [chainInfo,setChainInfo] = useState<IChainInfo|undefined>();
     const initMap = useCallback(()=>{
         const map :{[key:string]:string}= {};
         for (const heroesJsonElement of heroesJson) {
@@ -60,7 +61,8 @@ const  Home:React.FC = ()=>{
         if(provider&&chainConfig){
             const config = chainConfig.Chain[chainId];
             if(config){
-                chainInfoRef.current = config;
+                // chainInfoRef.current = config;
+                setChainInfo(config)
                try {
                    if(heroCore){
                        heroContract = new ethers.Contract( config.HeroContractAddress , heroCore , provider )
@@ -92,7 +94,6 @@ const  Home:React.FC = ()=>{
         initMap();
     },[chainId, init, initMap]);
     const getItemList = useCallback(async (filter:string)=>{
-        const chainInfo = chainInfoRef.current
         console.log(chainInfo,chainId,address)
         if(chainInfo&&chainId&&address){
             switch (filter) {
@@ -107,7 +108,7 @@ const  Home:React.FC = ()=>{
             }
         }
 
-    },[address, chainId, getList])
+    },[address, chainId, chainInfo, getList])
     useEffect(()=>{
         if(filterLoading!=loading){
             setFilterLoading(loading)
@@ -118,14 +119,15 @@ const  Home:React.FC = ()=>{
             }
         }
     },[filterLoading, loading, setFilterLoading])
-    useEffect(()=>{
-        getItemList(filter).then()
-    },[filter, getItemList])
+    useEffect(() => {
+        getItemList(filter).then();
+    }, [filter, getItemList, chainInfo])
+
+    // useEffect(()=>{},[chainInfo])
     const listRender = useCallback(( item:IChainItem)=>{
         const rateNum =  Number.parseInt(item.quality||'1');
         const rate = rateNum==0?1:rateNum;
         let image = item.tokenUri?`https://img7.99.com/yhkd/image/data/hero//big-head/${item.tokenUri}.jpg`: 'http://172.24.135.32:3080/static/img/empty.jpg'
-        const chainInfo = chainInfoRef.current
         let name = heroesMap[item.tokenUri||'']
         if(chainInfo){
             if(isPreSale(item,chainInfo)){
@@ -156,7 +158,7 @@ const  Home:React.FC = ()=>{
                 </CardActions>
             </CustomCard>
         </Grid>
-    },[heroesMap])
+    },[chainInfo, heroesMap])
     return <Grid container spacing={2} rowSpacing={2} columns={{ xs: 4, sm: 8, md: 12 }}>
         {list.map(listRender)}
     </Grid>
