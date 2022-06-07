@@ -1,16 +1,15 @@
-import Head from 'next/head'
-import utilStyles from '../styles/utils.module.css'
-import Link from 'next/link'
 import NProgress from 'nprogress'
-import React, {useCallback, useEffect, useRef, useState} from "react";
-import {Grid,Card,Rating,CardActions ,CardContent,CardMedia ,Button,Typography   } from '@mui/material'
+import React, {useCallback, useEffect, useState} from "react";
+import {Button, Card, CardActions, CardContent, CardMedia, Grid, Rating, Typography} from '@mui/material'
 import {
-    getChainConfig, getChainItemList,
+    getChainConfig,
+    getChainItemList,
     getHeroClockAction,
     getHeroCore,
     getMinBox,
     getPreSale,
-    IChainInfo, IChainItem,
+    IChainInfo,
+    IChainItem,
 } from "@/pc/services/contract";
 import {ethers} from "ethers";
 import Provider from "@/pc/instance/provider";
@@ -19,15 +18,15 @@ import {message} from "@lib/util";
 import {useFilter} from "@/pc/components/home/body/context/filter-context";
 import {EFilter} from "@/pc/constant/enum";
 import {heroesJson} from "@/pc/constant";
-import { styled } from '@mui/material/styles';
+import {styled} from '@mui/material/styles';
 import {useLoading} from "@lib/react-hook";
+
 const isMintBox =  (item:IChainItem,chainInfo:IChainInfo)=> {
     return item.creator && item.creator === chainInfo.MintBoxContractAddress;
 }
 const isPreSale =  (item:IChainItem,chainInfo:IChainInfo)=> {
     return item.creator && item.creator === chainInfo.PreSaleContractAddress;
 }
-// box-shadow: 0px 5px 5px -3pxrgba(0,0,0,0.2),0px 8px 10px 1px rgba(0,0,0,0.14),0px 3px 14px 2px rgba(0,0,0,0.12);
 const CustomCard = styled(Card)({
     '&:hover':{
         boxShadow:'0px 5px 5px -3px rgba(0,0,0,0.2),0px 8px 10px 1px rgba(0,0,0,0.14),0px 3px 14px 2px rgba(0,0,0,0.12)',
@@ -74,11 +73,15 @@ const  Home:React.FC = ()=>{
                        mintBoxContract = new ethers.Contract(config.MintBoxContractAddress, minBox,provider);
                    }
                    if(preSale){
-                       preSaleContract = new ethers.Contract(config.PreSaleContractAddress, preSale,provider);
+                       try{
+                           preSaleContract = new ethers.Contract(config.PreSaleContractAddress, preSale,provider);
+                       }catch (e){
+                           console.log('get preSaleContract fail', e, provider);
+                       }
                    }
                }catch (e:any) {
                    console.log(e)
-                   message.error(e.message)
+                   message.error(e)
                }
             }else {
                 message.error("暂不支持该链")
@@ -160,7 +163,7 @@ const  Home:React.FC = ()=>{
         </Grid>
     },[chainInfo, heroesMap])
     return <Grid container spacing={2} rowSpacing={2} columns={{ xs: 4, sm: 8, md: 12 }}>
-        {list.map(listRender)}
+        {list?.map(listRender)}
     </Grid>
 }
 export default Home
