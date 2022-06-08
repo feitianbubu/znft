@@ -12,6 +12,7 @@ import {EFilter} from "@/pc/constant/enum";
 const pages = [
     {name: '市场', id: 'market'},
     {name: '我的', id: 'my'},
+    {name: '案例', id: 'case'},
     {name: '游戏', id: 'game'},
     {name: '下载', id: 'download'},
     {name: '文档', id: 'doc'},

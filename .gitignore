@@ -10,3 +10,5 @@ yarn-error.log*
 # yarn.lock
 node_modules
 yarn-error.log
+/packages/hardhat/cache/
+/packages/hardhat/artifacts/
