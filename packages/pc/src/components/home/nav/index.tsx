@@ -15,7 +15,7 @@ const pages = [
     {name: '案例', id: 'case'},
     {name: '游戏', id: 'game'},
     {name: '下载', id: 'download'},
-    {name: '文档', id: 'doc'},
+    {name: '文档', id: 'document'},
     {name: '联系我们', id: 'contact'},
 ];
 const Banner = styled("div")({
@@ -67,6 +67,14 @@ const Nav: React.FC = () => {
         setSelectPageId(id);
         setFilter(id === 'my' ? EFilter.我的 : EFilter.市场);
     }, [setFilter]);
+    const handleFaucet = useCallback(async () => {
+        // 判断是否开发网
+        let devChainId = '31337';
+        if (chainId !== devChainId) {
+            message.warning(`请切换到开发网络${devChainId}`);
+            return;
+        }
+    }, [chainId]);
 
     return <>
         <AppBar position="relative">
@@ -97,6 +105,7 @@ const Nav: React.FC = () => {
                         <Chip sx={{border: '0'}} icon={<TuneIcon fontSize="small"/>} label={chainId} variant="outlined" clickable={true}/>
                     </UserBox>
                     <ActionBox>
+                        <Button color="inherit" onClick={handleFaucet}>水龙头</Button>
                         <Button color="inherit" onClick={handleClearCache}>刷新缓存</Button>
                         <Button id="connectBtn"
                                 color="inherit"
