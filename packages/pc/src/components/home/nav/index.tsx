@@ -2,13 +2,12 @@ import React, {useCallback} from "react";
 import {AppBar, Box, Button, Chip, Divider} from '@mui/material'
 import {styled} from '@mui/material/styles';
 import {useWallet} from "@/pc/context/wallet";
-import {message} from "@lib/util";
 import PersonIcon from '@mui/icons-material/Person';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import TuneIcon from '@mui/icons-material/Tune';
 import {useFilter} from "@/pc/components/home/body/context/filter-context";
 import {EFilter} from "@/pc/constant/enum";
-
+import { useSnackbar } from 'notistack';
 const pages = [
     {name: '市场', id: 'market'},
     {name: '我的', id: 'my'},
@@ -31,6 +30,7 @@ const Logo = styled('div')({
     fontSize: 32
 })
 const Nav: React.FC = () => {
+    const { enqueueSnackbar } = useSnackbar();
     const {address, balance, chainId} = useWallet();
     let showAddress = address && address.substring(0, 6) + '...' + address.substring(address.length - 4);
     let showBalance = parseFloat(balance).toFixed(4)
@@ -46,7 +46,7 @@ const Nav: React.FC = () => {
             owner,
             chainID
         }
-        message.loading('正在清除...')
+        enqueueSnackbar('正在清除...', {variant: 'info'})
         try {
             let res = await fetch(url + '/ClearCache', {
                 method: 'POST',
@@ -55,12 +55,12 @@ const Nav: React.FC = () => {
                 },
                 body: JSON.stringify(body)
             });
-            let json = await res.json();
-            message.success(`清除成功:${json}`);
+            await res.json();
+            enqueueSnackbar(`清除成功`, {variant: 'success'})
         } catch (e) {
-            message.warning(`清除失败:${e}`);
+            enqueueSnackbar('清除失败:${e}', {variant: 'warning'})
         }
-    }, [address, chainId, url]);
+    }, [address, chainId, enqueueSnackbar, url]);
     const [selectPageId, setSelectPageId] = React.useState<string>(pages[0].id);
     let [, setFilter] = useFilter();
     const handleChangePage = useCallback((id: string) => {
@@ -71,10 +71,10 @@ const Nav: React.FC = () => {
         // 判断是否开发网
         let devChainId = '31337';
         if (chainId !== devChainId) {
-            message.warning(`请切换到开发网络${devChainId}`);
+            enqueueSnackbar(`请切换到开发网络${devChainId}`, {variant: 'warning'});
             return;
         }
-    }, [chainId]);
+    }, [chainId, enqueueSnackbar]);
 
     return <>
         <AppBar position="relative">

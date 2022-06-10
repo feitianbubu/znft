@@ -1,13 +1,11 @@
-import Head from 'next/head'
-import utilStyles from '../styles/utils.module.css'
-import Link from 'next/link'
-import React, {useCallback, useEffect} from "react";
-import {Paper,Divider,Accordion,AccordionSummary ,AccordionDetails ,Typography   } from "@mui/material";
+import React from "react";
+import {Accordion, AccordionDetails, AccordionSummary, Paper, Typography} from "@mui/material";
 import {ExpandMore} from '@mui/icons-material'
-import  {Radio} from "@lib/react-component";
+import {Radio} from "@lib/react-component";
 import {EFilter} from "@/pc/constant/enum";
 
 import {useFilter} from "../context/filter-context";
+
 const sortList = [{
     label:'类型',
     value:'1',

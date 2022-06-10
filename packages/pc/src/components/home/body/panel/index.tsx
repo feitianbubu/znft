@@ -14,28 +14,29 @@ import {
 import {ethers} from "ethers";
 import Provider from "@/pc/instance/provider";
 import {useWallet} from "@/pc/context/wallet";
-import {message} from "@lib/util";
 import {useFilter} from "@/pc/components/home/body/context/filter-context";
 import {EFilter} from "@/pc/constant/enum";
 import {heroesJson} from "@/pc/constant";
 import {styled} from '@mui/material/styles';
 import {useLoading} from "@lib/react-hook";
+import { useSnackbar} from "notistack";
 
-const isMintBox =  (item:IChainItem,chainInfo:IChainInfo)=> {
+const isMintBox = (item: IChainItem, chainInfo: IChainInfo) => {
     return item.creator && item.creator === chainInfo.MintBoxContractAddress;
 }
-const isPreSale =  (item:IChainItem,chainInfo:IChainInfo)=> {
+const isPreSale = (item: IChainItem, chainInfo: IChainInfo) => {
     return item.creator && item.creator === chainInfo.PreSaleContractAddress;
 }
 const CustomCard = styled(Card)({
-    '&:hover':{
-        boxShadow:'0px 5px 5px -3px rgba(0,0,0,0.2),0px 8px 10px 1px rgba(0,0,0,0.14),0px 3px 14px 2px rgba(0,0,0,0.12)',
+    '&:hover': {
+        boxShadow: '0px 5px 5px -3px rgba(0,0,0,0.2),0px 8px 10px 1px rgba(0,0,0,0.14),0px 3px 14px 2px rgba(0,0,0,0.12)',
         position: 'relative',
-        left:-1,
-        top:-1
+        left: -1,
+        top: -1
     }
 })
-const  Home:React.FC = ()=>{
+const Home: React.FC = () => {
+    const {enqueueSnackbar, closeSnackbar} = useSnackbar();
     const [heroesMap,setHeroesMap] = useState<{[key:string]:string}>({})
     const[getList,loading] = useLoading(getChainItemList);
     const {chainId,address} = useWallet();
@@ -59,37 +60,37 @@ const  Home:React.FC = ()=>{
         let preSaleContract;
         if(provider&&chainConfig){
             const config = chainConfig.Chain[chainId];
-            if(config){
-                // chainInfoRef.current = config;
-                setChainInfo(config)
-               try {
-                   if(heroCore){
-                       heroContract = new ethers.Contract( config.HeroContractAddress , heroCore , provider )
-                   }
-                   if(HeroClockAction){
-                       auctionContract = new ethers.Contract(config.AuctionContractAddress, HeroClockAction,provider);
-                   }
-                   if(minBox){
-                       mintBoxContract = new ethers.Contract(config.MintBoxContractAddress, minBox,provider);
-                   }
-                   if(preSale){
-                       try{
-                           preSaleContract = new ethers.Contract(config.PreSaleContractAddress, preSale,provider);
-                       }catch (e){
-                           console.log('get preSaleContract fail', e, provider);
-                       }
-                   }
-               }catch (e:any) {
-                   console.log(e)
-                   message.error(e)
-               }
-            }else {
-                message.error("暂不支持该链")
+            if(!config){
+                enqueueSnackbar('暂不支持该链', {variant: 'error', persist: true});
+                return;
             }
+            setChainInfo(config);
+            try {
+                if (heroCore) {
+                    heroContract = new ethers.Contract(config.HeroContractAddress, heroCore, provider);
+                }
+                if (HeroClockAction) {
+                    auctionContract = new ethers.Contract(config.AuctionContractAddress, HeroClockAction, provider);
+                }
+                if (minBox) {
+                    mintBoxContract = new ethers.Contract(config.MintBoxContractAddress, minBox, provider);
+                }
+                if (preSale) {
+                    try {
+                        preSaleContract = new ethers.Contract(config.PreSaleContractAddress, preSale, provider);
+                    } catch (e) {
+                        console.log('get preSaleContract fail', e, provider);
+                    }
+                }
+            } catch (e: any) {
+                console.log('init contract fail', e);
+                enqueueSnackbar(e);
+            }
+            closeSnackbar();
         }
 
-        console.log(heroContract,auctionContract,mintBoxContract,preSaleContract)
-    },[])
+        console.log(heroContract, auctionContract, mintBoxContract, preSaleContract)
+    },[closeSnackbar, enqueueSnackbar])
     useEffect(()=>{
         if(chainId){
             init(chainId).then()
