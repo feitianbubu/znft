@@ -25,20 +25,18 @@ const Banner = styled("div")({
 const UserBox = styled('div')({display: 'flex', alignItems: 'center', marginRight: '20px'})
 const ActionBox = styled('div')({display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-end'})
 const Logo = styled('div')({
+    height: '55px',
     margin: '0 20px',
     fontWeight: 'bold',
     fontSize: 32
 })
 const Nav: React.FC = () => {
-    const { enqueueSnackbar } = useSnackbar();
+    const { enqueueSnackbar } = useSnackbar();``
     const {address, balance, chainId} = useWallet();
     let showAddress = address && address.substring(0, 6) + '...' + address.substring(address.length - 4);
     let showBalance = parseFloat(balance).toFixed(4)
     let connectBtnName = '连接钱包';
     const url = process.env.NEXT_PUBLIC_API_URL;
-    const handleClick = useCallback(async () => {
-
-    }, []);
     const handleClearCache = useCallback(async () => {
         let owner = address;
         let chainID = chainId;
@@ -98,6 +96,7 @@ const Nav: React.FC = () => {
                 </Box>
                 <Box>
                     <UserBox>
+                        <Button color="inherit" onClick={handleClearCache}>刷新缓存</Button>
                         <Chip sx={{border: '0'}} icon={<PersonIcon fontSize="small"/>} label={showAddress}
                               variant="outlined" clickable={true}/>
                         <Chip sx={{border: '0'}} icon={<AttachMoneyIcon fontSize="small"/>} label={showBalance} variant="outlined"
@@ -105,11 +104,6 @@ const Nav: React.FC = () => {
                         <Chip sx={{border: '0'}} icon={<TuneIcon fontSize="small"/>} label={chainId} variant="outlined" clickable={true}/>
                     </UserBox>
                     <ActionBox>
-                        <Button color="inherit" onClick={handleFaucet}>水龙头</Button>
-                        <Button color="inherit" onClick={handleClearCache}>刷新缓存</Button>
-                        <Button id="connectBtn"
-                                color="inherit"
-                                onClick={handleClick}>{connectBtnName}</Button>
                     </ActionBox>
                 </Box>
             </Banner>
