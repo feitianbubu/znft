@@ -24,6 +24,18 @@ const withTM = require('next-transpile-modules')(lib);
   //   },
   // },
   compress:true,
+    async rewrites() {
+        return [
+            {
+                source: '/static/abi/:path*',
+                destination: 'http://localhost:3080/static/abi/:path*'
+            },
+            {
+                source: '/cos/lobbyplatform/:path*',
+                destination: 'http://localhost:3080/cos/lobbyplatform/:path*'
+            }
+        ]
+    }
 })
 module.exports = moduleExports;
 // module.exports = withSentryConfig(moduleExports, {

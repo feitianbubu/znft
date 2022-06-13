@@ -47,9 +47,9 @@ let logoutWarn: undefined | string = undefined;
 
 export const restfulFetch = async <R>(requestUrl: string, requestInit: RequestInit, conversionFunc?: (params: any) => R) => {
   let url = requestUrl;
-  if (!requestUrl.startsWith('http')) {
-    url = process.env.NEXT_PUBLIC_API_URL + requestUrl;
-  }
+  // if (!requestUrl.startsWith('http')) {
+  //   url = process.env.NEXT_PUBLIC_API_URL + requestUrl;
+  // }
   let response: Response;
   try {
     response = await fetch(url, requestInit);
@@ -80,9 +80,9 @@ export const restfulFetch = async <R>(requestUrl: string, requestInit: RequestIn
 };
 export const staticFetch = async <R>(requestUrl: string, requestInit: RequestInit) => {
   let url = requestUrl;
-  if (!requestUrl.startsWith('http')) {
-    url = process.env.NEXT_PUBLIC_API_URL + requestUrl;
-  }
+  // if (!requestUrl.startsWith('http')) {
+  //   url = process.env.NEXT_PUBLIC_API_URL + requestUrl;
+  // }
   let response: Response;
   try {
     response = await fetch(url, requestInit);

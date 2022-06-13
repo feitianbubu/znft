@@ -4,7 +4,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "next build&&next start -p 3081",
     "lint": "next lint",
     "test": "next -v",
     "clean:dist": "rm -rf .next"

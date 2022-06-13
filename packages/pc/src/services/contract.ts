@@ -35,8 +35,7 @@ export interface IConfig{
     Version:string
 }
 export const getChainConfig = ()=>{
-    const url  = process.env.NEXT_PUBLIC_RESTFUL_URL;
-    return Http.post<IConfig>(`${url}/cos/lobbyplatform/chain/Chain/Config`,{})
+    return Http.post<IConfig>(`${process.env.NEXT_PUBLIC_API_URL}/Config`,{})
 }
 export interface IChainItem{
     currentPrice: string
@@ -58,6 +57,5 @@ export interface IChainItemListResponse{
     items:IChainItem[]
 }
 export const getChainItemList = (params?:IChainItemListRequest)=>{
-    const url  = process.env.NEXT_PUBLIC_RESTFUL_URL;
-    return Http.post<IChainItemListResponse>(`${url}/cos/lobbyplatform/chain/Chain/ItemList`,params)
+    return Http.post<IChainItemListResponse>(`${process.env.NEXT_PUBLIC_API_URL}/ItemList`,params)
 }
