@@ -1,10 +1,10 @@
-import type { AppProps } from 'next/app'
-import { CacheProvider } from '@emotion/react';
+import type {AppProps} from 'next/app'
+import {CacheProvider} from '@emotion/react';
 import Head from 'next/head';
-import { ThemeProvider } from '@mui/material/styles';
+import {createTheme, ThemeProvider} from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import createEmotionCache from "../config/createEmotionCache";
-import theme from "../config/theme";
+// import theme from "../config/theme";
 import {EmotionCache} from "@emotion/utils";
 import Context from "../context";
 import Layout from "../layout";
@@ -18,6 +18,7 @@ import {
   staticFetch
 } from "@/pc/http";
 import "nprogress/nprogress.css"
+
 const clientSideEmotionCache = createEmotionCache();
 interface  Props  extends AppProps {
   emotionCache:EmotionCache
@@ -28,15 +29,37 @@ Http.setRestfulRequestInit(getRestfulRequestInit);
 Http.setStaticFetch(staticFetch);
 Http.setStaticRequestInit(getStaticRequestInit);
 
+export const ColorModeContext = React.createContext({ toggleColorMode: () => {} });
+
 const MyApp :React.FC<PropsWithChildren<any>> = (props)=>{
   useEffect(()=>{
     console.log('_app','mount')
   },[])
   const { Component, emotionCache = clientSideEmotionCache, pageProps } = props;
+  const [mode, setMode] = React.useState<'light' | 'dark'>('dark');
+  const colorMode = React.useMemo(
+      () => ({
+        toggleColorMode: () => {
+          setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));
+        },
+      }),
+      [],
+  );
+
+  const theme = React.useMemo(
+      () =>
+          createTheme({
+            palette: {
+              mode,
+            },
+          }),
+      [mode],
+  );
   return  <CacheProvider value={emotionCache}>
     <Head>
       <meta name="viewport" content="initial-scale=1, width=device-width" />
     </Head>
+    <ColorModeContext.Provider value={colorMode}>
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Context>
@@ -45,6 +68,7 @@ const MyApp :React.FC<PropsWithChildren<any>> = (props)=>{
         </Layout>
       </Context>
     </ThemeProvider>
+    </ColorModeContext.Provider>
   </CacheProvider>
 }
 

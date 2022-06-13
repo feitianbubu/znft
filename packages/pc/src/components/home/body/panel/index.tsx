@@ -158,11 +158,11 @@ const Home: React.FC = () => {
                     <Rating name="read-only" value={rate} readOnly />
                 </CardContent>
                 <CardActions>
-                    <Button variant={"contained"} size={"small"}>购买</Button>
+                    <Button variant={"contained"} size={"small"} onClick={() => enqueueSnackbar(`开发中...`)}>购买</Button>
                 </CardActions>
             </CustomCard>
         </Grid>
-    },[chainInfo, heroesMap])
+    },[chainInfo, enqueueSnackbar, heroesMap])
     return <Grid container spacing={2} rowSpacing={2} columns={{ xs: 4, sm: 8, md: 12 }}>
         {list?.map(listRender)}
     </Grid>
