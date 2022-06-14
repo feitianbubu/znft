@@ -154,22 +154,25 @@ const Nav: React.FC = () => {
                 setSelectChainId(event.target.value);
             } catch (switchError: any) {
                 // This error code indicates that the chain has not been added to MetaMask.
-                // if (switchError.code === 4902) {
-                //     try {
-                //         await ethereum.request({
-                //             method: 'wallet_addEthereumChain',
-                //             params: [
-                //                 {
-                //                     chainId,
-                //                     chainName,
-                //                     rpcUrls,
-                //                 },
-                //             ],
-                //         });
-                //     } catch (addError) {
-                //         // handle "add" error
-                //     }
-                // }
+                if (switchError.code === 4902 && chainId === '0x7a69') {
+                    try {
+                        let chainName = 'hardhat';
+                        let rpcUrls = ['https://hardhat.tevat.dev/'];
+                        await ethereum.request({
+                            method: 'wallet_addEthereumChain',
+                            params: [
+                                {
+                                    chainId,
+                                    chainName,
+                                    rpcUrls,
+                                },
+                            ],
+                        });
+                    } catch (addError) {
+                        console.log('addError', addError);
+                    }
+                    return;
+                }
                 console.log(`切换失败${switchError.toString()}`, switchError, chainId);
                 enqueueSnackbar(`切换失败${switchError.toString()}`, {variant: 'error'});
             }
