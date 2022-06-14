@@ -61,7 +61,7 @@ const Home: React.FC = () => {
         if(provider&&chainConfig){
             const config = chainConfig.Chain[chainId];
             if(!config){
-                enqueueSnackbar('暂不支持该链', {variant: 'error', persist: true});
+                // enqueueSnackbar('暂不支持该链', {variant: 'error', persist: true});
                 return;
             }
             setChainInfo(config);

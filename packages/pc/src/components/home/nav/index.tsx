@@ -1,5 +1,16 @@
 import React, {useCallback} from "react";
-import {AppBar, Box, Button, Chip, Divider} from '@mui/material'
+import {
+    AppBar,
+    Box,
+    Button,
+    Chip,
+    Divider,
+    FormControl,
+    InputLabel,
+    MenuItem,
+    Select,
+    SelectChangeEvent
+} from '@mui/material'
 import {styled} from '@mui/material/styles';
 import {useWallet} from "@/pc/context/wallet";
 import PersonIcon from '@mui/icons-material/Person';
@@ -10,6 +21,7 @@ import {EFilter} from "@/pc/constant/enum";
 import {useSnackbar} from 'notistack';
 import Switch from '@mui/material/Switch';
 import {ColorModeContext} from "@/pc/pages/_app";
+import {getChainConfig} from "@/pc/services/contract";
 
 const MaterialUISwitch = styled(Switch)(({theme}) => ({
     width: 62,
@@ -115,6 +127,58 @@ const Nav: React.FC = () => {
         setSelectPageId(id);
         setFilter(id === 'my' ? EFilter.我的 : EFilter.市场);
     }, [setFilter]);
+    const [selectChainId, setSelectChainId] = React.useState<string>(chainId || '31337');
+    React.useEffect(function () {
+        console.log('selectChainId', selectChainId, chainId);
+        Promise.all([getChainConfig()]).then(
+            ([chainConfig]) => {
+                console.log('chainConfig', chainConfig);
+                const chain = chainConfig?.Chain[chainId];
+                if (!chain) {
+                    // 不支持该链
+                    enqueueSnackbar('不支持该链, 请点击右上角网络下拉菜单切换', {variant: 'error'})
+                    return;
+                }
+                setSelectChainId(chainId);
+            });
+    }, [enqueueSnackbar, selectChainId, chainId]);
+    const handleChange = (event: SelectChangeEvent) => {
+        // 切换网络
+        const switchChain = async function (chainId: string) {
+            const ethereum = (window as any).ethereum
+            try {
+                await ethereum.request({
+                    method: 'wallet_switchEthereumChain',
+                    params: [{chainId}],
+                });
+                setSelectChainId(event.target.value);
+            } catch (switchError: any) {
+                // This error code indicates that the chain has not been added to MetaMask.
+                // if (switchError.code === 4902) {
+                //     try {
+                //         await ethereum.request({
+                //             method: 'wallet_addEthereumChain',
+                //             params: [
+                //                 {
+                //                     chainId,
+                //                     chainName,
+                //                     rpcUrls,
+                //                 },
+                //             ],
+                //         });
+                //     } catch (addError) {
+                //         // handle "add" error
+                //     }
+                // }
+                console.log(`切换失败${switchError.toString()}`, switchError, chainId);
+                enqueueSnackbar(`切换失败${switchError.toString()}`, {variant: 'error'});
+            }
+        }
+
+        // 转为16进制
+        let switchChainId = '0x'+parseInt(event.target.value).toString(16);
+        switchChain(switchChainId).then();
+    };
 
     return <>
         <AppBar position="relative">
@@ -138,6 +202,15 @@ const Nav: React.FC = () => {
                 </Box>
                 <Box>
                     <UserBox>
+                        <FormControl sx={{minWidth: 120}} required>
+                            <InputLabel>网络</InputLabel>
+                            <Select label="网络" value={selectChainId} onChange={handleChange} sx={{height:40}}>
+                                <MenuItem value={31337}>Private</MenuItem>
+                                <MenuItem value={3}>Ropsten</MenuItem>
+                                <MenuItem value={80001}>Polygon Mumbai</MenuItem>
+                                <MenuItem value={97}>Binance Testnet</MenuItem>
+                            </Select>
+                        </FormControl>
                         <MaterialUISwitch sx={{m: 1}} defaultChecked onChange={colorMode.toggleColorMode}/>
                         <Button color="inherit" onClick={handleClearCache}>刷新缓存</Button>
                         <Chip sx={{border: '0'}} icon={<PersonIcon fontSize="small"/>} label={showAddress}
