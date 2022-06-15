@@ -130,6 +130,9 @@ const Nav: React.FC = () => {
     const [selectChainId, setSelectChainId] = React.useState<string>(chainId || '31337');
     React.useEffect(function () {
         console.log('selectChainId', selectChainId, chainId);
+        if(!chainId){
+            return;
+        }
         Promise.all([getChainConfig()]).then(
             ([chainConfig]) => {
                 console.log('chainConfig', chainConfig);
