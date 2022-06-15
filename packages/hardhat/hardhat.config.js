@@ -1,6 +1,10 @@
 require("@nomiclabs/hardhat-waffle");
 require('dotenv').config();
-const { ALCHEMY_KEY, ACCOUNT_PRIVATE_KEY } = process.env;
+require("@nomiclabs/hardhat-ethers");
+require("./scripts/deploy.js");
+require("./scripts/mint.js");
+require("@nomiclabs/hardhat-etherscan");
+const { ALCHEMY_KEY, ACCOUNT_PRIVATE_KEY, ETHERSCAN_API_KEY } = process.env;
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
 task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
@@ -44,5 +48,8 @@ module.exports = {
   },
   mocha: {
     timeout: 40000
-  }
+  },
+  etherscan: {
+    apiKey: ETHERSCAN_API_KEY,
+  },
 };
