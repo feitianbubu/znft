@@ -140,7 +140,7 @@ const Nav: React.FC = () => {
                 if (!chain) {
                     // 不支持该链
                     enqueueSnackbar('不支持该链, 请点击右上角网络下拉菜单切换', {variant: 'error'})
-                    return;
+                    // return;
                 }
                 setSelectChainId(chainId);
             });
