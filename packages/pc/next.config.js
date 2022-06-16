@@ -28,11 +28,11 @@ const withTM = require('next-transpile-modules')(lib);
         return [
             {
                 source: '/static/abi/:path*',
-                destination: 'http://localhost:3080/static/abi/:path*'
+                destination: 'http://172.24.135.32:3080/static/abi/:path*'
             },
             {
                 source: '/cos/lobbyplatform/:path*',
-                destination: 'http://localhost:3080/cos/lobbyplatform/:path*'
+                destination: 'http://172.24.135.32:3080/cos/lobbyplatform/:path*'
             }
         ]
     }
