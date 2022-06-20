@@ -73,11 +73,11 @@ const MaterialUISwitch = styled(Switch)(({theme}) => ({
 const pages = [
     {name: '市场', id: 'market'},
     {name: '我的', id: 'my'},
-    {name: '案例', id: 'case'},
-    {name: '游戏', id: 'game'},
-    {name: '下载', id: 'download'},
-    {name: '文档', id: 'document'},
-    {name: '联系我们', id: 'contact'},
+    {name: '案例', id: 'case', disabled:true},
+    {name: '游戏', id: 'game', disabled:true},
+    {name: '下载', id: 'download', disabled:true},
+    {name: '文档', id: 'document', href:'https://fu-xing-min.gitbook.io/z-gamefi-docs/'},
+    {name: '联系我们', id: 'contact', disabled:true},
 ];
 const Banner = styled("div")({
     padding: '5px 5px',
@@ -123,9 +123,14 @@ const Nav: React.FC = () => {
     }, [address, chainId, enqueueSnackbar, url]);
     const [selectPageId, setSelectPageId] = React.useState<string>(pages[0].id);
     let [, setFilter] = useFilter();
-    const handleChangePage = useCallback((id: string) => {
+    const handleChangePage = useCallback((page:any) => {
+        const id = page.id;
         setSelectPageId(id);
         setFilter(id === 'my' ? EFilter.我的 : EFilter.市场);
+        if(page.href){
+            // 打开新页面
+            window.open(page.href);
+        }
     }, [setFilter]);
     const [selectChainId, setSelectChainId] = React.useState<string>(chainId || '31337');
     React.useEffect(function () {
@@ -197,11 +202,12 @@ const Nav: React.FC = () => {
                         color={selectPageId === page.id ? 'warning' : 'inherit'}
                         key={page.id}
                         id={page.id}
+                        disabled={page.disabled}
                         size={'large'}
                         sx={{
                             fontWeight: 'bold', fontSize: '1.2rem', mr: 2, display: {xs: 'none', md: 'flex'}
                         }}
-                        onClick={() => handleChangePage(page.id)}
+                        onClick={() => handleChangePage(page)}
                     >
                         {page.name}
                     </Button>))}
