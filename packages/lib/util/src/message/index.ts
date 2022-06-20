@@ -104,12 +104,13 @@ export class message {
         zIndex = `${parseInt(message.loop[length - 1].style.zIndex) - 1}`;
       }
       dom.style.zIndex = zIndex;
-      dom.style.top = `${8 + (8 + 42) * (length - 1)}px`;
+      const last = message.loop[length-1];
+      const currentTop = last?last.style.top:'-42px';
+      dom.style.top = currentTop;
       dom.style.opacity = '0';
       if (duration != 0) {
         setTimeout(() => {
           message.removeDom(tag);
-          delete message.map[tag];
           onClose();
         }, duration * 1000);
       }
@@ -117,7 +118,7 @@ export class message {
       message.map[tag] = dom;
       message.body.appendChild(dom);
       setTimeout(() => {
-        dom.style.top = `${8 + (8 + 42) * (length)}px`;
+        dom.style.top = `${Number.parseInt(dom.style.top)+8+42}px`;
         dom.style.opacity = `1`;
       }, 50);
       return tag;
