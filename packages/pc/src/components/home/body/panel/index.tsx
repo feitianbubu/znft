@@ -20,6 +20,7 @@ import {heroesJson} from "@/pc/constant";
 import {styled} from '@mui/material/styles';
 import {useLoading} from "@lib/react-hook";
 import { useSnackbar} from "notistack";
+import {message} from "@lib/util";
 
 const isMintBox = (item: IChainItem, chainInfo: IChainInfo) => {
     return item.creator && item.creator === chainInfo.MintBoxContractAddress;

@@ -58,6 +58,7 @@ const MyApp :React.FC<PropsWithChildren<any>> = (props)=>{
   return  <CacheProvider value={emotionCache}>
     <Head>
       <meta name="viewport" content="initial-scale=1, width=device-width" />
+      <meta name="color-scheme" id={'colorScheme'} content={mode}/>
     </Head>
     <ColorModeContext.Provider value={colorMode}>
     <ThemeProvider theme={theme}>

@@ -1,11 +1,19 @@
-// const message = {
-//     success:()=>{},
-// }
-
 import createTextIcon, {IIconType} from '../create-icon';
 import {insertCss} from '../_util';
 import {EEnv, Env} from '../env';
 
+const theme:{[key:string]:{[key:string]:string}} ={
+  light: {
+    background: '#fff',
+    color: '#323232',
+    boxShadow: '0 3px 6px -4px rgb(0 0 0 / 12%), 0 6px 16px 0 rgb(0 0 0 / 8%), 0 9px 28px 8px rgb(0 0 0 / 5%)',
+  },
+  dark: {
+    background: '#323232',
+    color: '#fff',
+    boxShadow: 'rgb(0 0 0 / 20%) 0px 3px 5px -1px, rgb(0 0 0 / 14%) 0px 6px 10px 0px, rgb(0 0 0 / 12%) 0px 1px 18px 0px',
+  },
+};
 /**
  *
  */
@@ -13,13 +21,20 @@ export class message {
     static map: { [key: string]: HTMLDivElement } = {}
     static loop: HTMLDivElement[] = []
     static body = globalThis?.document?.body||{};
-
+    static modeId = 'colorScheme'
+    static modeAttr = 'colorScheme'
     /**
      *
      */
     constructor() {
       //
 
+    }
+    static setModeId = (modeId:string)=>{
+      this.modeId = modeId;
+    }
+    static setModeAttr = (modeAttr:string)=>{
+      this.modeAttr = modeAttr;
     }
 
     static success: (content: string, duration?: number, onClose?: () => void) => string|undefined = (content, duration = 3, onClose = () => {
@@ -58,6 +73,7 @@ export class message {
       const dom = document.createElement('div');
       const tip = document.createElement('div');
       const icon = createTextIcon(type);
+      const mode = document.getElementById(message.modeId)?.getAttribute(message.modeAttr)||'dark';
       tip.innerHTML = `${icon}<div style="width: 8px"></div><div style="font-size: 14px">${content}</div>`;
       tip.style.height = '38px';
       tip.style.whiteSpace = 'nowrap';
@@ -65,8 +81,9 @@ export class message {
       tip.style.alignItems = 'center';
       tip.style.display = 'flex';
       tip.style.padding = '10px';
-      tip.style.background = '#fff';
-      tip.style.boxShadow = '0 3px 6px -4px rgb(0 0 0 / 12%), 0 6px 16px 0 rgb(0 0 0 / 8%), 0 9px 28px 8px rgb(0 0 0 / 5%)';
+      tip.style.color = theme[mode].color;
+      tip.style.background = theme[mode].background;
+      tip.style.boxShadow = theme[mode].boxShadow;
       tip.style.borderRadius = '4px';
 
       dom.style.position = 'fixed';
