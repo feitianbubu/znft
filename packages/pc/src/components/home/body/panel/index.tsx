@@ -166,7 +166,6 @@ const Home: React.FC = () => {
     },[chainInfo, enqueueSnackbar, heroesMap])
     return <Grid container spacing={2} rowSpacing={2} columns={{ xs: 4, sm: 8, md: 12 }}>
         {list?.map(listRender)}
-        <Button onClick={()=>message.success("dsa")}>test</Button>
     </Grid>
 }
 export default Home
