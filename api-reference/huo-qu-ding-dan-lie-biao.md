@@ -1,7 +1,7 @@
 # 获取订单列表
 
-{% swagger src="https://petstore.swagger.io/v2/swagger.json" path="undefined" method="undefined" %}
-[https://petstore.swagger.io/v2/swagger.json](https://petstore.swagger.io/v2/swagger.json)
+{% swagger src="../.gitbook/assets/swagger.yaml" path="/store/order" method="post" %}
+[swagger.yaml](../.gitbook/assets/swagger.yaml)
 {% endswagger %}
 
 {% hint style="info" %}
