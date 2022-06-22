@@ -16,7 +16,7 @@ import {useWallet} from "@/pc/context/wallet";
 import PersonIcon from '@mui/icons-material/Person';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import TuneIcon from '@mui/icons-material/Tune';
-import {useFilter} from "@/pc/components/home/body/context/filter-context";
+import {useFilter} from "../body/context/filter-context";
 import {EFilter} from "@/pc/constant/enum";
 import {useSnackbar} from 'notistack';
 import Switch from '@mui/material/Switch';

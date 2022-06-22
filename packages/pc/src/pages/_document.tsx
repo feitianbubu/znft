@@ -2,9 +2,6 @@ import * as React from 'react';
 import Document, { Html, Head, Main, NextScript } from 'next/document';
 import createEmotionServer from '@emotion/server/create-instance';
 import createEmotionCache from "@/pc/config/createEmotionCache";
-import {Http} from "@lib/service";
-import {restfulFetch,getRestfulRequestFormInit,getRestfulRequestInit,getStaticRequestInit,staticFetch} from "@/pc/http";
-// import theme from "../../config/theme";
 
 
 export default class MyDocument extends Document {

@@ -3,7 +3,6 @@ import Provider from "@/pc/instance/provider";
 import {useMount} from "@lib/react-hook";
 import {message} from "@lib/util";
 export const Layout:React.FC<PropsWithChildren<unknown>> = (props)=>{
-    const [open, setOpen] = useState(false);
     const verifyProvider = useCallback(async ()=>{
         const provider = await Provider.getInstance();
         if(provider){

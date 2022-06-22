@@ -4,7 +4,6 @@ import Head from 'next/head';
 import {createTheme, ThemeProvider} from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import createEmotionCache from "../config/createEmotionCache";
-// import theme from "../config/theme";
 import {EmotionCache} from "@emotion/utils";
 import Context from "../context";
 import Layout from "../layout";
@@ -31,7 +30,7 @@ Http.setStaticRequestInit(getStaticRequestInit);
 
 export const ColorModeContext = React.createContext({ toggleColorMode: () => {} });
 
-const MyApp :React.FC<PropsWithChildren<any>> = (props)=>{
+const MyApp :React.FC<PropsWithChildren<Props>> = (props)=>{
   useEffect(()=>{
     console.log('_app','mount')
   },[])

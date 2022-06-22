@@ -14,7 +14,7 @@ import {
 import {ethers} from "ethers";
 import Provider from "@/pc/instance/provider";
 import {useWallet} from "@/pc/context/wallet";
-import {useFilter} from "@/pc/components/home/body/context/filter-context";
+import {useFilter} from "../context/filter-context";
 import {EFilter} from "@/pc/constant/enum";
 import {heroesJson} from "@/pc/constant";
 import {styled} from '@mui/material/styles';
