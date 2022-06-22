@@ -1,0 +1,204 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "chain/chain.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "Chain"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/config": {
+      "post": {
+        "operationId": "Chain_Config",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/chainConfigResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/chainConfigRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Chain"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "chainChainConfig": {
+      "type": "object",
+      "properties": {
+        "Rowurl": {
+          "type": "string"
+        },
+        "Symbol": {
+          "type": "string"
+        },
+        "Name": {
+          "type": "string"
+        },
+        "RefreshInterval": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "HeroContractAddress": {
+          "type": "string"
+        },
+        "AuctionContractAddress": {
+          "type": "string"
+        },
+        "MintBoxContractAddress": {
+          "type": "string"
+        },
+        "PreSaleContractAddress": {
+          "type": "string"
+        }
+      }
+    },
+    "chainConfigRequest": {
+      "type": "object"
+    },
+    "chainConfigResponse": {
+      "type": "object",
+      "properties": {
+        "CommitID": {
+          "type": "string"
+        },
+        "Version": {
+          "type": "string"
+        },
+        "Chain": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/chainChainConfig"
+          }
+        }
+      }
+    },
+    "chainEmpty": {
+      "type": "object"
+    },
+    "chainItem": {
+      "type": "object",
+      "properties": {
+        "tokenId": {
+          "type": "string"
+        },
+        "quality": {
+          "type": "string"
+        },
+        "currentPrice": {
+          "type": "string"
+        },
+        "tokenUri": {
+          "type": "string"
+        },
+        "owner": {
+          "type": "string"
+        },
+        "seller": {
+          "type": "string"
+        },
+        "creator": {
+          "type": "string"
+        },
+        "num": {
+          "type": "string"
+        },
+        "preSale": {
+          "$ref": "#/definitions/chainPreSale"
+        }
+      }
+    },
+    "chainItemListResponse": {
+      "type": "object",
+      "properties": {
+        "nonce": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/chainItem"
+          }
+        }
+      }
+    },
+    "chainPreSale": {
+      "type": "object",
+      "properties": {
+        "startTime": {
+          "type": "string"
+        },
+        "endTime": {
+          "type": "string"
+        },
+        "supportMax": {
+          "type": "string"
+        },
+        "bidMax": {
+          "type": "string"
+        },
+        "isFinish": {
+          "type": "boolean"
+        },
+        "isStart": {
+          "type": "boolean"
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  }
+}

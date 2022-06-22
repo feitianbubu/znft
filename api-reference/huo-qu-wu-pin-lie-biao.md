@@ -1,7 +1,7 @@
 # 获取物品列表
 
-{% swagger src="https://petstore.swagger.io/v2/swagger.json" path="/store/order" method="post" %}
-[https://petstore.swagger.io/v2/swagger.json](https://petstore.swagger.io/v2/swagger.json)
+{% swagger src="../.gitbook/assets/chain.swagger.json" path="/v1/config" method="post" %}
+[chain.swagger.json](../.gitbook/assets/chain.swagger.json)
 {% endswagger %}
 
 {% swagger src="https://petstore.swagger.io/v2/swagger.json" path="undefined" method="undefined" %}
