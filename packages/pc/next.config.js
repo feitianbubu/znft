@@ -27,8 +27,8 @@ const withTM = require('next-transpile-modules')(lib);
     async rewrites() {
         return [
             {
-                source: '/static/abi/:path*',
-                destination: 'http://172.24.135.32:3080/static/abi/:path*'
+                source: '/static/:path*',
+                destination: 'http://172.24.135.32:3080/static/:path*'
             },
             {
                 source: '/cos/lobbyplatform/:path*',
