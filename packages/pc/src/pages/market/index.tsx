@@ -1,5 +1,6 @@
 import React from "react";
-const Shop:React.FC = ()=>{
-    return <div>shop</div>
+import Market from '@/pc/components/market'
+const MarketPage:React.FC = ()=>{
+    return <Market/>
 }
-export  default  Shop;
+export  default  MarketPage;

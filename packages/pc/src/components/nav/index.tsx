@@ -32,7 +32,7 @@ const Row = styled(Stack)`
 const menu:{text:string,route:string}[] = [{
     text:'首页',route:'/',
 },{
-    text:'市场',route:'/shop',
+    text:'市场',route:'/market',
 },{
     text:'案例',route:'/demo',
 },{
