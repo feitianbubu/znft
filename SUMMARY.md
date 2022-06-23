@@ -15,7 +15,7 @@
 * [获取物品列表](api-reference/huo-qu-wu-pin-lie-biao.md)
 * [获取订单列表](api-reference/huo-qu-ding-dan-lie-biao.md)
 * [合成物品](api-reference/he-cheng-wu-pin.md)
-* [出售物品](api-reference/chu-shou-wu-pin.md)
+* [服务端API测试](api-reference/fu-wu-duan-api-ce-shi.md)
 
 ## Fundamentals
 
