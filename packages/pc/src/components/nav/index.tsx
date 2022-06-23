@@ -1,9 +1,10 @@
-import React from "react";
+import React, {useCallback, useEffect} from "react";
 import Image from 'next/image'
 import Link from 'next/link'
 import profilePic from '@/pc/asset/logo.webp'
-import {Stack} from '@mui/material';
+import {Button, Stack} from '@mui/material';
 import {styled} from "@mui/material/styles";
+import {useClintNavigation} from "@/pc/hook/navigation";
 const Body = styled("div")({
     width: '100%',
     height:'64px'
@@ -17,18 +18,14 @@ const Center = styled('div')({
 })
 
 const NavLink = styled('a')((props)=>{
-    console.log(props)
     return {
-        textDecoration:'none',
-        color:props.theme.palette.text.primary,
+        textDecoration: 'none',
+        color: props.theme.palette.text.primary,
         fontWeight: 'bold',
-        '&:hover':{
-            background:props.theme.palette.action.hover
-        }
     }
 })
 const Row = styled(Stack)`
-height: 64px;
+  height: 64px;
   line-height: 64px;
 
 `
@@ -49,8 +46,23 @@ const menu:{text:string,route:string}[] = [{
 }
 ]
 
-const render = (item:{text:string,route:string})=>{return <Link href={item.route} passHref={true} key={item.route}><NavLink>{item.text}</NavLink></Link>}
+
 const Nav:React.FC = ()=>{
+    const [clientNavigation] = useClintNavigation()
+    const p = useCallback((e:React.MouseEvent<HTMLButtonElement, MouseEvent> )=>{
+        e.preventDefault()
+        console.log(e.currentTarget.dataset.route)
+        const route = e.currentTarget.dataset.route
+        if(route){
+            clientNavigation.push(route).then()
+        }
+    },[clientNavigation])
+    const render = useCallback((item:{text:string,route:string})=>{
+        return <Button key={item.route} data-route={item.route} onClick={p}><Link href={item.route} passHref={true} ><NavLink>{item.text}</NavLink></Link></Button>
+    },[p])
+    useEffect(()=>{
+        console.log("nav mount")
+    },[])
     return <Body>
         <Center>
             <Image
