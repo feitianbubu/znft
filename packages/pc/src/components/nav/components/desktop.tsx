@@ -24,20 +24,20 @@ const NavLink = styled('a')((props)=>{
         fontWeight: 'bold',
     }
 })
-const menu:{text:string,route:string}[] = [{
+const menu:{text:string,route:string, disabled?:boolean}[] = [{
     text:'首页',route:'/',
 },{
     text:'市场',route:'/market',
 },{
-    text:'案例',route:'/demo',
+    text:'案例',route:'/demo', disabled:true
 },{
-    text:'游戏',route:'/game',
+    text:'游戏',route:'/game', disabled:true
 },{
-    text:'下载',route:'/download',
+    text:'下载',route:'/download', disabled:true
 },{
     text:'文档',route:'/docs',
 },{
-    text:'联系我们',route:'/chat',
+    text:'联系我们',route:'/chat', disabled:true
 }
 ]
 
@@ -50,8 +50,8 @@ const DesktopNav:React.FC= ()=>{
             clientNavigation.push(route).then()
         }
     },[clientNavigation])
-    const render = useCallback((item:{text:string,route:string})=>{
-        return <Button key={item.route} data-route={item.route} onClick={handleClick}><Link href={item.route} passHref={true} ><NavLink>{item.text}</NavLink></Link></Button>
+    const render = useCallback((item:{text:string,route:string,disabled?:boolean})=>{
+        return <Button key={item.route} data-route={item.route} onClick={handleClick} disabled={item.disabled}>{item.text}</Button>
     },[handleClick])
     return <Body>
         <Center>
