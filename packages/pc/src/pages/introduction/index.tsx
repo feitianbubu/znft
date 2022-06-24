@@ -1,5 +1,8 @@
 import React from "react";
+import Introduction from "@/pc/components/introduction";
 const IntroductionPage:React.FC = ()=>{
-    return <div>introduction</div>
+    return <>
+    <Introduction/>
+    </>
 }
 export  default  IntroductionPage;

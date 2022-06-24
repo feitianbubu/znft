@@ -1,6 +1,6 @@
 import React, {useMemo} from "react";
 import {useMediaQuery, useTheme} from '@mui/material';
-import { ENUM_BREAK_POINTS} from "@/pc/constant";
+import { ENUM_BREAK_POINTS} from "@/pc/constant/enum";
 import Xs from './components/xs'
 import Sm from './components/sm'
 import Md from './components/md'
