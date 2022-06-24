@@ -7,7 +7,7 @@ const SwaggerUI = dynamic(
 );
 
 const Docs:React.FC = ()=>{
-    let url = `${process.env.NEXT_PUBLIC_STATIC_URL}/oas/chain/chain.swagger.json`
+    let url = `http://192.168.246.62:3080/static/oas/chain/chain.swagger.json`
     return <SwaggerUI url={url} />
 }
 export  default  Docs;
