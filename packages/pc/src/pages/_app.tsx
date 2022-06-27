@@ -17,6 +17,8 @@ import {
   staticFetch
 } from "@/pc/http";
 import "nprogress/nprogress.css"
+import "swagger-ui-react/swagger-ui.css"
+import "../styles/swagger-dark.css"
 
 const clientSideEmotionCache = createEmotionCache();
 interface  Props  extends AppProps {
