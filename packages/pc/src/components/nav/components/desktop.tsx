@@ -41,7 +41,7 @@ const menu:{text:string,route:string, disabled?:boolean}[] = [{
 },{
     text:'游戏',route:'/game'
 },{
-    text:'下载',route:'/download', disabled:true
+    text:'下载',route:'/download'
 },{
     text:'文档',route:'/docs',
 },{

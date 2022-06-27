@@ -1,5 +1,6 @@
 import React from "react";
-const Download:React.FC = ()=>{
-    return <div>Download</div>
+import Download from "@/pc/components/download";
+const DownloadPage:React.FC = ()=>{
+    return <>    <Download/></>
 }
-export  default  Download;
+export  default  DownloadPage;
