@@ -3,6 +3,7 @@ import Provider from "@/pc/instance/provider";
 import {useMount} from "@lib/react-hook";
 import {message} from "@lib/util";
 import Nav from "@/pc/components/nav";
+import Footer from "@/pc/components/footer";
 export const Layout:React.FC<PropsWithChildren<unknown>> = (props)=>{
     const verifyProvider = useCallback(async ()=>{
         const provider = await Provider.getInstance();
@@ -21,6 +22,7 @@ export const Layout:React.FC<PropsWithChildren<unknown>> = (props)=>{
     return <>
         <Nav/>
         {props.children}
+        <Footer/>
     </>
 }
 export default Layout
