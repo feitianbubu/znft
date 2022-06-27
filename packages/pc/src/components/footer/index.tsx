@@ -20,7 +20,7 @@ const Footer:React.FC = ()=>{
       <Panel>
 
           <Grid container={true}>
-              <Grid item={true} xs={12} md={6} spacing={3}>
+              <Grid item={true} xs={12} md={6}>
                   <Typography variant={'h5'} fontWeight={"bold"} textAlign={'center'}>
                       加入我们
                   </Typography>
@@ -48,7 +48,7 @@ const Footer:React.FC = ()=>{
                   </Grid>
 
               </Grid>
-              <Grid item={true} xs={12} md={6} spacing={3} textAlign={'center'}>
+              <Grid item={true} xs={12} md={6} textAlign={'center'}>
                   <Typography variant={'h5'} marginBottom={2}>
                       订阅消息
                   </Typography>

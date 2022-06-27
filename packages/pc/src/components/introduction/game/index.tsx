@@ -50,23 +50,23 @@ const Game: React.FC = () => {
             <Grid container spacing={6} justifyContent={"center"} alignItems={'center'}>
                 <Item item xs={12} md={6}>
                     <Box  display={'flex'} alignItems={'center'} justifyContent={'center'}>
-                        <Image src={moyu}/>
+                        <Image src={moyu} alt={'魔域'}/>
                     </Box>
                 </Item>
                 <Item item xs={12} md={6}>
                     <Box  display={'flex'} alignItems={'center'} justifyContent={'center'}>
-                        <Image src={logo}/>
+                        <Image src={logo} alt={'英魂之刃'}/>
                     </Box>
 
                 </Item>
                 <Item item xs={12} md={6}>
                     <Box  display={'flex'} alignItems={'center'} justifyContent={'center'}>
-                        <Image src={jizhan}/>
+                        <Image src={jizhan} alt={'激战'}/>
                     </Box>
                 </Item>
                 <Item item xs={12} md={6}>
                     <Box  display={'flex'} alignItems={'center'} justifyContent={'center'}>
-                        <Image src={zhengfu}/>
+                        <Image src={zhengfu} alt={'征服'}/>
                     </Box>
                 </Item>
             </Grid>

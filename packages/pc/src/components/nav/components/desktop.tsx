@@ -5,9 +5,16 @@ import profilePic from '@/pc/asset/logo.webp'
 import {Button, Stack} from '@mui/material';
 import {styled} from "@mui/material/styles";
 import {useClintNavigation} from "@/pc/hook/navigation";
-const Body = styled("div")({
-    width: '100%',
-    height:'64px'
+const Body = styled("div")((props)=>{
+    return {
+        width: '100%',
+        height:'64px',
+        position:'sticky',
+        top:0,
+        zIndex:100,
+        backgroundColor:props.theme.palette.background.default,
+        opacity:0.8
+    }
 })
 const Center = styled('div')({
     width:'1200px',
@@ -17,10 +24,11 @@ const Center = styled('div')({
     alignItems:'center'
 })
 
-const NavLink = styled('a')((props)=>{
+const NavLink = styled('a')<{disabled?:boolean}>(({disabled,theme})=>{
+    console.log(theme)
     return {
         textDecoration: 'none',
-        color: props.theme.palette.text.primary,
+        color: disabled?theme.palette.text.disabled:theme.palette.text.primary,
         fontWeight: 'bold',
     }
 })
@@ -31,7 +39,7 @@ const menu:{text:string,route:string, disabled?:boolean}[] = [{
 },{
     text:'案例',route:'/demo', disabled:true
 },{
-    text:'游戏',route:'/game', disabled:true
+    text:'游戏',route:'/game'
 },{
     text:'下载',route:'/download', disabled:true
 },{
@@ -51,7 +59,11 @@ const DesktopNav:React.FC= ()=>{
         }
     },[clientNavigation])
     const render = useCallback((item:{text:string,route:string,disabled?:boolean})=>{
-        return <Button key={item.route} data-route={item.route} onClick={handleClick} disabled={item.disabled}>{item.text}</Button>
+        return <Button key={item.route} data-route={item.route} onClick={handleClick} disabled={item.disabled}>
+            <Link passHref={true} href={item.route}>
+                <NavLink disabled={item.disabled}>{item.text}</NavLink>
+            </Link>
+        </Button>
     },[handleClick])
     return <Body>
         <Center>

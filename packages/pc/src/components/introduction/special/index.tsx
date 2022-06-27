@@ -134,12 +134,12 @@ const Special: React.FC = () => {
                         <Grid width={280} container spacing={2} justifyContent={"center"} alignItems={'center'}>
                             <Grid item xs={6}>
                                 <ButtonItem>
-                                    <Image src={binance} height={68} objectFit={"contain"}/>
+                                    <Image src={binance} height={68} objectFit={"contain"} alt={'binance'}/>
                                 </ButtonItem>
                             </Grid>
                             <Grid item xs={6}>
                                 <ButtonItem>
-                                    <Image src={eth} height={68} objectFit={"contain"}/>
+                                    <Image src={eth} height={68} objectFit={"contain"} alt={'eth'}/>
                                 </ButtonItem>
                             </Grid>
 
@@ -154,32 +154,32 @@ const Special: React.FC = () => {
                         <Grid container spacing={2} width={420} justifyContent={"center"} alignItems={'center'}>
                             <Grid item xs={4}>
                                 <ButtonItem>
-                                    <Image src={heco} height={68} width={68} objectFit={"contain"}/>
+                                    <Image src={heco} height={68} width={68} objectFit={"contain"} alt={'heco'}/>
                                 </ButtonItem>
                             </Grid>
                             <Grid item xs={4}>
                                 <ButtonItem>
-                                    <Image src={flow} height={68} width={68} objectFit={"contain"}/>
+                                    <Image src={flow} height={68} width={68} objectFit={"contain"} alt={'flow'}/>
                                 </ButtonItem>
                             </Grid>
                             <Grid item xs={4}>
                                 <ButtonItem>
-                                    <Image src={ftm} height={68} width={68} objectFit={"contain"}/>
+                                    <Image src={ftm} height={68} width={68} objectFit={"contain"} alt={'ftm'}/>
                                 </ButtonItem>
                             </Grid>
                             <Grid item xs={4}>
                                 <ButtonItem>
-                                    <Image src={polygon} height={68} width={68} objectFit={"contain"}/>
+                                    <Image src={polygon} height={68} width={68} objectFit={"contain"} alt={'polygon'}/>
                                 </ButtonItem>
                             </Grid>
                             <Grid item xs={4}>
                                 <ButtonItem>
-                                    <Image src={solana} height={68} width={68} objectFit={"contain"}/>
+                                    <Image src={solana} height={68} width={68} objectFit={"contain"} alt={'solana'}/>
                                 </ButtonItem>
                             </Grid>
                             <Grid item xs={4}>
                                 <ButtonItem>
-                                    <Image src={avax} height={68} width={68} objectFit={"contain"}/>
+                                    <Image src={avax} height={68} width={68} objectFit={"contain"} alt={'avax'}/>
                                 </ButtonItem>
                             </Grid>
 
@@ -198,7 +198,7 @@ const Special: React.FC = () => {
                 </TextItem>
             </Item>
             <Item item xs={12} md={6}>
-                <Image src={admin}/>
+                <Image src={admin} alt={'admin'}/>
             </Item>
             <Item item xs={12} md={6}>
                 <TextItem>
@@ -211,7 +211,7 @@ const Special: React.FC = () => {
                 </TextItem>
             </Item>
             <Item item xs={12} md={6}>
-                <Image src={security}/>
+                <Image src={security} alt={'security'}/>
             </Item>
             <Item item xs={12} md={6}>
                 <TextItem>
@@ -228,7 +228,7 @@ const Special: React.FC = () => {
                     <Grid spacing={6}  container={true}>
                         <Grid item xs={6} justifyContent={'center'} alignItems={'center'} display={'flex'} flexDirection={'column'}>
                             <ButtonItem >
-                                <Image src={nft} height={120} objectFit={"contain"}/>
+                                <Image src={nft} height={120} objectFit={"contain"} alt={'nft'}/>
 
                             </ButtonItem>
                             <Typography variant="h5" fontWeight={'bold'} component="div" gutterBottom>
@@ -237,7 +237,7 @@ const Special: React.FC = () => {
                         </Grid>
                         <Grid item xs={6} justifyContent={'center'} alignItems={'center'} display={'flex'} flexDirection={'column'}>
                             <ButtonItem>
-                                <Image src={airdrop} height={120} objectFit={"contain"}/>
+                                <Image src={airdrop} height={120} objectFit={"contain"} alt={'airdrop'}/>
                             </ButtonItem>
                             <Typography variant="h5" fontWeight={'bold'} component="div" gutterBottom>
                                 空投
@@ -245,7 +245,7 @@ const Special: React.FC = () => {
                         </Grid>
                         <Grid item xs={6} justifyContent={'center'} alignItems={'center'} display={'flex'} flexDirection={'column'}>
                             <ButtonItem>
-                                <Image src={box} height={120} objectFit={"contain"}/>
+                                <Image src={box} height={120} objectFit={"contain"} alt={'box'}/>
                             </ButtonItem>
                             <Typography variant="h5" fontWeight={'bold'} component="div" gutterBottom>
                                 盲盒
@@ -253,7 +253,7 @@ const Special: React.FC = () => {
                         </Grid>
                         <Grid item xs={6} justifyContent={'center'} alignItems={'center'} display={'flex'} flexDirection={'column'}>
                             <ButtonItem>
-                                <Image src={auction} height={120} objectFit={"contain"}/>
+                                <Image src={auction} height={120} objectFit={"contain"} alt={'auction'}/>
                             </ButtonItem>
                             <Typography variant="h5" fontWeight={'bold'} component="div" gutterBottom>
                                 拍卖
@@ -322,12 +322,12 @@ const Special: React.FC = () => {
                         <Grid width={280} container spacing={2} justifyContent={"center"} alignItems={'center'}>
                             <Grid item xs={6}>
                                 <ButtonItem>
-                                    <Image src={binance} height={68} objectFit={"contain"}/>
+                                    <Image src={binance} height={68} objectFit={"contain"} alt={'binance'}/>
                                 </ButtonItem>
                             </Grid>
                             <Grid item xs={6}>
                                 <ButtonItem>
-                                    <Image src={eth} height={68} objectFit={"contain"}/>
+                                    <Image src={eth} height={68} objectFit={"contain"} alt={'eth'}/>
                                 </ButtonItem>
                             </Grid>
 
@@ -342,32 +342,32 @@ const Special: React.FC = () => {
                         <Grid container spacing={2} width={420} justifyContent={"center"} alignItems={'center'}>
                             <Grid item xs={4}>
                                 <ButtonItem>
-                                    <Image src={heco} height={68} width={68} objectFit={"contain"}/>
+                                    <Image src={heco} height={68} width={68} objectFit={"contain"} alt={'heco'}/>
                                 </ButtonItem>
                             </Grid>
                             <Grid item xs={4}>
                                 <ButtonItem>
-                                    <Image src={flow} height={68} width={68} objectFit={"contain"}/>
+                                    <Image src={flow} height={68} width={68} objectFit={"contain"} alt={'flow'}/>
                                 </ButtonItem>
                             </Grid>
                             <Grid item xs={4}>
                                 <ButtonItem>
-                                    <Image src={ftm} height={68} width={68} objectFit={"contain"}/>
+                                    <Image src={ftm} height={68} width={68} objectFit={"contain"} alt={'ftm'}/>
                                 </ButtonItem>
                             </Grid>
                             <Grid item xs={4}>
                                 <ButtonItem>
-                                    <Image src={polygon} height={68} width={68} objectFit={"contain"}/>
+                                    <Image src={polygon} height={68} width={68} objectFit={"contain"} alt={'polygon'}/>
                                 </ButtonItem>
                             </Grid>
                             <Grid item xs={4}>
                                 <ButtonItem>
-                                    <Image src={solana} height={68} width={68} objectFit={"contain"}/>
+                                    <Image src={solana} height={68} width={68} objectFit={"contain"} alt={'solana'}/>
                                 </ButtonItem>
                             </Grid>
                             <Grid item xs={4}>
                                 <ButtonItem>
-                                    <Image src={avax} height={68} width={68} objectFit={"contain"}/>
+                                    <Image src={avax} height={68} width={68} objectFit={"contain"} alt={'avax'}/>
                                 </ButtonItem>
                             </Grid>
 
@@ -376,7 +376,7 @@ const Special: React.FC = () => {
                 </Stack>
             </Item>
             <Item item xs={12} md={6}>
-                <Image src={admin}/>
+                <Image src={admin} alt={'admin'}/>
             </Item>
             <Item item xs={12} md={6}>
                 <TextItem>
@@ -399,14 +399,14 @@ const Special: React.FC = () => {
                 </TextItem>
             </Item>
             <Item item xs={12} md={6}>
-                <Image src={security}/>
+                <Image src={security} alt={'security'}/>
             </Item>
             <Item item xs={12} md={6}>
                 <Box width={280} display={'flex'} justifyContent={'center'} alignItems={'center'}>
                     <Grid spacing={6}  container={true}>
                         <Grid item xs={6} justifyContent={'center'} alignItems={'center'} display={'flex'} flexDirection={'column'}>
                             <ButtonItem >
-                                <Image src={nft} height={120} objectFit={"contain"}/>
+                                <Image src={nft} height={120} objectFit={"contain"} alt={'nft'}/>
 
                             </ButtonItem>
                             <Typography variant="h5" fontWeight={'bold'} component="div" gutterBottom>
@@ -415,7 +415,7 @@ const Special: React.FC = () => {
                         </Grid>
                         <Grid item xs={6} justifyContent={'center'} alignItems={'center'} display={'flex'} flexDirection={'column'}>
                             <ButtonItem>
-                                <Image src={airdrop} height={120} objectFit={"contain"}/>
+                                <Image src={airdrop} height={120} objectFit={"contain"} alt={'airdrop'}/>
                             </ButtonItem>
                             <Typography variant="h5" fontWeight={'bold'} component="div" gutterBottom>
                                 空投
@@ -423,7 +423,7 @@ const Special: React.FC = () => {
                         </Grid>
                         <Grid item xs={6} justifyContent={'center'} alignItems={'center'} display={'flex'} flexDirection={'column'}>
                             <ButtonItem>
-                                <Image src={box} height={120} objectFit={"contain"}/>
+                                <Image src={box} height={120} objectFit={"contain"} alt={'box'}/>
                             </ButtonItem>
                             <Typography variant="h5" fontWeight={'bold'} component="div" gutterBottom>
                                 盲盒
@@ -431,7 +431,7 @@ const Special: React.FC = () => {
                         </Grid>
                         <Grid item xs={6} justifyContent={'center'} alignItems={'center'} display={'flex'} flexDirection={'column'}>
                             <ButtonItem>
-                                <Image src={auction} height={120} objectFit={"contain"}/>
+                                <Image src={auction} height={120} objectFit={"contain"} alt={'auction'}/>
                             </ButtonItem>
                             <Typography variant="h5" fontWeight={'bold'} component="div" gutterBottom>
                                 拍卖

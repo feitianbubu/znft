@@ -64,7 +64,7 @@ const More: React.FC = () => {
             <Grid container spacing={12} justifyContent={"center"} alignItems={'center'}>
                 <Item item xs={12} md={6}>
                     <Icon  top={60} left={312}>
-                        <Image height={107} width={96} src={recharge}/>
+                        <Image height={107} width={96} src={recharge} alt={'法币充值'}/>
                     </Icon>
                     <CardItem>
                         <TextItem>
@@ -80,7 +80,7 @@ const More: React.FC = () => {
                 </Item>
                 <Item item xs={12} md={6}>
                     <Icon  top={80} left={312}>
-                        <Image height={89} width={96} src={swap}/>
+                        <Image height={89} width={96} src={swap} alt={'交易所'}/>
                     </Icon>
                     <CardItem>
                         <TextItem>
@@ -96,7 +96,7 @@ const More: React.FC = () => {
                 </Item>
                 <Item item xs={12} md={6}>
                     <Icon  top={80} left={312}>
-                        <Image height={68} width={96} src={services}/>
+                        <Image height={68} width={96} src={services} alt={'服务'}/>
                     </Icon>
                     <CardItem>
                         <TextItem>
@@ -111,7 +111,7 @@ const More: React.FC = () => {
                 </Item>
                 <Item item xs={12} md={6}>
                     <Icon  top={80} left={312}>
-                        <Image height={74} width={96} src={more}/>
+                        <Image height={74} width={96} src={more} alt={'更多'}/>
                     </Icon>
                     <CardItem>
                         <TextItem>

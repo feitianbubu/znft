@@ -51,7 +51,7 @@ const News: React.FC = () => {
                 <Item item xs={12} md={4}>
                     <Box width={'100%'} height={'100%'}>
                         <Box height={400} display={'flex'} alignItems={'center'} justifyContent={'center'}>
-                            <Image src={moyu}/>
+                            <Image src={moyu} alt={'魔域'}/>
                         </Box>
 
                         <TextItem>
@@ -68,7 +68,7 @@ const News: React.FC = () => {
                 <Item item xs={12} md={4}>
                     <Box width={'100%'} height={'100%'}>
                         <Box height={400} display={'flex'} alignItems={'center'} justifyContent={'center'}>
-                            <Image src={logo}/>
+                            <Image src={logo} alt={'英魂之刃'}/>
                         </Box>
                         <TextItem>
 
@@ -86,7 +86,7 @@ const News: React.FC = () => {
                     <Box width={'100%'} height={'100%'}>
                         <Box  height={400} display={'flex'} alignItems={'center'} justifyContent={'center'}>
                             <Box bgcolor={'white'} borderRadius={2}>
-                            <Image src={metamask}/>
+                            <Image src={metamask} alt={'metamask'}/>
                             </Box>
                         </Box>
                         <TextItem>
