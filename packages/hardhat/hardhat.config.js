@@ -4,7 +4,7 @@ require("@nomiclabs/hardhat-ethers");
 require("./scripts/deploy.js");
 require("./scripts/mint.js");
 require("@nomiclabs/hardhat-etherscan");
-const { ALCHEMY_KEY, ACCOUNT_PRIVATE_KEY, ETHERSCAN_API_KEY } = process.env;
+const { ALCHEMY_KEY,ALCHEMY_MUMBAI_KEY, ACCOUNT_PRIVATE_KEY, ETHERSCAN_API_KEY } = process.env;
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
 task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
@@ -22,7 +22,7 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
  * @type import('hardhat/config').HardhatUserConfig
  */
 module.exports = {
-  defaultNetwork: "rinkeby",
+  defaultNetwork: "maticmum",
   networks: {
     hardhat: {
     },
@@ -30,9 +30,13 @@ module.exports = {
       url: `https://eth-rinkeby.alchemyapi.io/v2/${ALCHEMY_KEY}`,
       accounts: [`0x${ACCOUNT_PRIVATE_KEY}`]
     },
+    maticmum: {
+      url: `https://eth-rinkeby.alchemyapi.io/v2/${ALCHEMY_MUMBAI_KEY}`,
+      accounts: [`0x${ACCOUNT_PRIVATE_KEY}`],
+    },
   },
   solidity: {
-    version: "0.8.4",
+    version: "0.5.12",
     settings: {
       optimizer: {
         enabled: true,
