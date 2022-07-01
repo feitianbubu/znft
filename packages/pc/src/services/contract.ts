@@ -28,9 +28,9 @@ export interface IChainContractConfig {
     Rowurl: string
     Symbol: string
 }
-export type IChain = {[key:string]:IChainContractConfig}
+export type IChainContractConfigMap = {[key:string]:IChainContractConfig}
 export interface IConfig{
-    Chain:IChain,
+    Chain:IChainContractConfigMap,
     CommitID:string,
     Version:string
 }

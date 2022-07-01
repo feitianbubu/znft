@@ -1,5 +1,5 @@
 import React, {PropsWithChildren, useCallback, useEffect} from "react";
-type  IState ='dark'|'light'
+type  IState ='dark'|'light'|undefined
 type IAction = {
     type: 'change',
     value: IState
@@ -20,7 +20,7 @@ export const modeReducer: (state: IState, action: IAction) => IState = (state, a
         return  state
     }
 };
-export const modeDefaultValue: IState =getModeByTime();
+export const modeDefaultValue: IState =undefined;
 export const ModeContext = React.createContext<{state:IState, dispatch: React.Dispatch<IAction>}>({
     state: modeDefaultValue, dispatch: () => {
         //
@@ -40,6 +40,12 @@ export const ModeProvider :React.FC<PropsWithChildren<unknown>> = (props) => {
                 type:'change',
                 value:cache
             })
+        }else{
+            const mode = getModeByTime();
+            dispatch({
+                type:'change',
+                value:mode
+            })
         }
     },[])
     return <ModeContext.Provider value={value}>
@@ -48,7 +54,7 @@ export const ModeProvider :React.FC<PropsWithChildren<unknown>> = (props) => {
 }
 export default ModeProvider;
 
-export const useMode:()=>['dark'|'light',()=>void] = ()=>{
+export const useMode:()=>['dark'|'light'|undefined,()=>void] = ()=>{
     const {state,dispatch} =React.useContext(ModeContext);
     const toggle = useCallback(()=>{
         const nextValue = state=="light"?'dark':'light'
