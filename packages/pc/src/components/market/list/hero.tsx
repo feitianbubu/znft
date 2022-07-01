@@ -79,10 +79,9 @@ const Hero: React.FC<{ contractMap: IChainContractConfigMap, list: IChainItem[],
             if(heroAddress){
                 const heroContractInstance: ethers.Contract | null = new ethers.Contract(heroAddress, heroAbi, singer);
                 heroContractInstanceRef.current = heroContractInstance
-                const l  = await loadNFTList({chainID:chainId,owner:address})
-                if(l){
-                    console.log(l)
-                    setMyList(l.items)
+                const myNFT  = await loadNFTList({chainID:chainId,owner:address})
+                if(myNFT&&myNFT.items){
+                    setMyList(myNFT.items)
                 }
 
             }
