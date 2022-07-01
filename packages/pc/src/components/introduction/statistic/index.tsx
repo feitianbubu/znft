@@ -51,47 +51,47 @@ const Statistic:React.FC = ()=>{
         <Panel>
             <Mask/>
             <Box width={'100%'} marginBottom={12}>
-                <Typography variant="h3" textAlign={'center'} fontWeight={'bold'} component="div" gutterBottom>
+                <Typography color={'white'} variant="h3" textAlign={'center'} fontWeight={'bold'} component="div" gutterBottom>
                     我们已经实现
                 </Typography>
             </Box>
             <Grid container spacing={12} justifyContent={"center"} alignItems={'center'}>
                 <Item item xs={12} md={6}>
                     <TextItem>
-                        <Typography variant="h2" fontWeight={'bold'} component="div" gutterBottom>
+                        <Typography color={'white'} variant="h2" fontWeight={'bold'} component="div" gutterBottom>
                             6,817,984,518
                         </Typography>
-                        <Typography variant="h5" component="div" gutterBottom>
+                        <Typography color={'white'} variant="h5" component="div" gutterBottom>
                            注册用户
                         </Typography>
                     </TextItem>
                 </Item>
                 <Item item xs={12} md={6}>
                     <TextItem>
-                        <Typography variant="h2" fontWeight={'bold'} component="div" gutterBottom>
+                        <Typography color={'white'} variant="h2" fontWeight={'bold'} component="div" gutterBottom>
                             $956,394,867,112
                         </Typography>
-                        <Typography variant="h5" component="div" gutterBottom>
+                        <Typography color={'white'} variant="h5" component="div" gutterBottom>
                             交易量
                         </Typography>
                     </TextItem>
                 </Item>
                 <Item item xs={12} md={6}>
                     <TextItem>
-                        <Typography variant="h2" fontWeight={'bold'} component="div" gutterBottom>
+                        <Typography color={'white'} variant="h2" fontWeight={'bold'} component="div" gutterBottom>
                             7,111,652,418
                         </Typography>
-                        <Typography variant="h5" component="div" gutterBottom>
+                        <Typography color={'white'} variant="h5" component="div" gutterBottom>
                             NFT 铸造量
                         </Typography>
                     </TextItem>
                 </Item>
                 <Item item xs={12} md={6}>
                     <TextItem>
-                        <Typography variant="h2" fontWeight={'bold'} component="div" gutterBottom>
+                        <Typography color={'white'} variant="h2" fontWeight={'bold'} component="div" gutterBottom>
                             57,000 USDT
                         </Typography>
-                        <Typography variant="h5" component="div" gutterBottom>
+                        <Typography color={'white'} variant="h5" component="div" gutterBottom>
                             NFT 最高售价
                         </Typography>
                     </TextItem>

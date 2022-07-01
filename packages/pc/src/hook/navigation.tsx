@@ -15,7 +15,7 @@ export const useNavigation = ()=>{
 }
 
 /**
- * 这个会刷新页面，spa逻辑，一句话区别就是 服务器带数据下发的用useNavigation，不带数据的用useClintNavigation
+ * 这个会刷新页面，spa逻辑，一句话区别就是 服务器带数据下发的用useNavigation，不带数据的用useClintNavigation（规则仅适用同页面，不同页面仍旧会强制获取数据）
  */
 export const useClintNavigation = ()=>{
     const _router = useRouter();

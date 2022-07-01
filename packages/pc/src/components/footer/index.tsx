@@ -21,7 +21,7 @@ const Footer:React.FC = ()=>{
 
           <Grid container={true}>
               <Grid item={true} xs={12} md={6}>
-                  <Typography variant={'h5'} fontWeight={"bold"} textAlign={'center'}>
+                  <Typography color={theme=>theme.palette.text.primary} variant={'h5'} fontWeight={"bold"} textAlign={'center'}>
                       加入我们
                   </Typography>
                   <Grid container={true} textAlign={'center'} paddingLeft={16} paddingRight={16}>
@@ -49,7 +49,7 @@ const Footer:React.FC = ()=>{
 
               </Grid>
               <Grid item={true} xs={12} md={6} textAlign={'center'}>
-                  <Typography variant={'h5'} marginBottom={2}>
+                  <Typography color={theme=>theme.palette.text.primary} variant={'h5'} marginBottom={2}>
                       订阅消息
                   </Typography>
                   <OutlinedInput size={"small"}  endAdornment={<InputAdornment position="end">
@@ -63,4 +63,4 @@ const Footer:React.FC = ()=>{
     </BannerBody>
         </>
 }
-export default Footer
+export default React.memo(Footer)

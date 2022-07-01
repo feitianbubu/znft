@@ -1,8 +1,10 @@
-export interface RadioProps{
-    list:{label:string, value:string, disabled?:boolean}[]
+import {RadioGroupProps} from '@mui/material/RadioGroup/RadioGroup';
+import * as React from 'react';
+
+export interface RadioProps extends RadioGroupProps{
     defaultValue?:string,
     value?:string
-    onChange?:(value:string)=>void
     labelPlacement?:'end' | 'start' | 'top' | 'bottom',
-    disabled?:boolean
+    label?:React.ReactNode
+
 }

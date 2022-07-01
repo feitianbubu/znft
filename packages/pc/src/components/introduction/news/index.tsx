@@ -43,7 +43,7 @@ const News: React.FC = () => {
     return <BannerBody>
         <Panel>
             <Box width={'100%'} marginBottom={0}>
-                <Typography variant="h3" textAlign={'center'} fontWeight={'bold'} component="div" gutterBottom>
+                <Typography color={theme=>theme.palette.text.primary} variant="h3" textAlign={'center'} fontWeight={'bold'} component="div" gutterBottom>
                     新闻
                 </Typography>
             </Box>
@@ -56,10 +56,10 @@ const News: React.FC = () => {
 
                         <TextItem>
 
-                            <Typography variant="h5" fontWeight={'bold'} component="div" gutterBottom>
+                            <Typography color={theme=>theme.palette.text.primary} variant="h5" fontWeight={'bold'} component="div" gutterBottom>
                                 魔域接入
                             </Typography>
-                            <Typography variant="body1" component="div" gutterBottom>
+                            <Typography color={theme=>theme.palette.text.primary} variant="body1" component="div" gutterBottom>
                                 Nd Space 已经和魔域达成合作，魔域将全面支持nft的接入。
                             </Typography>
                         </TextItem>
@@ -72,10 +72,10 @@ const News: React.FC = () => {
                         </Box>
                         <TextItem>
 
-                            <Typography variant="h5" fontWeight={'bold'} component="div" gutterBottom>
+                            <Typography color={theme=>theme.palette.text.primary} variant="h5" fontWeight={'bold'} component="div" gutterBottom>
                                 英魂之刃接入
                             </Typography>
-                            <Typography variant="body1" component="div" gutterBottom>
+                            <Typography color={theme=>theme.palette.text.primary} variant="body1" component="div" gutterBottom>
                                 Nd Space 已经和英魂之刃达成合作，英魂之刃将全面支持nft的接入。
                             </Typography>
                         </TextItem>
@@ -90,10 +90,10 @@ const News: React.FC = () => {
                             </Box>
                         </Box>
                         <TextItem>
-                            <Typography variant="h5" fontWeight={'bold'} component="div" gutterBottom>
+                            <Typography color={theme=>theme.palette.text.primary} variant="h5" fontWeight={'bold'} component="div" gutterBottom>
                                 metamask
                             </Typography>
-                            <Typography variant="body1" component="div" gutterBottom>
+                            <Typography color={theme=>theme.palette.text.primary} variant="body1" component="div" gutterBottom>
                                 Nd Space 的nft市场支持使用metamask的使用。
                             </Typography>
                         </TextItem>

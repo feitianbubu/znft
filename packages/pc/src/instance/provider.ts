@@ -4,6 +4,9 @@ import {ACCOUNTS_CHANGED, CHAIN_CHANGED, ETH_REQUEST_ACCOUNTS} from "@/pc/consta
 export  class  Provider {
     private static provider:ethers.providers.Web3Provider;
     private static event:{[key:string]:{[key:string]:(provider:ethers.providers.Web3Provider)=>Promise<void>}}  = {[CHAIN_CHANGED]:{},[ACCOUNTS_CHANGED]:{}}
+    /**
+     * 这里直接吞了error 没有返回就是错误了
+     */
     public static getInstance =async ()=>{
         if(Provider.provider){
             return Provider.provider
@@ -32,6 +35,7 @@ export  class  Provider {
 
                 await Provider.refreshInfoFromMetamask(provider)
             }catch (e) {
+                throw e;
                 return
             }
             Provider.addListener()
@@ -39,22 +43,30 @@ export  class  Provider {
             return  provider;
         }
     }
-    private static refreshInfoFromMetamask = (provider:ethers.providers.Web3Provider = Provider.provider) => {
-        return new Promise((resolve,reject)=>{
-            try {
-                provider.send(ETH_REQUEST_ACCOUNTS, [])
-                    .then((address)=>{
-                    resolve(address)
-                });
-                // console.log( provider.getSigner().getChainId().then(console.log))
-            }catch (e: any) {
-                // { code:number,message:string,stack:string }
-                // todo 尚不明确错误判断规则
-                if(e.code>0){
-                    reject(e.message)
-                }
-            }
-        })
+    private static refreshInfoFromMetamask = async (provider:ethers.providers.Web3Provider = Provider.provider) => {
+        try {
+            const address = await  provider.send(ETH_REQUEST_ACCOUNTS, []);
+            return address
+        }catch (e) {
+            throw e
+        }
+        // return new Promise((resolve,reject)=>{
+        //     try {
+        //         provider.send(ETH_REQUEST_ACCOUNTS, [])
+        //             .then((address)=>{
+        //             resolve(address)
+        //         }).catch(e=> {
+        //
+        //         });
+        //         // console.log( provider.getSigner().getChainId().then(console.log))
+        //     }catch (e: any) {
+        //         // { code:number,message:string,stack:string }
+        //         // todo 尚不明确错误判断规则
+        //         if(e.code>0){
+        //             reject(e.message)
+        //         }
+        //     }
+        // })
 
     };
 
@@ -91,6 +103,17 @@ export  class  Provider {
             ethereum.on(CHAIN_CHANGED, Provider.handleChainChange);
             ethereum.on(ACCOUNTS_CHANGED, Provider.handleAccountChange);
         }
+    }
+
+    public static isLinked = async ()=>{
+        const ethereum = (window as any).ethereum
+        if(!ethereum){
+            return  false
+        }else{
+            const addresses =  await ethereum.request({ method: 'eth_accounts' })
+           return addresses.length!=0
+        }
+
     }
 }
 export default Provider;

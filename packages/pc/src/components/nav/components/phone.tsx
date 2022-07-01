@@ -26,7 +26,7 @@ const NavLink = styled('a')((props)=>{
     }
 })
 const menu:{text:string,route:string}[] = [{
-    text:'首页',route:'/',
+    text:'首页',route:'/introduction',
 },{
     text:'案例',route:'/demo',
 },{

@@ -18,7 +18,7 @@ export const getPreSale = ()=>{
     const url  = process.env.NEXT_PUBLIC_STATIC_ABI_URL;
     return Http.static<ContractInterface>(`${url}${contract[PRE_SALE]}`)
 }
-export interface IChainInfo {
+export interface IChainContractConfig {
     AuctionContractAddress: string
     HeroContractAddress: string
     MintBoxContractAddress: string
@@ -28,7 +28,7 @@ export interface IChainInfo {
     Rowurl: string
     Symbol: string
 }
-export type IChain = {[key:string]:IChainInfo}
+export type IChain = {[key:string]:IChainContractConfig}
 export interface IConfig{
     Chain:IChain,
     CommitID:string,
@@ -56,6 +56,6 @@ export interface IChainItemListResponse{
     nonce:number,
     items:IChainItem[]
 }
-export const getChainItemList = (params?:IChainItemListRequest)=>{
+export const getNFTList = (params?:IChainItemListRequest)=>{
     return Http.post<IChainItemListResponse>(`${process.env.NEXT_PUBLIC_API_URL}/ItemList`,params)
 }

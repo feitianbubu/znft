@@ -1,5 +1,5 @@
 import React from "react";
-import {keyframes, styled} from "@mui/material";
+import {keyframes, styled, Typography} from "@mui/material";
 import bg from "@/pc/asset/bg.jpeg";
 import spaceStation from "@/pc/asset/space-station.png";
 import astronaut from "@/pc/asset/astronaut.png";
@@ -84,14 +84,8 @@ const SubTitle = styled(Title)`
   margin-top: 96px;
   font-size: 40px;
 `
-const Desc = styled('div')`
-  padding: 24px;
-font-size: 32px;
-  margin-top: 32px;
-`
-const WhoIAm = styled('h2')(({theme})=>(
+const WhoIAm = styled(Typography)(({theme})=>(
     {
-        padding:24,
         [theme.breakpoints.down(ENUM_BREAK_POINTS.MD)]: {
             marginTop:1080,
         },
@@ -100,7 +94,7 @@ const WhoIAm = styled('h2')(({theme})=>(
         },
     }
 ))
-const IAm = styled('p')`
+const IAm = styled(Typography)`
 padding-left: 24px;
   padding-right: 24px;
 `
@@ -117,10 +111,10 @@ const Banner:React.FC = ()=>{
                 <Title>GameFi as a Service</Title>
             </LinearGradient>
 
-            <Desc>累计撮合 百万+ 游戏NFT</Desc>
-            <WhoIAm>我们是谁？</WhoIAm>
-            <IAm>nd Space 为 GameFi 领域重要基础设施，为游戏厂商提供一站式的 GaaS 服务，助其一键进入 GameFi 领域。只需要集成 Game Space 提供的 SDK 交易组件，即可快速搭建一个游戏内置 NFT 交易市场。</IAm>
-            <IAm>Game Space，开启 GameFi as a Service 新时代！</IAm>
+            <Typography color={theme=>theme.palette.text.primary} variant={'h4'} fontWeight={"bold"} padding={3}>累计撮合 百万+ 游戏NFT</Typography>
+            <WhoIAm color={theme=>theme.palette.text.primary} variant={'h6'} fontWeight={"bold"} padding={3}>我们是谁？</WhoIAm>
+            <IAm color={theme=>theme.palette.text.primary} padding={3}>nd Space 为 GameFi 领域重要基础设施，为游戏厂商提供一站式的 GaaS 服务，助其一键进入 GameFi 领域。只需要集成 Game Space 提供的 SDK 交易组件，即可快速搭建一个游戏内置 NFT 交易市场。</IAm>
+            <IAm color={theme=>theme.palette.text.primary} >Game Space，开启 GameFi as a Service 新时代！</IAm>
         </Panel>
     </BannerBody>
 }

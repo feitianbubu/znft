@@ -20,8 +20,8 @@ import {useFilter} from "../body/context/filter-context";
 import {EFilter} from "@/pc/constant/enum";
 import {useSnackbar} from 'notistack';
 import Switch from '@mui/material/Switch';
-import {ColorModeContext} from "@/pc/pages/_app";
 import {getChainConfig} from "@/pc/services/contract";
+import {useMode} from "@/pc/context/mode";
 
 const MaterialUISwitch = styled(Switch)(({theme}) => ({
     width: 62,
@@ -94,10 +94,11 @@ const Logo = styled('div')({
 })
 const Nav: React.FC = () => {
     const {enqueueSnackbar} = useSnackbar();
-    const {address, balance, chainId} = useWallet();
+    const [mode,toggle] = useMode();
+    const [wallet] = useWallet();
+    const {address, balance, chainId} = wallet;
     let showAddress = address && address.substring(0, 6) + '...' + address.substring(address.length - 4);
-    const colorMode = React.useContext(ColorModeContext);
-    let showBalance = parseFloat(balance).toFixed(4)
+    let showBalance = parseFloat(balance||'').toFixed(4)
     const url = process.env.NEXT_PUBLIC_API_URL;
     const handleClearCache = useCallback(async () => {
         let owner = address;
@@ -223,7 +224,7 @@ const Nav: React.FC = () => {
                                 <MenuItem value={97}>Binance Testnet</MenuItem>
                             </Select>
                         </FormControl>
-                        <MaterialUISwitch sx={{m: 1}} defaultChecked onChange={colorMode.toggleColorMode}/>
+                        <MaterialUISwitch sx={{m: 1}} onChange={toggle}/>
                         <Button color="inherit" onClick={handleClearCache}>刷新缓存</Button>
                         <Chip sx={{border: '0'}} icon={<PersonIcon fontSize="small"/>} label={showAddress}
                               variant="outlined" clickable={true}/>

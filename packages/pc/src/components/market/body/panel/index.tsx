@@ -3,13 +3,13 @@ import React, {useCallback, useEffect, useState} from "react";
 import {Button, Card, CardActions, CardContent, CardMedia, Grid, Rating, Typography} from '@mui/material'
 import {
     getChainConfig,
-    getChainItemList,
+    getNFTList,
     getHeroClockAction,
     getHeroCore,
     getMinBox,
     getPreSale,
-    IChainInfo,
     IChainItem,
+    IChainContractConfig
 } from "@/pc/services/contract";
 import {ethers} from "ethers";
 import Provider from "@/pc/instance/provider";
@@ -22,10 +22,10 @@ import {useLoading} from "@lib/react-hook";
 import { useSnackbar} from "notistack";
 import {message} from "@lib/util";
 
-const isMintBox = (item: IChainItem, chainInfo: IChainInfo) => {
+const isMintBox = (item: IChainItem, chainInfo: IChainContractConfig) => {
     return item.creator && item.creator === chainInfo.MintBoxContractAddress;
 }
-const isPreSale = (item: IChainItem, chainInfo: IChainInfo) => {
+const isPreSale = (item: IChainItem, chainInfo: IChainContractConfig) => {
     return item.creator && item.creator === chainInfo.PreSaleContractAddress;
 }
 const CustomCard = styled(Card)({
@@ -39,12 +39,13 @@ const CustomCard = styled(Card)({
 const Home: React.FC = () => {
     const {enqueueSnackbar, closeSnackbar} = useSnackbar();
     const [heroesMap,setHeroesMap] = useState<{[key:string]:string}>({})
-    const[getList,loading] = useLoading(getChainItemList);
-    const {chainId,address} = useWallet();
+    const[getList,loading] = useLoading(getNFTList);
+    const [wallet] = useWallet();
+    const {chainId,address} = wallet
     const [filter,,filterLoading,setFilterLoading] = useFilter()
     const [list,setList] = useState<IChainItem[]>([]);
-    // const chainInfoRef = useRef<IChainInfo|undefined>();
-    const [chainInfo,setChainInfo] = useState<IChainInfo|undefined>();
+    // const chainInfoRef = useRef<IChainContractConfig|undefined>();
+    const [chainInfo,setChainInfo] = useState<IChainContractConfig|undefined>();
     const initMap = useCallback(()=>{
         const map :{[key:string]:string}= {};
         for (const heroesJsonElement of heroesJson) {

@@ -38,17 +38,17 @@ const Devops: React.FC = () => {
     return <BannerBody>
         <Panel>
             <Box width={'100%'} marginBottom={12}>
-                <Typography variant="h3" textAlign={'center'} fontWeight={'bold'} component="div" gutterBottom>
+                <Typography color={theme=>theme.palette.text.primary} variant="h3" textAlign={'center'} fontWeight={'bold'} component="div" gutterBottom>
                     开发与部署
                 </Typography>
             </Box>
             <Grid container spacing={12} justifyContent={"center"} alignItems={'center'}>
                 <Item item xs={12} md={6}>
                     <TextItem>
-                        <Typography variant="h4" fontWeight={'bold'} component="div" gutterBottom>
+                        <Typography color={theme=>theme.palette.text.primary} variant="h4" fontWeight={'bold'} component="div" gutterBottom>
                             免费部署
                         </Typography>
-                        <Typography variant="body1" component="div" gutterBottom>
+                        <Typography color={theme=>theme.palette.text.primary} variant="body1" component="div" gutterBottom>
                             Nd Space 所提供的服务均是免费的，只有在部署上线并产生 NFT 资产交易后才会收取一定的交易手续费。Game Space 的目标是帮助游戏厂商无缝跨入 GameFi 领域，因此无需担心在部署过程中有任何的额外成本。
                         </Typography>
                     </TextItem>
@@ -58,7 +58,7 @@ const Devops: React.FC = () => {
                         <Box width={480} padding={6}>
 
                             <Stack direction={'column'} spacing={2}>
-                                <Typography variant="h5" textAlign={'center'} fontWeight={'bold'} component="div" gutterBottom>
+                                <Typography color={theme=>theme.palette.text.primary} variant="h5" textAlign={'center'} fontWeight={'bold'} component="div" gutterBottom>
                                     免费申请限量公测资格
                                 </Typography>
                                 <TextField label="公司名称" variant="outlined" />

@@ -62,39 +62,39 @@ const Game:React.FC = ()=>{
                         <Grid xs={12} md={6}  item={true}>
                             <Grid container={true} spacing={3}>
                                 <Grid item={true} xs={12}>
-                                    <Typography variant={'h4'} fontWeight={'bold'}>
+                                    <Typography color={theme=>theme.palette.text.primary} variant={'h4'} fontWeight={'bold'}>
                                         {item.title}
                                     </Typography>
                                 </Grid>
                                 <Grid item={true} xs={6}>
-                                    <Typography variant={'h5'}>
+                                    <Typography color={theme=>theme.palette.text.primary} variant={'h5'}>
                                         游戏类型
                                     </Typography>
-                                    <Typography variant={'body1'} fontWeight={'bold'}>
+                                    <Typography color={theme=>theme.palette.text.primary} variant={'body1'} fontWeight={'bold'}>
                                         {item.type}
                                     </Typography>
                                 </Grid>
                                 <Grid item={true} xs={6}>
-                                    <Typography variant={'h5'}>
+                                    <Typography color={theme=>theme.palette.text.primary} variant={'h5'}>
                                         开发者
                                     </Typography>
-                                    <Typography variant={'body1'} fontWeight={'bold'}>
+                                    <Typography color={theme=>theme.palette.text.primary} variant={'body1'} fontWeight={'bold'}>
                                         {item.develop}
                                     </Typography>
                                 </Grid>
                                 <Grid item={true} xs={6}>
-                                    <Typography variant={'h5'}>
+                                    <Typography color={theme=>theme.palette.text.primary} variant={'h5'}>
                                         开发状态
                                     </Typography>
-                                    <Typography variant={'body1'} fontWeight={'bold'}>
+                                    <Typography color={theme=>theme.palette.text.primary} variant={'body1'} fontWeight={'bold'}>
                                         {item.status}
                                     </Typography>
                                 </Grid>
                                 <Grid item={true} xs={6}>
-                                    <Typography variant={'h5'}>
+                                    <Typography color={theme=>theme.palette.text.primary} variant={'h5'}>
                                         平台
                                     </Typography>
-                                    <Typography variant={'body1'} fontWeight={'bold'}>
+                                    <Typography color={theme=>theme.palette.text.primary} variant={'body1'} fontWeight={'bold'}>
                                         {item.platform}
                                     </Typography>
                                 </Grid>
@@ -113,7 +113,7 @@ const Game:React.FC = ()=>{
                 </Grid>
             })}
                 <Grid item={true} xs={12}>
-                    <Typography textAlign={'center'} variant={'body1'}>
+                    <Typography color={theme=>theme.palette.text.primary} textAlign={'center'} variant={'body1'}>
                         更多游戏即将上线
                     </Typography>
                 </Grid>

@@ -43,7 +43,7 @@ const Game: React.FC = () => {
     return <BannerBody>
         <Panel>
             <Box width={'100%'} marginBottom={0}>
-                <Typography variant="h3" textAlign={'center'} fontWeight={'bold'} component="div" gutterBottom>
+                <Typography color={theme=>theme.palette.text.primary} variant="h3" textAlign={'center'} fontWeight={'bold'} component="div" gutterBottom>
                     合作游戏
                 </Typography>
             </Box>

@@ -52,7 +52,7 @@ const Banner:React.FC = ()=>{
                     </Grid>
                 </Grid>
             </Box>
-            <Typography variant={'h4'} marginTop={12} marginBottom={6} fontWeight={'bold'} textAlign={'center'}>
+            <Typography color={theme=>theme.palette.text.primary} variant={'h4'} marginTop={12} marginBottom={6} fontWeight={'bold'} textAlign={'center'}>
                 如果您是我们的用户，请在下列方式中选择一种下载 Nd Wallet
             </Typography>
             <Box display={'flex'} justifyContent={'space-around'} alignItems={'center'}>
@@ -60,7 +60,7 @@ const Banner:React.FC = ()=>{
                 <Image src={googlePlay} alt={'谷歌商店'} height={65} width={218}/>
                 <Image src={androidDown} alt={'安卓商店'} height={65} width={218}/>
             </Box>
-            <Typography variant={'h4'} marginTop={12} marginBottom={6} fontWeight={'bold'} textAlign={'center'}>
+            <Typography color={theme=>theme.palette.text.primary} variant={'h4'} marginTop={12} marginBottom={6} fontWeight={'bold'} textAlign={'center'}>
                 如果您是游戏厂商，请下载 SDK
             </Typography>
             <Box display={'flex'} justifyContent={'space-around'} alignItems={'center'}>

@@ -5,6 +5,7 @@ import createEmotionCache from "@/pc/config/createEmotionCache";
 
 
 export default class MyDocument extends Document {
+
     render() {
         return (
             <Html lang="en">
