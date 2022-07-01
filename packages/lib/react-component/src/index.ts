@@ -8,4 +8,5 @@ export * from './icons';
 export * from './internal-icon';
 export * from './radio';
 export * from './radio-button';
+export * from './round';
 

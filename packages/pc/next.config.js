@@ -24,6 +24,7 @@ const withTM = require('next-transpile-modules')(lib);
   //   },
   // },
   compress:true,
+    // todo 咨询下为什么要用代理转发
     async rewrites() {
         return [
             {
