@@ -7,6 +7,7 @@
     "start": "next build&&nohup next start -p 3081 &",
     "lint": "next lint",
     "test": "next -v",
+    "release": "next build&&next export -o ../../../../go/lobbyplatfrom/bin/proxy/build/web",
     "clean:dist": "rm -rf .next"
   },
   "dependencies": {

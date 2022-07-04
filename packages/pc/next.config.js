@@ -7,6 +7,8 @@ const lib = [
   '@lib/service',
   '@lib/util'
 ]
+const serverHost = '192.168.246.62';
+const basePath = '/web';
 const withTM = require('next-transpile-modules')(lib);
 /** @type {import('next').NextConfig} */
  const moduleExports = withTM({
@@ -24,19 +26,23 @@ const withTM = require('next-transpile-modules')(lib);
   //   },
   // },
   compress:true,
-    // todo 咨询下为什么要用代理转发
     async rewrites() {
         return [
             {
-                source: '/static/:path*',
-                destination: 'http://172.24.135.32:3080/static/:path*'
+                source: `/static/:path*`,
+                destination: `http://${serverHost}:3080/static/:path*`
             },
             {
-                source: '/cos/lobbyplatform/:path*',
-                destination: 'http://172.24.135.32:3080/cos/lobbyplatform/:path*'
+                source: `/cos/lobbyplatform/:path*`,
+                destination: `http://${serverHost}:3080/cos/lobbyplatform/:path*`
             }
         ]
-    }
+    },
+    basePath,
+    images: {
+        loader: 'imgix',
+        path: `http://${serverHost}:3080/`,
+    },
 })
 module.exports = moduleExports;
 // module.exports = withSentryConfig(moduleExports, {

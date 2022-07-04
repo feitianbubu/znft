@@ -70,6 +70,7 @@
       "dev": "yarn workspace pc dev",
       "build": "yarn workspace pc build",
       "start": "yarn workspace pc start",
+      "release": "yarn workspace pc release",
       "pc:docker:build": "docker build . -t fzcode/web/pc",
       "pc:docker:tag":"docker tag fzcode/web/pc:latest 192.168.31.159/library/fzcode/web/pc:latest",
       "pc:docker:push": "docker push 192.168.31.159/library/fzcode/web/pc:latest",
