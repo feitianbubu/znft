@@ -7,7 +7,7 @@ const lib = [
   '@lib/service',
   '@lib/util'
 ]
-const serverHost = '192.168.246.62';
+const serverHost = '172.24.135.32';
 const basePath = '/web';
 const withTM = require('next-transpile-modules')(lib);
 /** @type {import('next').NextConfig} */
@@ -30,11 +30,13 @@ const withTM = require('next-transpile-modules')(lib);
         return [
             {
                 source: `/static/:path*`,
-                destination: `http://${serverHost}:3080/static/:path*`
+                destination: `http://${serverHost}:3080/static/:path*`,
+                basePath: false,
             },
             {
                 source: `/cos/lobbyplatform/:path*`,
-                destination: `http://${serverHost}:3080/cos/lobbyplatform/:path*`
+                destination: `http://${serverHost}:3080/cos/lobbyplatform/:path*`,
+                basePath: false,
             }
         ]
     },
