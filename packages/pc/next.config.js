@@ -43,6 +43,16 @@ const withTM = require('next-transpile-modules')(lib);
         loader: 'imgix',
         path: `http://${serverHost}:3080/`,
     },
+    async redirects() {
+        return [
+            {
+                source: '/',
+                destination: basePath,
+                basePath: false,
+                permanent: true,
+            },
+        ]
+    },
 })
 module.exports = moduleExports;
 // module.exports = withSentryConfig(moduleExports, {
