@@ -31,8 +31,9 @@ export const Dropdown:React.FC<DropdownProps> = (props)=>{
     const children:React.ReactElement|React.ReactElement[] = overlay.props.children;
     if ( Array.isArray(children)) {
       return overlay.props.children.map((item:React.ReactElement)=>{
-        const click = async (e?:React.MouseEvent)=>{
+        const click = async (e:React.MouseEvent<HTMLDivElement, MouseEvent>)=>{
           const res = await item.props.onClick?.(e);
+          onClick?.(e, item.key);
           if (res!=false) {
             handleClose();
           }
@@ -40,8 +41,9 @@ export const Dropdown:React.FC<DropdownProps> = (props)=>{
         return React.cloneElement(item, {onClick: click});
       });
     } else {
-      const click = async (e?:React.MouseEvent)=>{
+      const click = async (e:React.MouseEvent<HTMLDivElement, MouseEvent>)=>{
         const res = await children.props.onClick?.(e);
+        onClick?.(e, children.key);
         if (res!=false) {
           handleClose();
         }
@@ -49,17 +51,16 @@ export const Dropdown:React.FC<DropdownProps> = (props)=>{
 
       return React.cloneElement(children, {onClick: click});
     }
-  }, [handleClose, overlay]);
+  }, [handleClose, onClick, overlay.props.children]);
   const cloneOverlay = useMemo(()=>{
     return React.cloneElement(overlay, {
       ...overlay.props,
       anchorEl: childrenRef.current,
       open: visible,
       onClose: handleClose,
-      onClick,
       children: cloneOverlayChildren,
     });
-  }, [cloneOverlayChildren, handleClose, onClick, overlay, visible]);
+  }, [cloneOverlayChildren, handleClose, overlay, visible]);
 
   return <>
     {cloneOverlay}

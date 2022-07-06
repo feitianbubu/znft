@@ -26,3 +26,14 @@ export const switchMetamaskChain =async (chainId: string,config:{chainId:string,
     }
 
 }
+// metamask 官方说不准 https://metamask.github.io/api-playground/api-documentation/#wallet_switchEthereumChain
+// export  const eth_estimateGas = async(chainId: string)=>{
+//     const ethereum = (window as any).ethereum
+//     if(ethereum){
+//         const res = await ethereum.request({
+//             method: 'eth_estimateGas',
+//             params: [{chainId}],
+//         });
+//         return res
+//     }
+// }

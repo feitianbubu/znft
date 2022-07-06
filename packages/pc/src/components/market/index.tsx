@@ -1,38 +1,16 @@
-import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
+import React, {useCallback, useState} from "react";
 import {
     Box,
-    Button,
-    CircularProgress,
-    Divider,
-    Grid,
-    Paper,
-    Stack,
-    Typography,
-    MenuItem,
-    InputLabel,
-    Select,
-    FormControl,
-    SelectChangeEvent,
-    CardMedia,
-    CardContent,
-    Rating,
-    CardActions,
+    Tabs,
+    Tab,
     Card,
-    SvgIcon
+    SvgIcon,
+    Typography
 } from "@mui/material";
-import {Radio, RadioItem, RadioButton, RadioButtonItem, Dropdown} from "@lib/react-component";
 import {useLoading, useMount, useSubscribe} from "@lib/react-hook";
 import {getChainConfig, getNFTList, IChainContractConfigMap, IChainContractConfig, IChainItem} from "@/pc/services/contract";
 import {useWallet} from "@/pc/context/wallet";
-import {useSnackbar} from "notistack";
-import {switchMetamaskChain} from "@/pc/utils/metamask";
-import {numToHex} from "@/pc/utils/hex";
-import {IMockChain, mockChains} from "@/pc/mock/chains";
-import {heroesJson} from "@/pc/constant";
 import {styled} from "@mui/material/styles";
-import {Masonry} from '@mui/lab'
-import {weiToEth} from "@/pc/utils/eth";
-import Round from "@lib/react-component/es/round";
 import Hero from "@/pc/components/market/list/hero";
 import BlindBox from "@/pc/components/market/list/blindBox";
 import PreSale from "@/pc/components/market/list/preSale";
@@ -66,40 +44,32 @@ export const CustomCard = styled(Card)({
         top: -1
     }
 })
-const sortList: { label: string, value: string, labelPlacement: 'end' | 'start' | 'top' | 'bottom' }[] = [{
-    label: '类型',
-    value: '1',
-    labelPlacement: 'start',
-}, {
-    label: 'tokenId',
-    value: '2',
-    labelPlacement: 'start',
-}, {
-    label: '售价',
-    value: '3',
-    labelPlacement: 'start',
-}, {
-    label: '星级',
-    value: '4',
-    labelPlacement: 'start',
-}]
-const render = (item: { label: string, value: string, labelPlacement: 'end' | 'start' | 'top' | 'bottom' }) => {
-    return <RadioItem
-        sx={{justifyContent: "space-between"}}
-        label={item.label}
-        key={item.value}
-        value={item.value}
-        labelPlacement={item.labelPlacement}/>
-}
 
 export enum EArrangement {
     GRID = 'grid',
     MASONRY = 'masonry'
 }
+interface TabPanelProps {
+    children?: React.ReactNode;
+    name: string|number;
+    value: string|number;
+}
 
+function TabPanel(props: TabPanelProps) {
+    const { children, value, name } = props;
+
+    return (
+        <Box
+          hidden={value!=name}
+        >
+            {children}
+        </Box>
+    );
+}
 const Home: React.FC = () => {
     const [wallet] = useWallet();
     const {chainId} = wallet;
+    const [value, setValue] = React.useState<string|number>('hero');
     const [loadChain, loadChainLoading] = useLoading(getChainConfig);
     const [loadNFTList, loadNFTListLoading] = useLoading(getNFTList);
     const [contractMap, setContractMap] = useState<IChainContractConfigMap>({})
@@ -129,7 +99,7 @@ const Home: React.FC = () => {
     }, [])
     const getNFTListByAddress = useCallback(async (chainId: string, address: string,chain:IChainContractConfig) => {
         const res = await loadNFTList({chainID: chainId, owner: address});
-        if (res) {
+        if (res&&res.items) {
             const hero:IChainItem[] = []
             const blindBox:IChainItem[]=[]
             const preSale:IChainItem[] = []
@@ -174,45 +144,36 @@ const Home: React.FC = () => {
             setArrangement(value as EArrangement)
         }
     }, [])
+    const handleChange = useCallback((event: React.SyntheticEvent, newValue: number|string) => {
+        setValue(newValue);
+    },[])
     return <Box paddingLeft={6} paddingRight={6} minHeight={800}>
-       <SubNav status={status} contractMap={contractMap} loadChainLoading={loadChainLoading} loadNFTListLoading={loadNFTListLoading} />
-        <Grid container={true} spacing={3}>
-            <Grid item={true} xs={0} sm={4} md={4} lg={4} xl={2}>
-                <Paper elevation={0} variant={"outlined"}>
-                    <Box padding={3}>
-                        <RadioButton
-                            onChange={handleArrangementChange}
-                            sx={{justifyContent: 'center'}}
-                            value={arrangement}
-                            label={<Typography
-                                textAlign={'center'}
-                                variant={'h6'}>
-                                布局
-                            </Typography>}>
-                            <RadioButtonItem key={EArrangement.GRID} value={EArrangement.GRID}>
-                                网格布局
-                            </RadioButtonItem>
-                            <RadioButtonItem key={EArrangement.MASONRY} value={EArrangement.MASONRY}>
-                                流式布局
-                            </RadioButtonItem>
-                        </RadioButton>
-                    </Box>
-                    <Divider/>
-                    <Box padding={3}>
-                        <Radio label={<Typography textAlign={'center'} variant={'h6'}>
-                            排序
-                        </Typography>}>
-                            {sortList.map(render)}
-                        </Radio>
-                    </Box>
-                </Paper>
-            </Grid>
-            <Grid item={true} xs={12} sm={8} md={8} lg={8} xl={10}>
-                <Hero list={heroList} contractMap={contractMap} arrangement={arrangement} loading={loadNFTListLoading||loadChainLoading}/>
-                <BlindBox list={blindBoxList} contractMap={contractMap} arrangement={arrangement} loading={loadNFTListLoading||loadChainLoading}/>
-                <PreSale list={preSaleList} contractMap={contractMap} arrangement={arrangement} loading={loadNFTListLoading||loadChainLoading}/>
-            </Grid>
-        </Grid>
+        <SubNav onArrangementChange={handleArrangementChange} arrangement={arrangement} status={status} contractMap={contractMap} loadChainLoading={loadChainLoading} loadNFTListLoading={loadNFTListLoading} />
+        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+            <Tabs value={value} onChange={handleChange} aria-label="basic tabs example" centered={true}>
+                <Tab label={<Typography color={theme => theme.palette.text.primary} variant={'h5'} fontWeight={"bold"}>
+                    英雄
+                </Typography>} value={'hero'}/>
+                <Tab label={<Typography color={theme => theme.palette.text.primary} variant={'h5'} fontWeight={"bold"}>
+                    盲盒
+                </Typography>} value={'blind'}/>
+                <Tab label={<Typography color={theme => theme.palette.text.primary} variant={'h5'} fontWeight={"bold"}>
+                    预售
+                </Typography>} value={'sale'}/>
+            </Tabs>
+        </Box>
+        <TabPanel value={value} name={'hero'}>
+            <Hero list={heroList} contractMap={contractMap} arrangement={arrangement} loading={loadNFTListLoading||loadChainLoading}/>
+
+        </TabPanel>
+        <TabPanel value={value} name={'blind'}>
+            <BlindBox list={blindBoxList} contractMap={contractMap} arrangement={arrangement} loading={loadNFTListLoading||loadChainLoading}/>
+
+        </TabPanel>
+        <TabPanel value={value} name={'sale'}>
+            <PreSale list={preSaleList} contractMap={contractMap} arrangement={arrangement} loading={loadNFTListLoading||loadChainLoading}/>
+
+        </TabPanel>
     </Box>
 }
 export default React.memo(Home);

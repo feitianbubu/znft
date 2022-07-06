@@ -7,7 +7,6 @@ import Md from './components/md'
 import Lg from './components/lg'
 import XL from './components/xl'
 const Nav:React.FC = ()=>{
-    console.log('render')
     const theme = useTheme();
     const isXs= useMediaQuery(theme.breakpoints.up(ENUM_BREAK_POINTS.XS))
     const isSm= useMediaQuery(theme.breakpoints.up(ENUM_BREAK_POINTS.SM))

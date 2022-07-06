@@ -1,2 +1,2 @@
-import PhoneNav from "./phone";
+import PhoneNav from "./platform/phone";
 export  default  PhoneNav;

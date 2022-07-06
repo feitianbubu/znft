@@ -15,12 +15,14 @@ export const contract:{[key:string]:string} = {
     [MIN_BOX]:`${MIN_BOX}.json`,
     [PRE_SALE]:`${PRE_SALE}.json`
 }
-
-export const heroesJson =  [
+export const blindBoxJson = [
     {
         "bsID": "10000",
         "name": "盲盒"
     },
+]
+export const heroesJson =  [
+
     {
         "bsID": 39001,
         "name": "吕布"

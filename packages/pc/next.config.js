@@ -37,6 +37,11 @@ const withTM = require('next-transpile-modules')(lib);
                 source: `/cos/lobbyplatform/:path*`,
                 destination: `http://${serverHost}:3080/cos/lobbyplatform/:path*`,
                 basePath: false,
+            },
+            {
+                source: `/v1/:path*`,
+                destination: `http://${serverHost}:3080/v1/:path*`,
+                basePath: false,
             }
         ]
     },

@@ -56,7 +56,7 @@ const TabletNav:React.FC = ()=>{
         <Center>
             <Image
                 src={profilePic}
-                alt="Picture of the author"
+                alt="logo"
                 width={168}
                 height={64}
                 // blurDataURL="data:..." automatically provided

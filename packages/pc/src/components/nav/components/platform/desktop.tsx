@@ -2,41 +2,43 @@ import React, {useCallback, useRef, useState} from "react";
 import Image from 'next/image'
 import Link from 'next/link'
 import profilePic from '@/pc/asset/logo.webp'
-import {Button, AppBar, Stack,Menu,MenuItem} from '@mui/material';
+import {Button, AppBar, Stack, Menu, MenuItem, Box} from '@mui/material';
 import {styled} from "@mui/material/styles";
 import {useClintNavigation} from "@/pc/hook/navigation";
-import LoginDrawer from "./drawer";
+import LoginDrawer from "src/components/nav/components/drawer";
 import Switch from "@mui/material/Switch";
 import {useMode} from "@/pc/context/mode";
+import {useRouter} from "next/router";
+
 const Center = styled('div')({
-    width:'1200px',
-    margin:'0 auto',
-    display:'flex',
-    justifyContent:'space-between',
-    alignItems:'center'
+    width: '1200px',
+    margin: '0 auto',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center'
 })
 
-const NavLink = styled('a')<{disabled?:boolean}>(({disabled,theme})=>{
+const NavLink = styled('a')<{ disabled?: boolean }>(({disabled, theme}) => {
     return {
         textDecoration: 'none',
-        color: disabled?theme.palette.text.disabled:theme.palette.text.primary,
+        color: disabled ? theme.palette.text.disabled : theme.palette.text.primary,
         fontWeight: 'bold',
     }
 })
-const menu:{text:string,route:string, disabled?:boolean}[] = [{
-    text:'首页',route:'/introduction',
-},{
-    text:'市场',route:'/market',
-},{
-    text:'案例',route:'/demo', disabled:true
-},{
-    text:'游戏',route:'/game'
-},{
-    text:'下载',route:'/download'
-},{
-    text:'文档',route:'/docs',
-},{
-    text:'联系我们',route:'/chat', disabled:true
+const menu: { text: string, route: string, disabled?: boolean }[] = [{
+    text: '首页', route: '/introduction',
+}, {
+    text: '市场', route: '/market',
+}, {
+    text: '案例', route: '/demo', disabled: true
+}, {
+    text: '游戏', route: '/game'
+}, {
+    text: '下载', route: '/download'
+}, {
+    text: '文档', route: '/docs',
+}, {
+    text: '联系我们', route: '/chat', disabled: true
 }
 ]
 const MaterialUISwitch = styled(Switch)(({theme}) => ({
@@ -85,40 +87,65 @@ const MaterialUISwitch = styled(Switch)(({theme}) => ({
         borderRadius: 20 / 2,
     },
 }));
-const DesktopNav:React.FC= ()=>{
-    const [visible,setVisible] = useState(false);
-    const [mode,toggle] = useMode()
-    const [clientNavigation] = useClintNavigation()
-    const handleClick = useCallback((e:React.MouseEvent<HTMLButtonElement, MouseEvent> )=>{
+const ButtonLink = styled(Box)<{ selected?: boolean, disabled?: boolean }>(({selected, disabled, theme}) => ({
+    borderBottomWidth: selected ? 2 : 0,
+    borderBottomColor: theme.palette.text.primary,
+    borderBottomStyle: 'solid',
+    color: disabled ? theme.palette.text.disabled : theme.palette.text.primary,
+    '&:hover': {
+        backgroundColor: disabled ? theme.palette.background : theme.palette.action.hover,
+        cursor: disabled ? 'default' : 'pointer'
+    }
+}))
+const DesktopNav: React.FC = () => {
+    const [mode, toggle] = useMode()
+    const [clientNavigation] = useClintNavigation();
+    const router = useRouter();
+    const {pathname} = router
+    const handleClick = useCallback((e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         e.preventDefault()
+        const disabled = e.currentTarget.dataset.disabled
+        if (disabled) {
+            return
+        }
         const route = e.currentTarget.dataset.route
-        if(route){
+
+        if (route) {
             clientNavigation.push(route).then()
         }
-    },[clientNavigation])
-    const render = useCallback((item:{text:string,route:string,disabled?:boolean})=>{
-        return <Button key={item.route} data-route={item.route} onClick={handleClick} disabled={item.disabled}>
-            <Link passHref={true} href={item.route}>
-                <NavLink disabled={item.disabled}>{item.text}</NavLink>
-            </Link>
-        </Button>
-    },[handleClick])
+    }, [clientNavigation])
 
-    const handleClose = useCallback(()=>{
-       setVisible(false)
-    },[])
-    return <AppBar sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
+    const render = useCallback((item: { text: string, route: string, disabled?: boolean }) => {
+        return <ButtonLink
+            display={'flex'}
+            textAlign={'center'}
+            minWidth={50}
+            alignItems={'center'}
+            key={item.route}
+            justifyContent={'center'}
+            selected={pathname.startsWith(item.route)}
+            data-disabled={item.disabled}
+            data-route={item.route}
+            disabled={item.disabled}
+            onClick={handleClick}
+        >
+            <Link passHref={true} href={item.route}>
+                <NavLink style={{pointerEvents: 'none'}} disabled={item.disabled}>{item.text}</NavLink>
+            </Link>
+        </ButtonLink>
+    }, [handleClick, pathname])
+    return <AppBar sx={{zIndex: (theme) => theme.zIndex.drawer + 1}}>
         <Center>
             <Image
                 src={profilePic}
-                alt="Picture of the author"
+                alt="logo"
                 width={168}
                 height={64}
                 // blurDataURL="data:..." automatically provided
                 // placeholder="blur" // Optional blur-up while loading
             />
             <Stack direction="row" spacing={2}>
-                <MaterialUISwitch sx={{m: 1}} checked={mode=='dark'} onChange={toggle}/>
+                <MaterialUISwitch sx={{m: 1}} checked={mode == 'dark'} onChange={toggle}/>
                 {menu.map(render)}
                 <LoginDrawer/>
             </Stack>
@@ -126,4 +153,4 @@ const DesktopNav:React.FC= ()=>{
 
     </AppBar>
 }
-export  default  DesktopNav;
+export default DesktopNav;

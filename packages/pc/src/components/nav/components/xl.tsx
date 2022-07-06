@@ -1,2 +1,2 @@
-import DesktopNav from "./desktop";
+import DesktopNav from "./platform/desktop";
 export  default  DesktopNav;

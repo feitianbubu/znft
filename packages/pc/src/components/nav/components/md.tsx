@@ -1,2 +1,2 @@
-import TabletNav from "./tablet";
+import TabletNav from "./platform/tablet";
 export  default  TabletNav;

@@ -8,7 +8,7 @@ import {
     Select,
     SelectChangeEvent,
     Stack,
-    Typography, useTheme
+    Typography
 } from "@mui/material";
 import {IChainContractConfigMap, IChainContractConfig} from "@/pc/services/contract";
 import {IMockChain, mockChains} from "@/pc/mock/chains";
@@ -19,11 +19,9 @@ import {useWallet} from "@/pc/context/wallet";
 import Round from "@lib/react-component/es/round";
 import {RadioButton, RadioButtonItem} from "@lib/react-component";
 import {EArrangement} from "@/pc/components/market";
-// import {Replay} from '@mui/icons-material';
 
 const SubNav: React.FC<{ contractMap: IChainContractConfigMap, loadChainLoading?: boolean, loadNFTListLoading?: boolean, status: null | 'error' | 'waring' | 'success' | 'chainNotSupport', arrangement: EArrangement.GRID | EArrangement.MASONRY, onArrangementChange: (event: React.MouseEvent<HTMLElement, MouseEvent>, value?: string) => void }> = (props) => {
     const {contractMap, loadChainLoading, loadNFTListLoading, status, arrangement, onArrangementChange} = props;
-    const theme = useTheme();
     const [wallet] = useWallet();
     const {isConnected} = wallet;
     const light = useMemo(() => {
@@ -64,7 +62,7 @@ const SubNav: React.FC<{ contractMap: IChainContractConfigMap, loadChainLoading?
             return '已链接'
         }
     }, [isConnected, loadChainLoading, loadNFTListLoading, status])
-    return <Box height={48} display={"flex"} justifyContent={"space-between"} marginTop={3} marginBottom={3}>
+    return <Box height={48} display={"flex"} minWidth={520} justifyContent={"space-between"}>
         <Box>
             <RadioButton
                 onChange={onArrangementChange}
@@ -87,7 +85,6 @@ const SubNav: React.FC<{ contractMap: IChainContractConfigMap, loadChainLoading?
                 </Typography>
             </Box>
             <SwitchChain chains={contractMap} loading={loadChainLoading}/>
-            {/*<Replay style={{color: theme.palette.text.primary}}/>*/}
         </Stack>
     </Box>
 }
@@ -143,6 +140,7 @@ const SwitchChain: React.FC<{ chains: IChainContractConfigMap, loading?: boolean
             }else{
                 setValue('')
             }
+
         }
     }, [chainId, chains])
     useMount(() => {

@@ -11,5 +11,5 @@ export interface DropdownProps{
    * 显示菜单之前的aop
    */
   preShow?:()=>(Promise<boolean>|boolean)
-  onClick?:(event:React.MouseEvent<HTMLDivElement, MouseEvent>)=>void;
+  onClick?:(event:React.MouseEvent<HTMLDivElement, MouseEvent>, key?:React.Key|null)=>void;
 }

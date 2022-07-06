@@ -54,14 +54,11 @@ const Hero: React.FC<{ contractMap: IChainContractConfigMap, list: IChainItem[],
     const [loadAuctionAbi, auctionAbiLoading] = useLoading(getHeroClockAction);
     const [loadNFTList, loadNFTListLoading] = useLoading(getNFTList);
     const [loadHeroAbi, heroAbiLoading] = useLoading(getHeroCore);
-    const [myList,setMyList] = useState<IChainItem[]>([])
     const auctionContractInstanceRef = useRef<ethers.Contract | null>();
-    const heroContractInstanceRef = useRef<ethers.Contract | null>();
     const [connectLoading, setConnectLoading] = useState(false)
     const connectContract = useCallback(async (contractMap: IChainContractConfigMap, chainId: string, auctionAbi:ContractInterface,heroAbi: ContractInterface,address:string) => {
         setConnectLoading(true)
         const auctionAddress = contractMap[chainId]?.AuctionContractAddress;
-        const heroAddress = contractMap[chainId]?.HeroContractAddress;
         const provider = await Provider.getInstance();
         if(provider){
             let singer
@@ -76,18 +73,18 @@ const Hero: React.FC<{ contractMap: IChainContractConfigMap, list: IChainItem[],
                 const auctionContractInstance: ethers.Contract | null = new ethers.Contract(auctionAddress, auctionAbi, singer);
                 auctionContractInstanceRef.current = auctionContractInstance
             }
-            if(heroAddress){
-                const heroContractInstance: ethers.Contract | null = new ethers.Contract(heroAddress, heroAbi, singer);
-                heroContractInstanceRef.current = heroContractInstance
-                const myNFT  = await loadNFTList({chainID:chainId,owner:address})
-                if(myNFT&&myNFT.items){
-                    setMyList(myNFT.items)
-                }
-
-            }
+            // if(heroAddress){
+            //     const heroContractInstance: ethers.Contract | null = new ethers.Contract(heroAddress, heroAbi, singer);
+            //     heroContractInstanceRef.current = heroContractInstance
+            //     const myNFT  = await loadNFTList({chainID:chainId,owner:address})
+            //     if(myNFT&&myNFT.items){
+            //         setMyList(myNFT.items)
+            //     }
+            //
+            // }
         }
         setConnectLoading(false)
-    }, [enqueueSnackbar, loadNFTList])
+    }, [enqueueSnackbar])
 
     const getAuctionAbi = useCallback(async () => {
         const res = await loadAuctionAbi();
@@ -141,8 +138,8 @@ const Hero: React.FC<{ contractMap: IChainContractConfigMap, list: IChainItem[],
         }
     }, [chainId, connectContract, contractMap, address, auctionAbi, heroAbi])
     const masonryItemRender = useCallback((item: IChainItem,) => {
-        let image = mockImage[Math.floor(Math.random() * mockImage.length)]
-        let name = heroesMap[item.tokenUri || '']
+        const image = item.tokenUri ? `https://img7.99.com/yhkd/image/data/hero//big-head/${item.tokenUri}.jpg` : 'http://172.24.135.32:3080/static/img/empty.jpg'
+        const name = heroesMap[item.tokenUri || '']
         const rateNum = Number.parseInt(item.quality || '1');
         const rate = rateNum == 0 ? 1 : rateNum;
         return <CustomCard
@@ -155,7 +152,6 @@ const Hero: React.FC<{ contractMap: IChainContractConfigMap, list: IChainItem[],
                 alt="The house from the offer."
                 src={image}
                 width={'100%'}
-
             />
             <CardContent>
                 <Stack direction={"row"} justifyContent={"space-between"}>
@@ -187,8 +183,8 @@ const Hero: React.FC<{ contractMap: IChainContractConfigMap, list: IChainItem[],
     const gridItemRender = useCallback((item: IChainItem) => {
         const rateNum = Number.parseInt(item.quality || '1');
         const rate = rateNum == 0 ? 1 : rateNum;
-        let image = item.tokenUri ? `https://img7.99.com/yhkd/image/data/hero//big-head/${item.tokenUri}.jpg` : 'http://172.24.135.32:3080/static/img/empty.jpg'
-        let name = heroesMap[item.tokenUri || '']
+        const image = item.tokenUri ? `https://img7.99.com/yhkd/image/data/hero//big-head/${item.tokenUri}.jpg` : 'http://172.24.135.32:3080/static/img/empty.jpg'
+        const name = heroesMap[item.tokenUri || '']
         return <Grid item={true} key={`${item.tokenUri}${item.tokenId}${item.quality}${item.creator}`} xs={12}
                      sm={4} md={3}>
             <CustomCard elevation={0} variant={'outlined'}>
@@ -245,38 +241,36 @@ const Hero: React.FC<{ contractMap: IChainContractConfigMap, list: IChainItem[],
             </Masonry>
         }
     }, [arrangement, gridItemRender, list, loading, masonryItemRender])
-    const myHeroList = useMemo(() => {
-        if (loading) {
-            return;
-        }
-        if (myList.length == 0) {
-            return <Box minHeight={160} display={"flex"} alignItems={"center"} justifyContent={"center"}><Typography
-                color={theme => theme.palette.text.primary} variant={'h6'} textAlign={"center"}>
-                暂无项目
-            </Typography>
-            </Box>
-        }
-        if (arrangement == EArrangement.GRID) {
-            return <Grid container spacing={2} columns={12}>
-                {myList?.map(gridItemRender)}
-            </Grid>
-        } else if (arrangement == EArrangement.MASONRY) {
-            return <Masonry columns={{xs: 1, sm: 3, md: 4}} spacing={2}>
-                {myList.map(masonryItemRender)}
-            </Masonry>
-        }
-    }, [arrangement, gridItemRender, loading, masonryItemRender, myList])
+    // const myHeroList = useMemo(() => {
+    //     if (loading) {
+    //         return;
+    //     }
+    //     if (myList.length == 0) {
+    //         return <Box minHeight={160} display={"flex"} alignItems={"center"} justifyContent={"center"}><Typography
+    //             color={theme => theme.palette.text.primary} variant={'h6'} textAlign={"center"}>
+    //             暂无项目
+    //         </Typography>
+    //         </Box>
+    //     }
+    //     if (arrangement == EArrangement.GRID) {
+    //         return <Grid container spacing={2} columns={12}>
+    //             {myList?.map(gridItemRender)}
+    //         </Grid>
+    //     } else if (arrangement == EArrangement.MASONRY) {
+    //         return <Masonry columns={{xs: 1, sm: 3, md: 4}} spacing={2}>
+    //             {myList.map(masonryItemRender)}
+    //         </Masonry>
+    //     }
+    // }, [arrangement, gridItemRender, loading, masonryItemRender, myList])
     return <Box>
-        <Typography color={theme => theme.palette.text.primary} variant={'h4'} fontWeight={"bold"}>
-            英雄
-        </Typography>
+
         <Divider sx={{marginBottom: 3}}/>
         {heroList}
-        <Typography color={theme => theme.palette.text.primary} variant={'h4'} fontWeight={"bold"} marginTop={3}>
-            我的英雄
-        </Typography>
-        <Divider sx={{marginBottom: 3}}/>
-        {myHeroList}
+        {/*<Typography color={theme => theme.palette.text.primary} variant={'h4'} fontWeight={"bold"} marginTop={3}>*/}
+        {/*    我的英雄*/}
+        {/*</Typography>*/}
+        {/*<Divider sx={{marginBottom: 3}}/>*/}
+        {/*{myHeroList}*/}
     </Box>
 }
 export default Hero;
