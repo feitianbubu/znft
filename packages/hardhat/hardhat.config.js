@@ -31,12 +31,12 @@ module.exports = {
       accounts: [`0x${ACCOUNT_PRIVATE_KEY}`]
     },
     maticmum: {
-      url: `https://eth-rinkeby.alchemyapi.io/v2/${ALCHEMY_MUMBAI_KEY}`,
+      url: `https://polygon-mumbai.g.alchemy.com/v2/${ALCHEMY_MUMBAI_KEY}`,
       accounts: [`0x${ACCOUNT_PRIVATE_KEY}`],
     },
   },
   solidity: {
-    version: "0.5.12",
+    version: "0.8.4",
     settings: {
       optimizer: {
         enabled: true,

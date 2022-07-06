@@ -1,3 +1,4 @@
+const { getNetwork } = require("@ethersproject/networks");
 const { ethers } = require("ethers");
 const { getContractAt } = require("@nomiclabs/hardhat-ethers/internal/helpers");
 
@@ -15,6 +16,7 @@ function getEnvVariable(key, defaultValue) {
 
 // Helper method for fetching a connection provider to the Ethereum network
 function getProvider() {
+    return new ethers.providers.JsonRpcProvider("https://polygon-mumbai.g.alchemy.com/v2/R_NbFK1zefA_2adH0oXN4uzQQf3c9C6t");
     return ethers.getDefaultProvider(getEnvVariable("NETWORK", "rinkeby"), {
         alchemy: getEnvVariable("ALCHEMY_KEY"),
     });
