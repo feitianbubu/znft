@@ -6,7 +6,7 @@ const SwaggerUI = dynamic(
 );
 
 const Docs:React.FC = ()=>{
-    let url = `static/oas/chain/chain.swagger.json`
+    let url = `/static/oas/chain/chain.swagger.json`
     return <SwaggerUI url={url} tryItOutEnabled={true} requestSnippetsEnabled={true} />
 }
 export  default  Docs;
