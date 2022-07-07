@@ -12,10 +12,7 @@
 
 ## Api reference
 
-* [获取物品列表](api-reference/huo-qu-wu-pin-lie-biao.md)
-* [获取订单列表](api-reference/huo-qu-ding-dan-lie-biao.md)
-* [合成物品](api-reference/he-cheng-wu-pin.md)
-* [服务端API测试](api-reference/fu-wu-duan-api-ce-shi.md)
+* [服务端API](api-reference/fu-wu-duan-api.md)
 
 ## Fundamentals
 
