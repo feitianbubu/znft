@@ -1,7 +1,7 @@
 import React, {useCallback, useEffect, useMemo, useState} from "react";
 import Image from 'next/image'
 import Link from 'next/link'
-import profilePic from '@/pc/asset/logo.webp'
+import logo from '@/pc/asset/nd-logo.png'
 import {Button, Drawer, List, ListItem, IconButton, Box} from '@mui/material';
 import {Menu} from '@mui/icons-material';
 import {styled} from "@mui/material/styles";
@@ -80,7 +80,7 @@ const PhoneNav:React.FC = ()=>{
             </IconButton>
 
             <Image
-                src={profilePic}
+                src={logo}
                 alt="Picture of the author"
                 width={168}
                 height={64}

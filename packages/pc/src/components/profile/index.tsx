@@ -22,6 +22,7 @@ import BlindBox from "./list/blindBox";
 import PreSale from "./list/preSale";
 import SubNav from "./subNav";
 import Avatar from './avatar'
+import {useContract} from "@/pc/context/contract";
 
 // todo 现在svg太大 不知道怎么处理
 const GridSvg: React.FC = () => {
@@ -81,19 +82,13 @@ const Home: React.FC = () => {
     const {chainId, address} = wallet;
     const [value, setValue] = React.useState<string | number>('hero');
     const [status, setStatus] = useState<null | 'error' | 'waring' | 'success' | 'chainNotSupport'>(null);
-    const [loadChain, loadChainLoading] = useLoading(getChainConfig);
     const [loadNFTList, loadNFTListLoading] = useLoading(getNFTList);
-    const [contractMap, setContractMap] = useState<IChainContractConfigMap>({})
+    const [contract] = useContract();
+    const {data:contractMap,loading:loadChainLoading} = contract
     const [heroList, setHeroList] = useState<IChainItem[]>([]);
     const [blindBoxList, setBLindBoxList] = useState<IChainItem[]>([]);
     const [preSaleList, setPreSaleList] = useState<IChainItem[]>([]);
-    const [arrangement, setArrangement] = useState<EArrangement.GRID | EArrangement.MASONRY>(EArrangement.GRID);
-    const getContractAddress = useCallback(async () => {
-        const chainConfig = await loadChain();
-        if (chainConfig) {
-            setContractMap(chainConfig.Chain)
-        }
-    }, [loadChain])
+    const [arrangement, setArrangement] = useState<EArrangement.GRID | EArrangement.MASONRY>(EArrangement.MASONRY);
     const verify = useCallback((chainId: string, contractMap: IChainContractConfigMap) => {
         const chain = contractMap[chainId];
         if (!chain) {
@@ -127,10 +122,6 @@ const Home: React.FC = () => {
             setPreSaleList(preSale)
         }
     }, [loadNFTList])
-    useMount(() => {
-        getContractAddress().then();
-    })
-
     /**
      * 观察者模式副作用方法
      * 当chainId变化时，检查当前的链支不支持nft市场
@@ -181,7 +172,7 @@ const Home: React.FC = () => {
                        </Typography>} value={'my'}/>
                    </Tabs>
                </Box>
-               <SubNav onArrangementChange={handleArrangementChange} arrangement={arrangement} status={status} contractMap={contractMap} loadChainLoading={loadChainLoading} loadNFTListLoading={loadNFTListLoading} />
+               <SubNav onArrangementChange={handleArrangementChange} arrangement={arrangement} status={status} loadNFTListLoading={loadNFTListLoading} />
            </Box>
             <TabPanel value={value} name={'hero'}>
                 <Hero

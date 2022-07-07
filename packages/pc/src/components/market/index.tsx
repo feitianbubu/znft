@@ -15,6 +15,7 @@ import Hero from "@/pc/components/market/list/hero";
 import BlindBox from "@/pc/components/market/list/blindBox";
 import PreSale from "@/pc/components/market/list/preSale";
 import SubNav from "@/pc/components/market/subNav";
+import {useContract} from "@/pc/context/contract";
 // todo 现在svg太大 不知道怎么处理
 const GridSvg :React.FC = ()=>{
     return <SvgIcon>
@@ -70,20 +71,14 @@ const Home: React.FC = () => {
     const [wallet] = useWallet();
     const {chainId} = wallet;
     const [value, setValue] = React.useState<string|number>('hero');
-    const [loadChain, loadChainLoading] = useLoading(getChainConfig);
     const [loadNFTList, loadNFTListLoading] = useLoading(getNFTList);
-    const [contractMap, setContractMap] = useState<IChainContractConfigMap>({})
+    const [contract] = useContract();
+    const {data:contractMap,loading:loadChainLoading} = contract
     const [status, setStatus] = useState<null | 'error' | 'waring' | 'success' | 'chainNotSupport'>(null);
     const [heroList, setHeroList] = useState<IChainItem[]>([]);
     const [blindBoxList, setBLindBoxList] = useState<IChainItem[]>([]);
     const [preSaleList, setPreSaleList] = useState<IChainItem[]>([]);
-    const [arrangement, setArrangement] = useState<EArrangement.GRID | EArrangement.MASONRY>(EArrangement.GRID);
-    const getContractAddress = useCallback(async () => {
-        const chainConfig = await loadChain();
-        if (chainConfig) {
-            setContractMap(chainConfig.Chain)
-        }
-    }, [loadChain])
+    const [arrangement, setArrangement] = useState<EArrangement.GRID | EArrangement.MASONRY>(EArrangement.MASONRY);
     const verify = useCallback((chainId: string, contractMap: IChainContractConfigMap) => {
         const chain = contractMap[chainId];
         if (!chain) {
@@ -117,10 +112,6 @@ const Home: React.FC = () => {
             setPreSaleList(preSale)
         }
     }, [loadNFTList])
-
-    useMount(() => {
-        getContractAddress().then();
-    })
     /**
      * 观察者模式副作用方法
      * 当chainId变化时，检查当前的链支不支持nft市场
@@ -148,7 +139,7 @@ const Home: React.FC = () => {
         setValue(newValue);
     },[])
     return <Box paddingLeft={6} paddingRight={6} minHeight={800}>
-        <SubNav onArrangementChange={handleArrangementChange} arrangement={arrangement} status={status} contractMap={contractMap} loadChainLoading={loadChainLoading} loadNFTListLoading={loadNFTListLoading} />
+        <SubNav onArrangementChange={handleArrangementChange} arrangement={arrangement} status={status}  loadNFTListLoading={loadNFTListLoading} />
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
             <Tabs value={value} onChange={handleChange} aria-label="basic tabs example" centered={true}>
                 <Tab label={<Typography color={theme => theme.palette.text.primary} variant={'h5'} fontWeight={"bold"}>

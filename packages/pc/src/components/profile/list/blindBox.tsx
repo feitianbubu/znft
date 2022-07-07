@@ -7,7 +7,6 @@ import {
     CardActions,
     CardContent,
     CardMedia,
-    Divider,
     Grid,
     Rating,
     Stack,

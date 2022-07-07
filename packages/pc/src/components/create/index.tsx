@@ -29,6 +29,7 @@ import {ethers} from "ethers";
 import {useSnackbar} from "notistack";
 import {heroesJson} from "@/pc/constant";
 import {IMintRequest, mint} from "@/pc/services/restful";
+import {useContract} from "@/pc/context/contract";
 
 const CREATE_ROLE = "0x154c00819833dac601ee5ddded6fda79d9d8b506b911b3dbd54cdb95fe6c3686"
 // todo 暂时叫这个
@@ -41,17 +42,11 @@ const Create: React.FC = () => {
     const [selected, setSelected] = useState<undefined | { bsID: number, name: string }>(undefined)
     const [visible, setVisible] = useState(false);
     const [heroAbi, setHeroAbi] = useState<ContractInterface>();
-    const [contractMap, setContractMap] = useState<IChainContractConfigMap>({})
+    const [contract] = useContract();
+    const {data:contractMap,loading:loadChainLoading} = contract
     const [loadHeroAbi, heroAbiLoading] = useLoading(getHeroCore);
-    const [loadChain, loadChainLoading] = useLoading(getChainConfig);
     const [connectLoading, setConnectLoading] = useState(true)
     const heroContractInstanceRef = useRef<ethers.Contract | null>();
-    const getContractAddress = useCallback(async () => {
-        const chainConfig = await loadChain();
-        if (chainConfig) {
-            setContractMap(chainConfig.Chain)
-        }
-    }, [loadChain])
     const getHeroAbi = useCallback(async () => {
         const res = await loadHeroAbi();
         if (res) {
@@ -73,7 +68,16 @@ const Create: React.FC = () => {
             if (heroContractAddress) {
                 const heroContractInstance: ethers.Contract | null = new ethers.Contract(heroContractAddress, heroAbi, singer);
                 heroContractInstanceRef.current = heroContractInstance
-                const bool = await heroContractInstance.hasRole(CREATE_ROLE, address);
+                let bool = false
+                try {
+                    console.log(CREATE_ROLE,address)
+                    bool = await heroContractInstance.hasRole(CREATE_ROLE, address);
+                }catch (e:any) {
+                    console.log(e.message)
+                    setHasAuth(false)
+                    setConnectLoading(false)
+                }
+
                 setHasAuth(bool)
                 setConnectLoading(false)
             }
@@ -84,9 +88,8 @@ const Create: React.FC = () => {
 
     }, [])
     const init = useCallback(async () => {
-        getContractAddress().then()
         getHeroAbi().then()
-    }, [getContractAddress, getHeroAbi])
+    }, [getHeroAbi])
 
 
     const handleClickCreate = useCallback((item: { bsID: number; name: string; }) => {

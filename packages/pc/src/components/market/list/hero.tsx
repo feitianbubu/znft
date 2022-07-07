@@ -52,7 +52,6 @@ const Hero: React.FC<{ contractMap: IChainContractConfigMap, list: IChainItem[],
         setHeroesMap(map)
     }, [])
     const [loadAuctionAbi, auctionAbiLoading] = useLoading(getHeroClockAction);
-    const [loadNFTList, loadNFTListLoading] = useLoading(getNFTList);
     const [loadHeroAbi, heroAbiLoading] = useLoading(getHeroCore);
     const auctionContractInstanceRef = useRef<ethers.Contract | null>();
     const [connectLoading, setConnectLoading] = useState(false)

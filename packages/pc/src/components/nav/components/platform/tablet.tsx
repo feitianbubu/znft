@@ -1,7 +1,7 @@
 import React, {useCallback} from "react";
 import Image from 'next/image'
 import Link from 'next/link'
-import profilePic from '@/pc/asset/logo.webp'
+import logo from '@/pc/asset/nd-logo.png'
 import {Button, Stack} from '@mui/material';
 import {styled} from "@mui/material/styles";
 import {useClintNavigation} from "@/pc/hook/navigation";
@@ -55,7 +55,7 @@ const TabletNav:React.FC = ()=>{
     return <Body>
         <Center>
             <Image
-                src={profilePic}
+                src={logo}
                 alt="logo"
                 width={168}
                 height={64}

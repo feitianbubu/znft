@@ -1,8 +1,8 @@
-import React, {useCallback, useRef, useState} from "react";
+import React, {useCallback} from "react";
 import Image from 'next/image'
 import Link from 'next/link'
-import profilePic from '@/pc/asset/logo.webp'
-import {Button, AppBar, Stack, Menu, MenuItem, Box} from '@mui/material';
+import logo from '@/pc/asset/nd-logo.png'
+import {AppBar, Stack, Box} from '@mui/material';
 import {styled} from "@mui/material/styles";
 import {useClintNavigation} from "@/pc/hook/navigation";
 import LoginDrawer from "src/components/nav/components/drawer";
@@ -137,7 +137,7 @@ const DesktopNav: React.FC = () => {
     return <AppBar sx={{zIndex: (theme) => theme.zIndex.drawer + 1}}>
         <Center>
             <Image
-                src={profilePic}
+                src={logo}
                 alt="logo"
                 width={168}
                 height={64}

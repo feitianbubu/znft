@@ -1,29 +1,21 @@
-import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
+import React, {useMemo} from "react";
 import {
     Box,
     CircularProgress,
-    FormControl,
-    InputLabel,
-    MenuItem,
-    Select,
-    SelectChangeEvent,
     Stack,
-    Typography, useTheme
+    Typography
 } from "@mui/material";
-import {IChainContractConfigMap, IChainContractConfig} from "@/pc/services/contract";
-import {IMockChain, mockChains} from "@/pc/mock/chains";
-import {numToHex} from "@/pc/utils/hex";
-import {switchMetamaskChain} from "@/pc/utils/metamask";
-import {useMount} from "@lib/react-hook";
 import {useWallet} from "@/pc/context/wallet";
 import Round from "@lib/react-component/es/round";
 import {RadioButton, RadioButtonItem} from "@lib/react-component";
 import {EArrangement} from "@/pc/components/market";
-// import {Replay} from '@mui/icons-material';
+import {useContract} from "@/pc/context/contract";
+import SwitchChain from "@/pc/components/switchChain";
 
-const SubNav: React.FC<{ contractMap: IChainContractConfigMap, loadChainLoading?: boolean, loadNFTListLoading?: boolean, status: null | 'error' | 'waring' | 'success' | 'chainNotSupport', arrangement: EArrangement.GRID | EArrangement.MASONRY, onArrangementChange: (event: React.MouseEvent<HTMLElement, MouseEvent>, value?: string) => void }> = (props) => {
-    const {contractMap, loadChainLoading, loadNFTListLoading, status, arrangement, onArrangementChange} = props;
-    const theme = useTheme();
+const SubNav: React.FC<{  loadNFTListLoading?: boolean, status: null | 'error' | 'waring' | 'success' | 'chainNotSupport', arrangement: EArrangement.GRID | EArrangement.MASONRY, onArrangementChange: (event: React.MouseEvent<HTMLElement, MouseEvent>, value?: string) => void }> = (props) => {
+    const { loadNFTListLoading, status, arrangement, onArrangementChange} = props;
+    const [contract] = useContract();
+    const {loading:loadChainLoading} = contract
     const [wallet] = useWallet();
     const {isConnected} = wallet;
     const light = useMemo(() => {
@@ -86,80 +78,8 @@ const SubNav: React.FC<{ contractMap: IChainContractConfigMap, loadChainLoading?
                     {statusMessage}
                 </Typography>
             </Box>
-            <SwitchChain chains={contractMap} loading={loadChainLoading}/>
-            {/*<Replay style={{color: theme.palette.text.primary}}/>*/}
+            <SwitchChain/>
         </Stack>
     </Box>
 }
 export default SubNav
-
-const SwitchChain: React.FC<{ chains: IChainContractConfigMap, loading?: boolean }> = (props) => {
-    const [wallet] = useWallet();
-    const {chainId} = wallet;
-    const ref = useRef<{ [key: number]: IMockChain }>({})
-    const mockFunc = useCallback(() => {
-        for (const mockChain of mockChains) {
-            ref.current[mockChain.chainId] = mockChain
-        }
-    }, [])
-    const {chains, loading} = props;
-    const [value, setValue] = useState(chainId && chains[chainId] ? chains : '');
-    const list = useMemo(() => {
-        const list: (IChainContractConfig & { chainId: string })[] = []
-        for (const chainsKey in chains) {
-            if (chains.hasOwnProperty(chainsKey)) {
-                list.push({
-                    ...chains[chainsKey],
-                    chainId: chainsKey
-                })
-            }
-        }
-        return list.map((item) => {
-            return <MenuItem key={item.chainId} value={item.chainId}>{item.Name}</MenuItem>
-        })
-    }, [chains])
-    const handleChange = useCallback(async (event: SelectChangeEvent<unknown>) => {
-        const chainId = event.target.value as string;
-        try {
-            const num = Number.parseInt(chainId);
-            const all = ref.current[num]
-            const op = {
-                chainId: numToHex(all.chainId),
-                chainName: all.name,
-                rpcUrls: all.rpc
-            }
-            await switchMetamaskChain(numToHex(num), op);
-        } catch (e) {
-            console.log(e)
-            return;
-        }
-
-        setValue(event.target.value as string);
-    }, [])
-    useEffect(() => {
-        if (chainId ) {
-            if(chains[chainId]){
-                setValue(chainId)
-            }else{
-                setValue('')
-            }
-        }
-    }, [chainId, chains])
-    useMount(() => {
-        mockFunc()
-    })
-    return <Box minWidth={200}><FormControl size={"small"} fullWidth>
-        <InputLabel>切换已支持的链</InputLabel>
-        <Select
-            fullWidth={true}
-            value={value}
-            onChange={handleChange}
-            size={"small"}
-            label="切换已支持的链" // add this
-            disabled={loading}
-        >
-            {list}
-        </Select>
-    </FormControl>
-    </Box>
-}
