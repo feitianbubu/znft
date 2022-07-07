@@ -63,10 +63,8 @@ const Create: React.FC = () => {
                 heroContractInstanceRef.current = heroContractInstance
                 let bool = false
                 try {
-                    console.log(CREATE_ROLE,address)
                     bool = await heroContractInstance.hasRole(CREATE_ROLE, address);
                 }catch (e:any) {
-                    console.log(e.message)
                     setHasAuth(false)
                     setConnectLoading(false)
                 }
@@ -77,9 +75,6 @@ const Create: React.FC = () => {
         }
         setConnectLoading(false)
     }, [enqueueSnackbar])
-    const initCon = useCallback(() => {
-
-    }, [])
     const handleClickCreate = useCallback((item: { bsID: number; name: string; }) => {
         setSelected(item);
         setVisible(true);
@@ -143,7 +138,7 @@ const Create: React.FC = () => {
         setSelected(undefined);
         setVisible(false)
     }, [])
-    const ref = useRef<{ currHp: number, level: number, power: number, quantity: number }>(null)
+    const ref = useRef<{ currHp: number, level: number, power: number, quantity: number ,gasLimit:number,gasPrice:number}>(null)
     const [createIng,setCreateIng] = useState(false);
     const handleCreate = useCallback(async () => {
 
@@ -152,8 +147,13 @@ const Create: React.FC = () => {
         if (address && heroContract) {
             setCreateIng(true)
             if (form && selected) {
+                const {gasPrice,gasLimit } = form
+                const params = {
+                    from: address,
+                    gasPrice, gasLimit,
+                }
                 try {
-                    await heroContract.mint(address,HERO_TYPE,selected.bsID.toString())
+                    await heroContract.mint(address,HERO_TYPE,selected.bsID.toString(),params)
                     enqueueSnackbar("铸造成功，等待上链",{variant:'success'})
                     setVisible(false);
                     setSelected(undefined)
@@ -189,11 +189,13 @@ const Create: React.FC = () => {
 }
 export default Create;
 
-const Form: ForwardRefRenderFunction<{ currHp: number, level: number, power: number, quantity: number }, { name?: string }> = (props, ref) => {
+const Form: ForwardRefRenderFunction<{ currHp: number, level: number, power: number, quantity: number ,gasLimit:number,gasPrice:number}, { name?: string }> = (props, ref) => {
     const [currHp, setCurrHp] = useState(100)
     const [level, setLevel] = useState(1)
     const [power, setPower] = useState(100)
     const [quantity, setQuantity] = useState(1)
+    const [gasPrice, setGasPrice] = useState(20)
+    const [gasLimit, setGasLimit] = useState(21000)
     const handleCurrHpChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const _value = Number.parseInt(e.target.value)
         setCurrHp(isNaN(_value) ? 100 : _value)
@@ -210,12 +212,23 @@ const Form: ForwardRefRenderFunction<{ currHp: number, level: number, power: num
         const _value = Number.parseInt(e.target.value)
         setPower(isNaN(_value) ? 100 : _value)
     }, [])
+
+    const handleGasPriceChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const _value = Number.parseInt(e.target.value)
+        setGasPrice(isNaN(_value) ? 20 : _value)
+    }, [])
+    const handleGasLimitChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const _value = Number.parseInt(e.target.value)
+        setGasLimit(isNaN(_value) ? 21000 : _value)
+    }, [])
     useImperativeHandle(ref, () => ({
         currHp,
         level,
         power,
-        quantity
-    }), [currHp, level, power, quantity])
+        quantity,
+        gasPrice,
+        gasLimit
+    }), [currHp, level, power, quantity,gasLimit,gasPrice])
     return <>
         <Stack direction={"column"} spacing={3} marginTop={3}>
             <Typography>
@@ -248,6 +261,20 @@ const Form: ForwardRefRenderFunction<{ currHp: number, level: number, power: num
                 value={power}
                 onChange={handlePowerChange}
                 helperText={'默认值为100'}
+            />
+            <TextField
+                label="gasPrice"
+                type={"number"}
+                value={gasPrice}
+                onChange={handleGasPriceChange}
+                helperText={'单位：wei'}
+            />
+            <TextField
+                label="gasLimit"
+                type={"number"}
+                value={gasLimit}
+                onChange={handleGasLimitChange}
+                helperText={'单位：wei'}
             />
         </Stack>
 
