@@ -1,5 +1,5 @@
 import {Http} from "@lib/service";
-import {contract, HERO_CLOCK_AUCTION, HERO_CORE, MIN_BOX, PRE_SALE} from "@/pc/constant";
+import {contract, HERO_CLOCK_AUCTION, HERO_CORE, MINT_BOX, PRE_SALE} from "@/pc/constant";
 import {ContractInterface} from "@ethersproject/contracts/src.ts";
 
 export const getHeroCore = ()=>{
@@ -10,9 +10,9 @@ export const getHeroClockAction = ()=>{
     const url  = process.env.NEXT_PUBLIC_STATIC_ABI_URL;
     return Http.static<ContractInterface>(`${url}${contract[HERO_CLOCK_AUCTION]}`)
 }
-export const getMinBox = ()=>{
+export const getMintBox = ()=>{
     const url  = process.env.NEXT_PUBLIC_STATIC_ABI_URL;
-    return Http.static<ContractInterface>(`${url}${contract[MIN_BOX]}`)
+    return Http.static<ContractInterface>(`${url}${contract[MINT_BOX]}`)
 }
 export const getPreSale = ()=>{
     const url  = process.env.NEXT_PUBLIC_STATIC_ABI_URL;

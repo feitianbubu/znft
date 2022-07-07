@@ -4,6 +4,7 @@ import SnackProvider from "@/pc/context/snack";
 import ModeProvider from "@/pc/context/mode";
 import ThemeProvider from "@/pc/context/theme";
 import ContractProvider from "@/pc/context/contract";
+import AbiProvider from "@/pc/context/abi";
 
 export const Context: React.FC<PropsWithChildren<unknown>> = (props) => {
     const {children} = props;
@@ -12,7 +13,9 @@ export const Context: React.FC<PropsWithChildren<unknown>> = (props) => {
             <WalletProvider>
                 <SnackProvider>
                     <ContractProvider>
-                        {children}
+                        <AbiProvider>
+                            {children}
+                        </AbiProvider>
                     </ContractProvider>
                 </SnackProvider>
             </WalletProvider>

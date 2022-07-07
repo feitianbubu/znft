@@ -10,13 +10,6 @@ import Switch from "@mui/material/Switch";
 import {useMode} from "@/pc/context/mode";
 import {useRouter} from "next/router";
 
-const Center = styled('div')({
-    width: '1200px',
-    margin: '0 auto',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center'
-})
 
 const NavLink = styled('a')<{ disabled?: boolean }>(({disabled, theme}) => {
     return {
@@ -97,6 +90,14 @@ const ButtonLink = styled(Box)<{ selected?: boolean, disabled?: boolean }>(({sel
         cursor: disabled ? 'default' : 'pointer'
     }
 }))
+
+const Center = styled('div')({
+    width: '1200px',
+    margin: '0 auto',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center'
+})
 const DesktopNav: React.FC = () => {
     const [mode, toggle] = useMode()
     const [clientNavigation] = useClintNavigation();
@@ -135,12 +136,12 @@ const DesktopNav: React.FC = () => {
         </ButtonLink>
     }, [handleClick, pathname])
     return <AppBar sx={{zIndex: (theme) => theme.zIndex.drawer + 1}}>
-        <Center>
+        <Box  width={1200} margin={'0 auto'} display={"flex"} justifyContent={"space-between"} alignItems={"center"} height={64}>
             <Image
                 src={logo}
                 alt="logo"
-                width={168}
-                height={64}
+                width={48}
+                height={40}
                 // blurDataURL="data:..." automatically provided
                 // placeholder="blur" // Optional blur-up while loading
             />
@@ -149,7 +150,7 @@ const DesktopNav: React.FC = () => {
                 {menu.map(render)}
                 <LoginDrawer/>
             </Stack>
-        </Center>
+        </Box>
 
     </AppBar>
 }

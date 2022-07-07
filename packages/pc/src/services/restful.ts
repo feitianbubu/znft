@@ -21,3 +21,11 @@ export const mint = (params:IMintRequest)=>{
     const url = `/${VERSION}/mint`;
     return Http.post(url,params)
 }
+interface  IClearCacheRequest{
+    owner:string,
+    chainID:string
+}
+export const clearCache = (params?:IClearCacheRequest)=>{
+    const url = `/v1/clearCache`;
+    return Http.post<string>(url,params)
+}

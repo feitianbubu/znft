@@ -7,15 +7,15 @@ export const ACCOUNTS_CHANGED = 'accountsChanged'
 
 export const HERO_CORE = 'heroCore'
 export const HERO_CLOCK_AUCTION = 'heroClockAuction'
-export const MIN_BOX = 'mintBox'
+export const MINT_BOX = 'mintBox'
 export const PRE_SALE = 'preSale'
 export const contract:{[key:string]:string} = {
     [HERO_CORE]:`${HERO_CORE}.json`,
     [HERO_CLOCK_AUCTION]:`${HERO_CLOCK_AUCTION}.json`,
-    [MIN_BOX]:`${MIN_BOX}.json`,
+    [MINT_BOX]:`${MINT_BOX}.json`,
     [PRE_SALE]:`${PRE_SALE}.json`
 }
-export const blindBoxJson = [
+export const mintBoxJson = [
     {
         "bsID": "10000",
         "name": "盲盒"

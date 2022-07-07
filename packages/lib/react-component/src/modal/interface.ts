@@ -7,4 +7,5 @@ export interface ModalProps extends DialogProps{
     cancelText?:string
     title?:string,
     childrenType?:'string'|'node'
+    loading?:boolean
 }

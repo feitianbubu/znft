@@ -7,7 +7,7 @@ import React, {
     useRef,
     useState
 } from "react";
-import {getHeroClockAction, getHeroCore, getNFTList, IChainContractConfigMap, IChainItem} from "@/pc/services/contract";
+import {IChainContractConfigMap, IChainItem} from "@/pc/services/contract";
 import {CustomCard, EArrangement} from "@/pc/components/market";
 import {
     Box,
@@ -32,26 +32,22 @@ import {useWallet} from "@/pc/context/wallet";
 import Provider from "@/pc/instance/provider";
 import {LoadingButton} from '@mui/lab'
 import {Modal} from "@lib/react-component";
+import {useHeroAbi} from "@/pc/context/abi/hero";
+import {useAuctionAbi} from "@/pc/context/abi/auction";
+import {useContract} from "@/pc/context/contract";
 
-// const mockImage = [
-//     'https://m.yh31.com/tp/zjbq/202109040904253416.jpg',
-//     'https://img.wxcha.com/m00/42/60/638abd891b32310bef50b00fa5dee34a.jpg',
-//     'https://i3.meixingnan.com/c5deff1b7a804511d3/918ba34d/9289a348/c28cf8062a925f008f69.jpg',
-//     'https://img.kuaiyong.com/pkfile/202111/02183823vmdq.jpg',
-//     'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTFvd9r9LC4M5Z3fUGlMnqElEckJoaP7uMfyA&usqp=CAU',
-//     'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR8dXROc6lez26lC3-R28Rg8QXm7QJKfj91fg&usqp=CAU',
-//     'https://img.haote.com/upload/news/20191108/157317782067267.jpg',
-//     'https://img.kuaiyong.com/pkfile/202111/02183823vmdq.jpg',
-//     'https://tva1.sinaimg.cn/large/9150e4e5gy1frjcs5kblwj20750h4dfv.jpg'
-// ]
-const Hero: React.FC<{ contractMap: IChainContractConfigMap, list: IChainItem[], arrangement: EArrangement, loading?: boolean }> = (props) => {
-    const {contractMap, list, arrangement, loading} = props;
+const Hero: React.FC<{ list: IChainItem[], arrangement: EArrangement, loading?: boolean }> = (props) => {
+    const { list, arrangement, loading} = props;
+    const [contract] = useContract();
+    const {data:contractMap} = contract
     const {enqueueSnackbar} = useSnackbar()
     const [wallet] = useWallet();
     const {chainId, address} = wallet;
     const [heroesMap, setHeroesMap] = useState<{ [key: string]: string }>({});
-    const [auctionAbi, setAuctionAbi] = useState<ContractInterface>();
-    const [heroAbi, setHeroAbi] = useState<ContractInterface>();
+    const [hero] = useHeroAbi()
+    const {loading:heroAbiLoading,abi:heroAbi} = hero;
+    const [auction] = useAuctionAbi()
+    const {loading:auctionAbiLoading,abi:auctionAbi} = auction;
     const [onSaleVisible, setOnSaleVisible] = useState(false);
     const [onSaleSelected, setOnSaleSelected] = useState<IChainItem | undefined>(undefined)
     const [sendVisible, setSendVisible] = useState(false);
@@ -63,12 +59,10 @@ const Hero: React.FC<{ contractMap: IChainContractConfigMap, list: IChainItem[],
         }
         setHeroesMap(map)
     }, [])
-    const [loadAuctionAbi, auctionAbiLoading] = useLoading(getHeroClockAction);
-    const [loadHeroAbi, heroAbiLoading] = useLoading(getHeroCore);
     const auctionContractInstanceRef = useRef<ethers.Contract | null>();
     const heroContractInstanceRef = useRef<ethers.Contract | null>();
     const [connectLoading, setConnectLoading] = useState(true)
-    const connectContract = useCallback(async (contractMap: IChainContractConfigMap, chainId: string, auctionAbi: ContractInterface, heroAbi: ContractInterface, address: string) => {
+    const connectContract = useCallback(async (contractMap: IChainContractConfigMap, chainId: string, auctionAbi: ContractInterface, heroAbi: ContractInterface) => {
         setConnectLoading(true)
         const auctionAddress = contractMap[chainId]?.AuctionContractAddress;
         const heroAddress = contractMap[chainId]?.HeroContractAddress;
@@ -94,19 +88,8 @@ const Hero: React.FC<{ contractMap: IChainContractConfigMap, list: IChainItem[],
         setConnectLoading(false)
     }, [enqueueSnackbar])
 
-    const getAuctionAbi = useCallback(async () => {
-        const res = await loadAuctionAbi();
-        if (res) {
-            setAuctionAbi(res)
-        }
-    }, [loadAuctionAbi])
-    const getHeroAbi = useCallback(async () => {
-        const res = await loadHeroAbi();
-        if (res) {
-            setHeroAbi(res)
-        }
-    }, [loadHeroAbi])
     const saleFormRef = useRef<{ startingPrice: number, endingPrice: number, duration: number, gasLimit: number, gasPrice: number }>(null)
+    const [onSaleIng,setOnSaleIng] = useState(false)
     const handleSale = useCallback(async () => {
         const auctionContract = auctionContractInstanceRef.current
         const heroContract = heroContractInstanceRef.current
@@ -115,26 +98,26 @@ const Hero: React.FC<{ contractMap: IChainContractConfigMap, list: IChainItem[],
             const chain = contractMap[chainId]
             const {startingPrice, endingPrice, duration, gasLimit, gasPrice} = saleForm
             if (chain && onSaleSelected) {
+                setOnSaleIng(true)
                 const startingPriceWei = ethToWei(startingPrice.toString())
                 const endingPriceWei = ethToWei(endingPrice.toString())
                 const params = {
                     from: address,
                     gasPrice, gasLimit
                 }
-                console.log(chain,onSaleSelected)
                 let hasRole = false
                 try {
-
                     hasRole = await heroContract.isApprovedForAll(address, chain.AuctionContractAddress)
                 }catch (e:any) {
                     enqueueSnackbar(`获取权限失败:${e.message}`, {variant: 'error'})
+                    setOnSaleIng(false)
                     return
                 }
                 if(!hasRole){
                     try {
                         await heroContract.setApprovalForAll(chain.AuctionContractAddress, true)
                     }catch (e:any) {
-                        console.log(e)
+                        setOnSaleIng(false)
                         enqueueSnackbar(`授权失败:${e.message}`, {variant: 'error'})
                         return
                     }
@@ -147,10 +130,11 @@ const Hero: React.FC<{ contractMap: IChainContractConfigMap, list: IChainItem[],
                     setOnSaleVisible(false)
                 } catch (e: any) {
                     console.log(e)
+                    setOnSaleIng(false)
                     enqueueSnackbar(`上架失败:${e.message}`, {variant: 'error'})
                     return
                 }
-
+                setOnSaleIng(false)
             } else {
                 enqueueSnackbar("当前不支持", {variant: 'error'})
             }
@@ -160,6 +144,7 @@ const Hero: React.FC<{ contractMap: IChainContractConfigMap, list: IChainItem[],
 
     }, [address, chainId, contractMap, enqueueSnackbar, onSaleSelected])
     const sendFormRef = useRef<{ to: string, gasLimit: number, gasPrice: number }>(null)
+    const [onSendIng,setOnSendIng] = useState(false);
     const handleSend = useCallback(async () => {
         const heroContract = heroContractInstanceRef.current
         const sendForm = sendFormRef.current
@@ -167,21 +152,22 @@ const Hero: React.FC<{ contractMap: IChainContractConfigMap, list: IChainItem[],
             const chain = contractMap[chainId]
             const {gasLimit, gasPrice, to} = sendForm
             if (chain && sendSelected) {
+                setOnSendIng(true)
                 const params = {
                     from: address,
                     gasPrice, gasLimit
                 }
                 try {
-
                     await heroContract.safeTransferFrom(address, to, sendSelected.tokenId, params);
                     enqueueSnackbar("发送成功,等待链上确认", {variant: 'success'});
                     setSendSelected(undefined)
                     setSendVisible(false)
                 } catch (e: any) {
                     console.log(e)
+                    setOnSendIng(false)
                     enqueueSnackbar(`发送失败:${e.message}`, {variant: 'error'})
                 }
-
+                setOnSendIng(false)
             } else {
                 enqueueSnackbar("当前不支持", {variant: 'error'})
             }
@@ -191,17 +177,15 @@ const Hero: React.FC<{ contractMap: IChainContractConfigMap, list: IChainItem[],
     }, [address, chainId, contractMap, enqueueSnackbar, sendSelected])
     useMount(() => {
         initMap()
-        getAuctionAbi().then()
-        getHeroAbi().then()
     })
     /**
      * 构建合同
      */
     useEffect(() => {
-        if (chainId && auctionAbi && heroAbi && address) {
-            connectContract(contractMap, chainId, auctionAbi, heroAbi, address).then()
+        if (chainId && auctionAbi && heroAbi) {
+            connectContract(contractMap, chainId, auctionAbi, heroAbi).then()
         }
-    }, [chainId, connectContract, contractMap, address, auctionAbi, heroAbi])
+    }, [chainId, connectContract, contractMap, auctionAbi, heroAbi])
     const masonryItemRender = useCallback((item: IChainItem,) => {
         const image = item.tokenUri ? `https://img7.99.com/yhkd/image/data/hero//big-head/${item.tokenUri}.jpg` : 'http://172.24.135.32:3080/static/img/empty.jpg'
         const name = heroesMap[item.tokenUri || '']
@@ -362,6 +346,7 @@ const Hero: React.FC<{ contractMap: IChainContractConfigMap, list: IChainItem[],
             onCancel={handleOnSaleCancel}
             onOk={handleSale}
             keepMounted={true}
+            loading={onSaleIng}
         >
             <SaleFormRef name={heroesMap[onSaleSelected?.tokenUri || '']} ref={saleFormRef}/>
         </Modal>
@@ -371,6 +356,7 @@ const Hero: React.FC<{ contractMap: IChainContractConfigMap, list: IChainItem[],
             onCancel={handleSendCancel}
             onOk={handleSend}
             keepMounted={true}
+            loading={onSendIng}
         >
             <SendFormRef name={heroesMap[sendSelected?.tokenUri || '']} ref={sendFormRef}/>
         </Modal>

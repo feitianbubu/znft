@@ -5,23 +5,19 @@ import {useContract} from "@/pc/context/contract";
 import {IChainContractConfig} from "@/pc/services/contract";
 import {
     Box,
-    CircularProgress,
     FormControl,
     InputLabel,
     MenuItem,
     Select,
     SelectChangeEvent,
-    Stack,
-    Typography
 } from "@mui/material";
 import {numToHex} from "@/pc/utils/hex";
 import {switchMetamaskChain} from "@/pc/utils/metamask";
 import {useMount} from "@lib/react-hook";
-import Round from "@lib/react-component/es/round";
 
 export const SwitchChain: React.FC = () => {
     const [wallet] = useWallet();
-    const {chainId,isConnected} = wallet;
+    const {chainId, isConnected} = wallet;
     const ref = useRef<{ [key: number]: IMockChain }>({})
     const mockFunc = useCallback(() => {
         for (const mockChain of mockChains) {
@@ -29,7 +25,7 @@ export const SwitchChain: React.FC = () => {
         }
     }, [])
     const [contract] = useContract();
-    const {data:contractMap,loading:loadChainLoading} = contract
+    const {data: contractMap, loading: loadChainLoading} = contract
     const [value, setValue] = useState(chainId && contractMap[chainId] ? contractMap : '');
     const list = useMemo(() => {
         const list: (IChainContractConfig & { chainId: string })[] = []
@@ -50,15 +46,15 @@ export const SwitchChain: React.FC = () => {
         try {
             const num = Number.parseInt(chainId);
             const all = ref.current[num]
-            let op:{chainId:string,chainName:string,rpcUrls:string[]}|null;
-            if (num==31337) {
+            let op: { chainId: string, chainName: string, rpcUrls: string[] } | null;
+            if (num == 31337) {
                 op = {
                     chainId: numToHex(num),
                     chainName: 'hardhat',
                     rpcUrls: ['https://hardhat.tevat.dev/']
                 }
 
-            } else{
+            } else {
                 op = {
                     chainId: numToHex(all.chainId),
                     chainName: all.name,
@@ -66,7 +62,7 @@ export const SwitchChain: React.FC = () => {
                 }
             }
 
-            await switchMetamaskChain(numToHex(num), op as {chainId:string,chainName:string,rpcUrls:string[]});
+            await switchMetamaskChain(numToHex(num), op as { chainId: string, chainName: string, rpcUrls: string[] });
         } catch (e) {
             console.log(e)
             return;
@@ -75,61 +71,20 @@ export const SwitchChain: React.FC = () => {
         setValue(event.target.value as string);
     }, [])
     useEffect(() => {
-        if (chainId ) {
-            if(contractMap[chainId]){
+        if (chainId) {
+            if (contractMap[chainId]) {
                 setValue(chainId)
-            }else{
+            } else {
                 setValue('')
             }
 
         }
     }, [chainId, contractMap])
-    const light = useMemo(() => {
-        if (!isConnected) {
-            return <Round color={'error'}/>;
-        }
-        if (loadChainLoading) {
-            return <CircularProgress size={10} sx={{
-                color: theme => theme.palette.text.primary
-            }}/>
-        }
-
-        switch (status) {
-            case 'error':
-                return <Round color={'error'}/>;
-            case 'chainNotSupport':
-                return <Round color={'error'}/>;
-            case 'success':
-                return <Round color={'success'}/>;
-            case 'waring':
-                return <Round color={'waring'}/>;
-        }
-    }, [isConnected, loadChainLoading])
-    const statusMessage = useMemo(() => {
-        if (!isConnected) {
-            return "尚未链接到钱包"
-        }
-        if (loadChainLoading) {
-            return "正在检测市场是否支持当前网络"
-        }
-        if (status == 'chainNotSupport') {
-            return '市场不支持当前网络'
-        }
-        if (status == 'success') {
-            return '已链接'
-        }
-    }, [isConnected, loadChainLoading])
     useMount(() => {
         mockFunc()
     })
-    return <Stack direction={"row"} alignItems={"center"} spacing={2}>
-        {light}
-        <Box>
-            <Typography color={theme => theme.palette.text.primary} whiteSpace={"nowrap"}>
-                {statusMessage}
-            </Typography>
-        </Box>
-        <Box minWidth={200}><FormControl size={"small"} fullWidth>
+    return  <Box minWidth={200}>
+        <FormControl size={"small"} fullWidth>
             <InputLabel>切换已支持的链</InputLabel>
             <Select
                 fullWidth={true}
@@ -142,7 +97,6 @@ export const SwitchChain: React.FC = () => {
                 {list}
             </Select>
         </FormControl>
-        </Box>
-    </Stack>
+    </Box>
 }
-export  default SwitchChain;
+export default SwitchChain;

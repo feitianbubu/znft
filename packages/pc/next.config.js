@@ -2,30 +2,30 @@
 const lib = [
     '@lib/constant',
     '@lib/react-component',
-  '@lib/react-context',
-  '@lib/react-hook',
-  '@lib/service',
-  '@lib/util'
+    '@lib/react-context',
+    '@lib/react-hook',
+    '@lib/service',
+    '@lib/util'
 ]
 const serverHost = '172.24.135.32';
 const basePath = '/web';
 const withTM = require('next-transpile-modules')(lib);
 /** @type {import('next').NextConfig} */
- const moduleExports = withTM({
-  // webpack5:false,
-  reactStrictMode: true,
-  swcMinify: true,
-  typescript:{
-    tsconfigPath:'./tsconfig.json',
-      // 因为node_modules/@ethersproject/contracts/src.ts/index.ts:143:5 中有类型错误，所以打包的时候跳过类型检查
-      ignoreBuildErrors: true,
-  },
-  // compiler: {
-  //   removeConsole: {
-  //     exclude: ['error'],
-  //   },
-  // },
-  compress:true,
+const moduleExports = withTM({
+    // webpack5:false,
+    reactStrictMode: true,
+    swcMinify: true,
+    typescript: {
+        tsconfigPath: './tsconfig.json',
+        // 因为node_modules/@ethersproject/contracts/src.ts/index.ts:143:5 中有类型错误，所以打包的时候跳过类型检查
+        ignoreBuildErrors: true,
+    },
+    // compiler: {
+    //   removeConsole: {
+    //     exclude: ['error'],
+    //   },
+    // },
+    compress: true,
     async rewrites() {
         return [
             {

@@ -1,5 +1,6 @@
 import * as React from 'react';
-import {Slide, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button} from '@mui/material';
+import {Slide, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions} from '@mui/material';
+import {LoadingButton} from '@mui/lab';
 import {TransitionProps} from '@mui/material/transitions';
 import {ModalProps} from './interface';
 import {PropsWithChildren, useMemo} from 'react';
@@ -12,7 +13,7 @@ const Transition = React.forwardRef(function Transition(
   return <Slide direction="up" ref={ref} {...props} />;
 });
 export const Modal:React.FC<PropsWithChildren<ModalProps>> = (props)=>{
-  const {onOk, onCancel, title='', children, okText='确定', cancelText='取消', childrenType, ...others} = props;
+  const {onOk, onCancel, title='', children, okText='确定', cancelText='取消', childrenType, loading=false, ...others} = props;
   const memo = useMemo(()=>{
     if (typeof children=='string'||childrenType=='string') {
       return <DialogContentText>
@@ -31,8 +32,22 @@ export const Modal:React.FC<PropsWithChildren<ModalProps>> = (props)=>{
       {memo}
     </DialogContent>
     <DialogActions>
-      <Button onClick={onCancel}>{cancelText}</Button>
-      <Button onClick={onOk}>{okText}</Button>
+      <LoadingButton
+        size="small"
+        onClick={onCancel}
+        loading={loading}
+        variant="contained"
+      >
+        {cancelText}
+      </LoadingButton>
+      <LoadingButton
+        size="small"
+        onClick={onOk}
+        loading={loading}
+        variant="contained"
+      >
+        {okText}
+      </LoadingButton>
     </DialogActions>
   </Dialog>;
 };

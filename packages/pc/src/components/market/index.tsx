@@ -12,7 +12,7 @@ import {getChainConfig, getNFTList, IChainContractConfigMap, IChainContractConfi
 import {useWallet} from "@/pc/context/wallet";
 import {styled} from "@mui/material/styles";
 import Hero from "@/pc/components/market/list/hero";
-import BlindBox from "@/pc/components/market/list/blindBox";
+import MintBox from "@/pc/components/market/list/mintBox";
 import PreSale from "@/pc/components/market/list/preSale";
 import SubNav from "@/pc/components/market/subNav";
 import {useContract} from "@/pc/context/contract";
@@ -76,7 +76,7 @@ const Home: React.FC = () => {
     const {data:contractMap,loading:loadChainLoading} = contract
     const [status, setStatus] = useState<null | 'error' | 'waring' | 'success' | 'chainNotSupport'>(null);
     const [heroList, setHeroList] = useState<IChainItem[]>([]);
-    const [blindBoxList, setBLindBoxList] = useState<IChainItem[]>([]);
+    const [mintBoxList, setMintBoxList] = useState<IChainItem[]>([]);
     const [preSaleList, setPreSaleList] = useState<IChainItem[]>([]);
     const [arrangement, setArrangement] = useState<EArrangement.GRID | EArrangement.MASONRY>(EArrangement.MASONRY);
     const verify = useCallback((chainId: string, contractMap: IChainContractConfigMap) => {
@@ -96,19 +96,19 @@ const Home: React.FC = () => {
         const res = await loadNFTList({chainID: chainId, owner: address});
         if (res&&res.items) {
             const hero:IChainItem[] = []
-            const blindBox:IChainItem[]=[]
+            const mintBox:IChainItem[]=[]
             const preSale:IChainItem[] = []
             for (const item of res.items) {
                 if(isPreSale(item,chain)){
                     preSale.push(item)
                 }else if(isMintBox(item,chain)){
-                    blindBox.push(item)
+                    mintBox.push(item)
                 }else{
                     hero.push(item)
                 }
             }
             setHeroList(hero)
-            setBLindBoxList(blindBox)
+            setMintBoxList(mintBox)
             setPreSaleList(preSale)
         }
     }, [loadNFTList])
@@ -147,7 +147,7 @@ const Home: React.FC = () => {
                 </Typography>} value={'hero'}/>
                 <Tab label={<Typography color={theme => theme.palette.text.primary} variant={'h5'} fontWeight={"bold"}>
                     盲盒
-                </Typography>} value={'blind'}/>
+                </Typography>} value={'mint'}/>
                 <Tab label={<Typography color={theme => theme.palette.text.primary} variant={'h5'} fontWeight={"bold"}>
                     预售
                 </Typography>} value={'sale'}/>
@@ -157,8 +157,8 @@ const Home: React.FC = () => {
             <Hero list={heroList} contractMap={contractMap} arrangement={arrangement} loading={loadNFTListLoading||loadChainLoading}/>
 
         </TabPanel>
-        <TabPanel value={value} name={'blind'}>
-            <BlindBox list={blindBoxList} contractMap={contractMap} arrangement={arrangement} loading={loadNFTListLoading||loadChainLoading}/>
+        <TabPanel value={value} name={'mint'}>
+            <MintBox list={mintBoxList} contractMap={contractMap} arrangement={arrangement} loading={loadNFTListLoading||loadChainLoading}/>
 
         </TabPanel>
         <TabPanel value={value} name={'sale'}>

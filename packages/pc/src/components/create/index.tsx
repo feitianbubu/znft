@@ -21,15 +21,14 @@ import {
 } from "@mui/material";
 import Provider from "@/pc/instance/provider";
 import {Modal} from "@lib/react-component";
-import {useLoading, useMount} from "@lib/react-hook";
 import {useWallet} from "@/pc/context/wallet";
-import {getChainConfig, getHeroCore, IChainContractConfigMap} from "@/pc/services/contract";
+import { IChainContractConfigMap} from "@/pc/services/contract";
 import {ContractInterface} from "@ethersproject/contracts/src.ts/index";
 import {ethers} from "ethers";
 import {useSnackbar} from "notistack";
 import {heroesJson} from "@/pc/constant";
-import {IMintRequest, mint} from "@/pc/services/restful";
 import {useContract} from "@/pc/context/contract";
+import {useHeroAbi} from "@/pc/context/abi/hero";
 
 const CREATE_ROLE = "0x154c00819833dac601ee5ddded6fda79d9d8b506b911b3dbd54cdb95fe6c3686"
 // todo 暂时叫这个
@@ -41,18 +40,12 @@ const Create: React.FC = () => {
     const [hasAuth, setHasAuth] = useState<undefined | boolean>(undefined);
     const [selected, setSelected] = useState<undefined | { bsID: number, name: string }>(undefined)
     const [visible, setVisible] = useState(false);
-    const [heroAbi, setHeroAbi] = useState<ContractInterface>();
     const [contract] = useContract();
     const {data:contractMap,loading:loadChainLoading} = contract
-    const [loadHeroAbi, heroAbiLoading] = useLoading(getHeroCore);
+    const [hero] = useHeroAbi()
+    const {loading:heroAbiLoading,abi:heroAbi} = hero
     const [connectLoading, setConnectLoading] = useState(true)
     const heroContractInstanceRef = useRef<ethers.Contract | null>();
-    const getHeroAbi = useCallback(async () => {
-        const res = await loadHeroAbi();
-        if (res) {
-            setHeroAbi(res)
-        }
-    }, [loadHeroAbi])
     const connectContract = useCallback(async (contractMap: IChainContractConfigMap, chainId: string, heroAbi: ContractInterface, address: string) => {
         setConnectLoading(true)
         const heroContractAddress = contractMap[chainId]?.HeroContractAddress;
@@ -87,18 +80,10 @@ const Create: React.FC = () => {
     const initCon = useCallback(() => {
 
     }, [])
-    const init = useCallback(async () => {
-        getHeroAbi().then()
-    }, [getHeroAbi])
-
-
     const handleClickCreate = useCallback((item: { bsID: number; name: string; }) => {
         setSelected(item);
         setVisible(true);
     }, [])
-    useMount(() => {
-        init().then()
-    })
     /**
      * 监听返回值 等这三个都有值了，就去请求权限
      */
@@ -159,24 +144,23 @@ const Create: React.FC = () => {
         setVisible(false)
     }, [])
     const ref = useRef<{ currHp: number, level: number, power: number, quantity: number }>(null)
+    const [createIng,setCreateIng] = useState(false);
     const handleCreate = useCallback(async () => {
+
         const form = ref.current
         const heroContract = heroContractInstanceRef.current;
         if (address && heroContract) {
+            setCreateIng(true)
             if (form && selected) {
-                // const {currHp, quantity, level, power} = form
-                // const params: Partial<IMintRequest> = {
-                //     "to": address,
-                //     "tokenType": HERO_TYPE,
-                //     "tokenCode": selected.bsID.toString(),
-                // }
                 try {
                     await heroContract.mint(address,HERO_TYPE,selected.bsID.toString())
                     enqueueSnackbar("铸造成功，等待上链",{variant:'success'})
                     setVisible(false);
                     setSelected(undefined)
+                    setCreateIng(false)
                 }catch (e) {
                     enqueueSnackbar("失败，请重试", {variant: "error"})
+                    setCreateIng(false)
                     return
                 }
 
@@ -194,6 +178,7 @@ const Create: React.FC = () => {
             onCancel={handleCancel}
             onOk={handleCreate}
             keepMounted={true}
+            loading={createIng}
         >
             <FormRef name={selected?.name} ref={ref}/>
         </Modal>

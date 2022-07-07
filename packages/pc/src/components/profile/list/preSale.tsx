@@ -90,7 +90,7 @@ const PreSale:React.FC<{contractMap:IChainContractConfigMap,list:IChainItem[],ar
         </Grid>
 
     }, [handleBuy])
-    const blindBoxList = useMemo(() => {
+    const mintBoxList = useMemo(() => {
         if(loading){
             return ;
         }
@@ -111,7 +111,7 @@ const PreSale:React.FC<{contractMap:IChainContractConfigMap,list:IChainItem[],ar
         }
     }, [arrangement, gridItemRender, list, loading, masonryItemRender])
     return <Box marginTop={3}>
-        {blindBoxList}
+        {mintBoxList}
     </Box>
 }
 export  default  PreSale;

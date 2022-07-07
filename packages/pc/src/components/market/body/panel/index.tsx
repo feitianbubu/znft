@@ -6,7 +6,7 @@ import {
     getNFTList,
     getHeroClockAction,
     getHeroCore,
-    getMinBox,
+    getMintBox,
     getPreSale,
     IChainItem,
     IChainContractConfig
@@ -54,7 +54,7 @@ const Home: React.FC = () => {
         setHeroesMap(map)
     },[])
     const init = useCallback(async (chainId:string)=>{
-        const [heroCore,HeroClockAction,minBox,preSale,chainConfig] = await Promise.all([getHeroCore(),getHeroClockAction(),getMinBox(),getPreSale(),getChainConfig()]);
+        const [heroCore,HeroClockAction,mintBox,preSale,chainConfig] = await Promise.all([getHeroCore(),getHeroClockAction(),getMintBox(),getPreSale(),getChainConfig()]);
         const provider = await Provider.getInstance();
         let heroContract;
         let auctionContract;
@@ -74,8 +74,8 @@ const Home: React.FC = () => {
                 if (HeroClockAction) {
                     auctionContract = new ethers.Contract(config.AuctionContractAddress, HeroClockAction, provider);
                 }
-                if (minBox) {
-                    mintBoxContract = new ethers.Contract(config.MintBoxContractAddress, minBox, provider);
+                if (mintBox) {
+                    mintBoxContract = new ethers.Contract(config.MintBoxContractAddress, mintBox, provider);
                 }
                 if (preSale) {
                     try {

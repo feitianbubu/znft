@@ -45,7 +45,7 @@ const MyApp :React.FC<PropsWithChildren<Props>> = (props)=>{
       <meta name="viewport" content="initial-scale=1, width=device-width" />
 
       {/*https://docs.metamask.io/guide/defining-your-icon.html*/}
-      <link rel={'shortcut icon'} href={'https://bkimg.cdn.bcebos.com/pic/5366d0160924ab188166165032fae6cd7b890b60'}/>
+      {/*<link rel={'shortcut icon'} href={'https://bkimg.cdn.bcebos.com/pic/5366d0160924ab188166165032fae6cd7b890b60'}/>*/}
     </Head>
 
       <CssBaseline />
