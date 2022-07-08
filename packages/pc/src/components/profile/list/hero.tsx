@@ -158,7 +158,8 @@ const Hero: React.FC<{ list: IChainItem[], arrangement: EArrangement, loading?: 
                     gasPrice, gasLimit
                 }
                 try {
-                    await heroContract.safeTransferFrom(address, to, sendSelected.tokenId, params);
+                    console.log(heroContract)
+                    await heroContract['safeTransferFrom(address,address,uint256)'](address, to, sendSelected.tokenId, params);
                     enqueueSnackbar("发送成功,等待链上确认", {variant: 'success'});
                     setSendSelected(undefined)
                     setSendVisible(false)
