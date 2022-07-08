@@ -84,7 +84,7 @@ const Home: React.FC = () => {
     const [status, setStatus] = useState<null | 'error' | 'waring' | 'success' | 'chainNotSupport'>(null);
     const [loadNFTList, loadNFTListLoading] = useLoading(getNFTList);
     const [contract] = useContract();
-    const {data:contractMap,loading:loadChainLoading} = contract
+    const {data: contractMap, loading: loadChainLoading} = contract
     const [heroList, setHeroList] = useState<IChainItem[]>([]);
     const [mintBoxList, setMintBoxList] = useState<IChainItem[]>([]);
     const [preSaleList, setPreSaleList] = useState<IChainItem[]>([]);
@@ -102,18 +102,18 @@ const Home: React.FC = () => {
             return chain;
         }
     }, [])
-    const getNFTListByAddress = useCallback(async (chainId: string, address: string,chain:IChainContractConfig) => {
+    const getNFTListByAddress = useCallback(async (chainId: string, address: string, chain: IChainContractConfig) => {
         const res = await loadNFTList({chainID: chainId, owner: address});
-        if (res&&res.items) {
-            const hero:IChainItem[] = []
-            const mintBox:IChainItem[]=[]
-            const preSale:IChainItem[] = []
+        if (res && res.items) {
+            const hero: IChainItem[] = []
+            const mintBox: IChainItem[] = []
+            const preSale: IChainItem[] = []
             for (const item of res.items) {
-                if(isPreSale(item,chain)){
+                if (isPreSale(item, chain)) {
                     preSale.push(item)
-                }else if(isMintBox(item,chain)){
+                } else if (isMintBox(item, chain)) {
                     mintBox.push(item)
-                }else{
+                } else {
                     hero.push(item)
                 }
             }
@@ -130,7 +130,7 @@ const Home: React.FC = () => {
         if (chainId && contractMap && address) {
             const chain = verify(chainId, contractMap)
             if (chain) {
-                getNFTListByAddress(chainId, address,chain).then()
+                getNFTListByAddress(chainId, address, chain).then()
             }
         }
 
@@ -138,7 +138,7 @@ const Home: React.FC = () => {
          * 每当切换链的时候，会校验一次是否支持,如果支持就把合同地址存到ref里面
          * getNFTListByAddress和loadChain是静态函数，不会变化，所以不用监听
          */
-    }, [chainId, contractMap,address], [])
+    }, [chainId, contractMap, address], [])
     const handleArrangementChange = useCallback((event: React.MouseEvent<HTMLElement, MouseEvent>, value?: string) => {
         if (value) {
             setArrangement(value as EArrangement)
@@ -151,29 +151,30 @@ const Home: React.FC = () => {
         <Avatar/>
         <Box paddingLeft={6} paddingRight={6} minHeight={800}>
 
-           <Box display={"flex"}>
-               <Box sx={{borderBottom: 1, borderColor: 'divider'}} flex={1}>
-                   <Tabs value={value} onChange={handleChange}>
-                       <Tab label={<Typography color={theme => theme.palette.text.primary} variant={'h5'}
-                                               fontWeight={"bold"}>
-                           英雄
-                       </Typography>} value={'hero'}/>
-                       <Tab label={<Typography color={theme => theme.palette.text.primary} variant={'h5'}
-                                               fontWeight={"bold"}>
-                           盲盒
-                       </Typography>} value={'mint'}/>
-                       {/*<Tab label={<Typography color={theme => theme.palette.text.primary} variant={'h5'}*/}
-                       {/*                        fontWeight={"bold"}>*/}
-                       {/*    预售*/}
-                       {/*</Typography>} value={'sale'}/>*/}
-                       <Tab label={<Typography color={theme => theme.palette.text.primary} variant={'h5'}
-                                               fontWeight={"bold"}>
-                           我的铸造
-                       </Typography>} value={'my'}/>
-                   </Tabs>
-               </Box>
-               <SubNav onArrangementChange={handleArrangementChange} arrangement={arrangement} status={status} loadNFTListLoading={loadNFTListLoading} />
-           </Box>
+            <Box display={"flex"}>
+                <Box sx={{borderBottom: 1, borderColor: 'divider'}} flex={1}>
+                    <Tabs value={value} onChange={handleChange}>
+                        <Tab label={<Typography color={theme => theme.palette.text.primary} variant={'h5'}
+                                                fontWeight={"bold"}>
+                            英雄
+                        </Typography>} value={'hero'}/>
+                        <Tab label={<Typography color={theme => theme.palette.text.primary} variant={'h5'}
+                                                fontWeight={"bold"}>
+                            盲盒
+                        </Typography>} value={'mint'}/>
+                        {/*<Tab label={<Typography color={theme => theme.palette.text.primary} variant={'h5'}*/}
+                        {/*                        fontWeight={"bold"}>*/}
+                        {/*    预售*/}
+                        {/*</Typography>} value={'sale'}/>*/}
+                        <Tab label={<Typography color={theme => theme.palette.text.primary} variant={'h5'}
+                                                fontWeight={"bold"}>
+                            我的铸造
+                        </Typography>} value={'my'}/>
+                    </Tabs>
+                </Box>
+                <SubNav onArrangementChange={handleArrangementChange} arrangement={arrangement} status={status}
+                        loadNFTListLoading={loadNFTListLoading}/>
+            </Box>
             <TabPanel value={value} name={'hero'}>
                 <Hero
                     list={heroList}

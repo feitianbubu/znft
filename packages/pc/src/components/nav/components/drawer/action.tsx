@@ -8,6 +8,7 @@ import {LoadingButton} from "@mui/lab";
 import {useLoading} from "@lib/react-hook";
 import {clearCache} from "@/pc/services/restful";
 import {useSnackbar} from "notistack";
+import {useContract} from "@/pc/context/contract";
 
 const sx = {
     width: 480,
@@ -19,11 +20,14 @@ const Action:React.FC = ()=>{
     const {visible} = state;
     const [wallet] = useWallet();
     const {isConnected,address,chainId} = wallet;
-    const [clear,loading] = useLoading(clearCache);
+    const [clearSelf,selfLoading] = useLoading(clearCache);
+    const [clearMarket,marketLoading] = useLoading(clearCache);
     const {enqueueSnackbar} = useSnackbar()
-    const handleClear = useCallback(async ()=>{
+    const [contract] = useContract();
+    const {data:contractMap,loading:loadChainLoading} = contract
+    const handleSelfClear = useCallback(async ()=>{
         if(address&&chainId){
-            const res = await  clear({
+            const res = await  clearSelf({
                 owner:address,
                 chainID:chainId
             })
@@ -33,7 +37,24 @@ const Action:React.FC = ()=>{
 
         }
 
-    },[address, chainId, clear, enqueueSnackbar])
+    },[address, chainId, clearSelf, enqueueSnackbar])
+    const handleMarketClear = useCallback(async ()=>{
+
+        if(contractMap&&chainId){
+            const contract = contractMap[chainId]
+            if(contract&&contract.AuctionContractAddress){
+                const res = await  clearMarket({
+                    owner:contract.AuctionContractAddress,
+                    chainID:chainId
+                })
+                if(res){
+                    enqueueSnackbar("清除成功",{variant:'success'})
+                }
+            }
+        }
+
+    },[chainId, clearMarket, contractMap, enqueueSnackbar])
+
     const handleClose = useCallback(()=>{
         setState({visible:false})
     },[setState])
@@ -46,7 +67,8 @@ const Action:React.FC = ()=>{
         <Toolbar />
         {isConnected?<Logged/>:<Login/>}
         <Stack direction={"column"} spacing={3} marginTop={3} paddingLeft={16} paddingRight={16}>
-            <LoadingButton onClick={handleClear} variant={"outlined"} loading={loading}>清除缓存</LoadingButton>
+            <LoadingButton onClick={handleSelfClear} variant={"outlined"} loading={selfLoading}>清除物品缓存</LoadingButton>
+            <LoadingButton onClick={handleMarketClear} variant={"outlined"} loading={marketLoading||loadChainLoading}>清除市场缓存</LoadingButton>
         </Stack>
 
         </Drawer>
