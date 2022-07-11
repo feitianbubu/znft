@@ -7,8 +7,8 @@ import {
     SvgIcon,
     Typography
 } from "@mui/material";
-import {useLoading, useMount, useSubscribe} from "@lib/react-hook";
-import {getChainConfig, getNFTList, IChainContractConfigMap, IChainContractConfig, IChainItem} from "@/pc/services/contract";
+import {useLoading, useSubscribe} from "@lib/react-hook";
+import {getNFTList, IChainContractConfigMap, IChainContractConfig, IChainItem} from "@/pc/services/contract";
 import {useWallet} from "@/pc/context/wallet";
 import {styled} from "@mui/material/styles";
 import Hero from "@/pc/components/market/list/hero";
@@ -16,6 +16,7 @@ import MintBox from "@/pc/components/market/list/mintBox";
 import PreSale from "@/pc/components/market/list/preSale";
 import SubNav from "@/pc/components/market/subNav";
 import {useContract} from "@/pc/context/contract";
+import Tickets from "@/pc/components/market/list/tickets";
 // todo 现在svg太大 不知道怎么处理
 const GridSvg :React.FC = ()=>{
     return <SvgIcon>
@@ -151,6 +152,9 @@ const Home: React.FC = () => {
                 <Tab label={<Typography color={theme => theme.palette.text.primary} variant={'h5'} fontWeight={"bold"}>
                     预售
                 </Typography>} value={'sale'}/>
+                <Tab label={<Typography color={theme => theme.palette.text.primary} variant={'h5'} fontWeight={"bold"}>
+                    门票
+                </Typography>} value={'tickets'}/>
             </Tabs>
         </Box>
         <TabPanel value={value} name={'hero'}>
@@ -163,6 +167,10 @@ const Home: React.FC = () => {
         </TabPanel>
         <TabPanel value={value} name={'sale'}>
             <PreSale list={preSaleList} contractMap={contractMap} arrangement={arrangement} loading={loadNFTListLoading||loadChainLoading}/>
+
+        </TabPanel>
+        <TabPanel value={value} name={'tickets'}>
+            <Tickets  arrangement={arrangement}/>
 
         </TabPanel>
     </Box>

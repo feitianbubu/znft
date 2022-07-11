@@ -21,7 +21,7 @@ import {
     Typography
 } from "@mui/material";
 import {Masonry} from "@mui/lab";
-import {weiToEth} from "@/pc/utils/eth";
+import {bnToWei, weiToEth} from "@/pc/utils/eth";
 import {heroesJson} from "@/pc/constant";
 import {useMount} from "@lib/react-hook";
 import {useSnackbar} from "notistack";
@@ -33,6 +33,7 @@ import {LoadingButton} from '@mui/lab'
 import {useHeroAbi} from "@/pc/context/abi/hero";
 import {useAuctionAbi} from "@/pc/context/abi/auction";
 import {Modal} from "@lib/react-component/lib/modal";
+import {useReferencePrice} from "@/pc/hook/gas";
 
 const Hero: React.FC<{ contractMap: IChainContractConfigMap, list: IChainItem[], arrangement: EArrangement, loading?: boolean }> = (props) => {
     const {contractMap, list, arrangement, loading} = props;
@@ -40,7 +41,7 @@ const Hero: React.FC<{ contractMap: IChainContractConfigMap, list: IChainItem[],
     const [wallet] = useWallet();
     const {chainId, address} = wallet;
     const [heroesMap, setHeroesMap] = useState<{ [key: string]: string }>({});
-    const [visible,setVisible] = useState(false);
+    const [visible, setVisible] = useState(false);
     const [buySelected, setBuySelected] = useState<IChainItem | undefined>(undefined)
     const initMap = useCallback(() => {
         const map: { [key: string]: string } = {};
@@ -51,21 +52,22 @@ const Hero: React.FC<{ contractMap: IChainContractConfigMap, list: IChainItem[],
     }, [])
 
     const [hero] = useHeroAbi()
-    const {loading:heroAbiLoading,abi:heroAbi} = hero;
+    const {loading: heroAbiLoading, abi: heroAbi} = hero;
     const [auction] = useAuctionAbi()
-    const {loading:auctionAbiLoading,abi:auctionAbi} = auction;
+    const {loading: auctionAbiLoading, abi: auctionAbi} = auction;
     const auctionContractInstanceRef = useRef<ethers.Contract | null>();
     const [connectLoading, setConnectLoading] = useState(false)
-    const connectContract = useCallback(async (contractMap: IChainContractConfigMap, chainId: string, auctionAbi:ContractInterface) => {
+
+    const connectContract = useCallback(async (contractMap: IChainContractConfigMap, chainId: string, auctionAbi: ContractInterface) => {
         setConnectLoading(true)
         const auctionAddress = contractMap[chainId]?.AuctionContractAddress;
         const provider = await Provider.getInstance();
-        if(provider){
+        if (provider) {
             let singer
             try {
                 singer = provider.getSigner();
-            }catch (e) {
-                enqueueSnackbar("签名失败，请刷新页面",{variant:"error"})
+            } catch (e) {
+                enqueueSnackbar("签名失败，请刷新页面", {variant: "error"})
                 setConnectLoading(false)
             }
 
@@ -76,42 +78,58 @@ const Hero: React.FC<{ contractMap: IChainContractConfigMap, list: IChainItem[],
         }
         setConnectLoading(false)
     }, [enqueueSnackbar])
-    const [buying,setBuying] =useState(false)
+    const [buying, setBuying] = useState(false)
     const buyFormRef = useRef<{ gasLimit: number, gasPrice: number }>(null)
+
     const handleBuy = useCallback(async () => {
         const contractInstance = auctionContractInstanceRef.current;
         if (chainId) {
             const chain = contractMap[chainId]
             const {HeroContractAddress} = chain || {}
             const buyForm = buyFormRef.current
-            if (contractInstance && HeroContractAddress&&address&&buySelected&&buyForm) {
+            if (contractInstance && HeroContractAddress && address && buySelected && buyForm) {
                 setBuying(true)
-                const {gasPrice,gasLimit } = buyForm
+                const {gasPrice, gasLimit} = buyForm
                 const params = {
                     gasLimit,
                     gasPrice,
-                    value:ethers.utils.parseUnits(buySelected.currentPrice,'wei'),
-                    from:address,
+                    value: ethers.utils.parseUnits(buySelected.currentPrice, 'wei'),
+                    from: address,
                 }
                 try {
-                     await contractInstance.bid(HeroContractAddress, buySelected.tokenId,params)
+                    await contractInstance.bid(HeroContractAddress, buySelected.tokenId, params)
                     enqueueSnackbar("已发起购买，请等待交易成功")
                     setBuying(false)
                     setVisible(false)
                     setBuySelected(undefined)
-                }
-                catch (e:any) {
-                    enqueueSnackbar(`购买失败:${e.message}`,{variant: 'error'})
+                } catch (e: any) {
+                    enqueueSnackbar(`购买失败:${e.message}`, {variant: 'error'})
                     setBuying(false)
                 }
             }
         }
 
     }, [address, buySelected, chainId, contractMap, enqueueSnackbar])
-    const handleCancel= useCallback(()=>{
+    const handleCancel = useCallback(() => {
         setVisible(false);
         setBuySelected(undefined)
-    },[])
+    }, [])
+    const [referenceLimit, setReferenceLimit] = useState("");
+    const guess = useCallback(async (address: string, tokenId: string) => {
+        const auctionContractInstance = auctionContractInstanceRef.current
+        if (auctionContractInstance) {
+            const res = await auctionContractInstance.estimateGas.bid(tokenId)
+            setReferenceLimit(bnToWei(res))
+        }
+    }, [])
+    useEffect(() => {
+        if (buySelected && chainId) {
+            const auctionAddress = contractMap[chainId]?.AuctionContractAddress;
+            if (auctionAddress) {
+                guess(auctionAddress, buySelected.tokenId).then()
+            }
+        }
+    }, [buySelected, chainId, contractMap, guess])
     useMount(() => {
         initMap()
     })
@@ -128,7 +146,7 @@ const Hero: React.FC<{ contractMap: IChainContractConfigMap, list: IChainItem[],
         const name = heroesMap[item.tokenUri || '']
         const rateNum = Number.parseInt(item.quality || '1');
         const rate = rateNum == 0 ? 1 : rateNum;
-        const buy = ()=>{
+        const buy = () => {
             setVisible(true)
             setBuySelected(item)
         }
@@ -157,24 +175,25 @@ const Hero: React.FC<{ contractMap: IChainContractConfigMap, list: IChainItem[],
             </CardContent>
             <CardActions>
                 <LoadingButton
-                    loading={connectLoading || auctionAbiLoading||heroAbiLoading||buying}
+                    loading={connectLoading || auctionAbiLoading || heroAbiLoading || buying}
                     data-id={item.tokenId}
-                    data-value = {item.currentPrice}
+                    data-value={item.currentPrice}
                     variant={"contained"}
                     size={"small"}
                     onClick={buy}
+                    disabled={item.owner == address}
                 >
-                    购买
+                    {item.owner == address ? '已购买' : '购买'}
                 </LoadingButton>
             </CardActions>
         </CustomCard>
-    }, [heroesMap, connectLoading, auctionAbiLoading, heroAbiLoading, buying])
+    }, [heroesMap, connectLoading, auctionAbiLoading, heroAbiLoading, buying, address])
     const gridItemRender = useCallback((item: IChainItem) => {
         const rateNum = Number.parseInt(item.quality || '1');
         const rate = rateNum == 0 ? 1 : rateNum;
         const image = item.tokenUri ? `https://img7.99.com/yhkd/image/data/hero//big-head/${item.tokenUri}.jpg` : 'http://172.24.135.32:3080/static/img/empty.jpg'
         const name = heroesMap[item.tokenUri || '']
-        const buy = ()=>{
+        const buy = () => {
             setVisible(true)
             setBuySelected(item)
         }
@@ -204,15 +223,16 @@ const Hero: React.FC<{ contractMap: IChainContractConfigMap, list: IChainItem[],
                         size={"small"}
                         onClick={buy}
 
-                        loading={connectLoading || auctionAbiLoading||heroAbiLoading||buying}
+                        loading={connectLoading || auctionAbiLoading || heroAbiLoading || buying}
                         data-id={item.tokenId}
-                        data-value = {item.currentPrice}
-                    >购买</LoadingButton>
+                        data-value={item.currentPrice} disabled={item.owner == address}
+                    >
+                        {item.owner == address ? '已购买' : '购买'}</LoadingButton>
                 </CardActions>
             </CustomCard>
         </Grid>
 
-    }, [heroesMap, connectLoading, auctionAbiLoading, heroAbiLoading, buying])
+    }, [heroesMap, connectLoading, auctionAbiLoading, heroAbiLoading, buying, address])
     const heroList = useMemo(() => {
         if (loading) {
             return;
@@ -242,16 +262,26 @@ const Hero: React.FC<{ contractMap: IChainContractConfigMap, list: IChainItem[],
             onCancel={handleCancel}
             loading={buying}
         >
-            <BuyFormRef ref={buyFormRef}/>
+            <BuyFormRef ref={buyFormRef} referenceLimit={referenceLimit}/>
         </Modal>
         <Divider sx={{marginBottom: 3}}/>
         {heroList}
     </Box>
 }
 export default Hero;
-const BuyForm: ForwardRefRenderFunction<{ gasLimit: number, gasPrice: number }, unknown> = (_props, ref) => {
+const BuyForm: ForwardRefRenderFunction<{ gasLimit: number, gasPrice: number }, { referenceLimit?: string }> = (props, ref) => {
+    const {referenceLimit} = props
+    const [referencePrice] = useReferencePrice();
     const [gasPrice, setGasPrice] = useState(20)
     const [gasLimit, setGasLimit] = useState(21000)
+    const _referenceLimit = useMemo(() => {
+        return referenceLimit ? <Typography display={"inline-block"} fontSize={'inherit'} component={'span'}
+                                            onClick={() => setGasLimit(Number.parseInt(referenceLimit))}>参考值:{referenceLimit}</Typography> : ''
+    }, [referenceLimit])
+    const _referencePrice = useMemo(() => {
+        return referencePrice ? <Typography display={"inline-block"} fontSize={'inherit'} component={'span'}
+                                            onClick={() => setGasPrice(Number.parseInt(referencePrice))}>参考值:{referencePrice}</Typography> : ''
+    }, [referencePrice])
     const handleGasPriceChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const _value = Number.parseInt(e.target.value)
         setGasPrice(isNaN(_value) ? 20 : _value)
@@ -271,14 +301,14 @@ const BuyForm: ForwardRefRenderFunction<{ gasLimit: number, gasPrice: number }, 
                 type={"number"}
                 value={gasPrice}
                 onChange={handleGasPriceChange}
-                helperText={'单位：wei'}
+                helperText={<>单位:wei {_referencePrice}</>}
             />
             <TextField
                 label="gasLimit"
                 type={"number"}
                 value={gasLimit}
                 onChange={handleGasLimitChange}
-                helperText={'单位：wei'}
+                helperText={<>单位：wei {_referenceLimit}</>}
             />
         </Stack>
 

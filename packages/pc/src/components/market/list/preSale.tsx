@@ -20,7 +20,7 @@ import {
     Typography
 } from "@mui/material";
 import {Masonry} from "@mui/lab";
-import {weiToEth} from "@/pc/utils/eth";
+import {bnToWei, weiToEth} from "@/pc/utils/eth";
 import {useSnackbar} from "notistack";
 import {LoadingButton} from "@mui/lab"
 import {Modal} from "@lib/react-component/lib/modal";
@@ -30,6 +30,7 @@ import {ContractInterface} from "@ethersproject/contracts/src.ts/index";
 import Provider from "@/pc/instance/provider";
 import {usePreSaleAbi} from "@/pc/context/abi/preSale";
 import {useContract} from "@/pc/context/contract";
+import {useReferencePrice} from "@/pc/hook/gas";
 
 const getButtonText = (startTime?: string, endTime?: string,isSupported?:boolean) => {
     if(isSupported){
@@ -94,6 +95,22 @@ const PreSale: React.FC<{ contractMap: IChainContractConfigMap, list: IChainItem
         }
         setConnectLoading(false)
     }, [address, enqueueSnackbar])
+    const [referenceLimit,setReferenceLimit] = useState("");
+    const guess = useCallback(async (currentPrice:string)=>{
+        const preSaleContractInstance =  preSaleContractInstanceRef.current
+        if(preSaleContractInstance){
+            const params = {
+                value:ethers.utils.parseUnits(currentPrice,'wei'),
+            }
+            const res = await preSaleContractInstance.estimateGas.Support(params)
+            setReferenceLimit(bnToWei(res))
+        }
+    },[])
+    useEffect(()=>{
+        if(buySelected){
+            guess(buySelected.currentPrice).then()
+        }
+    },[buySelected, guess])
     const handleBuy = useCallback(async () => {
         const preSaleContractInstance = preSaleContractInstanceRef.current
         const buyForm = buyFormRef.current
@@ -245,7 +262,7 @@ const PreSale: React.FC<{ contractMap: IChainContractConfigMap, list: IChainItem
             onCancel={handleCancel}
             loading={buying}
         >
-            <BuyFormRef ref={buyFormRef}/>
+            <BuyFormRef ref={buyFormRef} referenceLimit={referenceLimit}/>
         </Modal>
         <Box marginTop={3}>
             {mintBoxList}
@@ -253,9 +270,17 @@ const PreSale: React.FC<{ contractMap: IChainContractConfigMap, list: IChainItem
     </>
 }
 export default PreSale;
-const BuyForm: ForwardRefRenderFunction<{ gasLimit: number, gasPrice: number }, unknown> = (_props, ref) => {
+const BuyForm: ForwardRefRenderFunction<{ gasLimit: number, gasPrice: number }, { referenceLimit?:string }> = (props, ref) => {
+    const {referenceLimit} = props
+    const [referencePrice] = useReferencePrice();
     const [gasPrice, setGasPrice] = useState(20)
     const [gasLimit, setGasLimit] = useState(21000)
+    const _referenceLimit = useMemo(()=>{
+        return referenceLimit?<Typography display={"inline-block"} fontSize={'inherit'} component={'span'} onClick={()=>setGasLimit(Number.parseInt(referenceLimit))}>参考值:{referenceLimit}</Typography>:''
+    },[referenceLimit])
+    const _referencePrice = useMemo(()=>{
+        return referencePrice?<Typography display={"inline-block"} fontSize={'inherit'} component={'span'} onClick={()=>setGasPrice(Number.parseInt(referencePrice))}>参考值:{referencePrice}</Typography>:''
+    },[referencePrice])
     const handleGasPriceChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const _value = Number.parseInt(e.target.value)
         setGasPrice(isNaN(_value) ? 20 : _value)
@@ -275,14 +300,14 @@ const BuyForm: ForwardRefRenderFunction<{ gasLimit: number, gasPrice: number }, 
                 type={"number"}
                 value={gasPrice}
                 onChange={handleGasPriceChange}
-                helperText={'单位：wei'}
+                helperText={<>单位:wei  {_referencePrice}</>}
             />
             <TextField
                 label="gasLimit"
                 type={"number"}
                 value={gasLimit}
                 onChange={handleGasLimitChange}
-                helperText={'单位：wei'}
+                helperText={<>单位：wei {_referenceLimit}</>}
             />
         </Stack>
 

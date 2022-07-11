@@ -29,6 +29,8 @@ import {useSnackbar} from "notistack";
 import {heroesJson} from "@/pc/constant";
 import {useContract} from "@/pc/context/contract";
 import {useHeroAbi} from "@/pc/context/abi/hero";
+import {useReferencePrice} from "@/pc/hook/gas";
+import {bnToWei} from "@/pc/utils/eth";
 
 const CREATE_ROLE = "0x154c00819833dac601ee5ddded6fda79d9d8b506b911b3dbd54cdb95fe6c3686"
 // todo 暂时叫这个
@@ -79,6 +81,48 @@ const Create: React.FC = () => {
         setSelected(item);
         setVisible(true);
     }, [])
+    const [referenceLimit,setReferenceLimit] = useState("");
+    const handleCreate = useCallback(async () => {
+        const form = ref.current
+        const heroContract = heroContractInstanceRef.current;
+        if (address && heroContract) {
+            setCreateIng(true)
+            if (form && selected) {
+                const {gasPrice,gasLimit } = form
+                const params = {
+                    from: address,
+                    gasPrice, gasLimit,
+                }
+                try {
+                    await heroContract.mint(address,HERO_TYPE,selected.bsID.toString(),params)
+                    enqueueSnackbar("铸造成功，等待上链",{variant:'success'})
+                    setVisible(false);
+                    setSelected(undefined)
+                    setCreateIng(false)
+                }catch (e) {
+                    enqueueSnackbar("失败，请重试", {variant: "error"})
+                    setCreateIng(false)
+                    return
+                }
+
+            }
+        } else {
+            enqueueSnackbar("请链接钱包", {variant: "error"})
+        }
+
+    }, [address, enqueueSnackbar, selected])
+    const guess = useCallback(async (address:string,bsID:string)=>{
+        const heroContract = heroContractInstanceRef.current;
+        if(heroContract){
+            const res = await heroContract.estimateGas.mint(address,HERO_TYPE,bsID)
+            setReferenceLimit(bnToWei(res))
+        }
+    },[])
+    useEffect(()=>{
+        if(selected&&address){
+            guess(address,selected.bsID.toString()).then()
+        }
+    },[selected, address, guess])
     /**
      * 监听返回值 等这三个都有值了，就去请求权限
      */
@@ -140,36 +184,7 @@ const Create: React.FC = () => {
     }, [])
     const ref = useRef<{ currHp: number, level: number, power: number, quantity: number ,gasLimit:number,gasPrice:number}>(null)
     const [createIng,setCreateIng] = useState(false);
-    const handleCreate = useCallback(async () => {
 
-        const form = ref.current
-        const heroContract = heroContractInstanceRef.current;
-        if (address && heroContract) {
-            setCreateIng(true)
-            if (form && selected) {
-                const {gasPrice,gasLimit } = form
-                const params = {
-                    from: address,
-                    gasPrice, gasLimit,
-                }
-                try {
-                    await heroContract.mint(address,HERO_TYPE,selected.bsID.toString(),params)
-                    enqueueSnackbar("铸造成功，等待上链",{variant:'success'})
-                    setVisible(false);
-                    setSelected(undefined)
-                    setCreateIng(false)
-                }catch (e) {
-                    enqueueSnackbar("失败，请重试", {variant: "error"})
-                    setCreateIng(false)
-                    return
-                }
-
-            }
-        } else {
-            enqueueSnackbar("请链接钱包", {variant: "error"})
-        }
-
-    }, [address, enqueueSnackbar, selected])
 
     return <>
         <Modal
@@ -180,7 +195,7 @@ const Create: React.FC = () => {
             keepMounted={true}
             loading={createIng}
         >
-            <FormRef name={selected?.name} ref={ref}/>
+            <FormRef name={selected?.name} ref={ref} referenceLimit={referenceLimit}/>
         </Modal>
         <Box minHeight={900}>
             {child}
@@ -189,13 +204,21 @@ const Create: React.FC = () => {
 }
 export default Create;
 
-const Form: ForwardRefRenderFunction<{ currHp: number, level: number, power: number, quantity: number ,gasLimit:number,gasPrice:number}, { name?: string }> = (props, ref) => {
+const Form: ForwardRefRenderFunction<{ currHp: number, level: number, power: number, quantity: number ,gasLimit:number,gasPrice:number}, { name?: string,referenceLimit?:string }> = (props, ref) => {
+    const {referenceLimit} = props
     const [currHp, setCurrHp] = useState(100)
     const [level, setLevel] = useState(1)
     const [power, setPower] = useState(100)
     const [quantity, setQuantity] = useState(1)
+    const [referencePrice] = useReferencePrice();
     const [gasPrice, setGasPrice] = useState(20)
     const [gasLimit, setGasLimit] = useState(21000)
+    const _referenceLimit = useMemo(()=>{
+        return referenceLimit?<Typography display={"inline-block"} fontSize={'inherit'} component={'span'} onClick={()=>setGasLimit(Number.parseInt(referenceLimit))}>参考值:{referenceLimit}</Typography>:''
+    },[referenceLimit])
+    const _referencePrice = useMemo(()=>{
+        return referencePrice?<Typography display={"inline-block"} fontSize={'inherit'} component={'span'} onClick={()=>setGasPrice(Number.parseInt(referencePrice))}>参考值:{referencePrice}</Typography>:''
+    },[referencePrice])
     const handleCurrHpChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const _value = Number.parseInt(e.target.value)
         setCurrHp(isNaN(_value) ? 100 : _value)
@@ -267,14 +290,14 @@ const Form: ForwardRefRenderFunction<{ currHp: number, level: number, power: num
                 type={"number"}
                 value={gasPrice}
                 onChange={handleGasPriceChange}
-                helperText={'单位：wei'}
+                helperText={<>单位:wei  {_referencePrice}</>}
             />
             <TextField
                 label="gasLimit"
                 type={"number"}
                 value={gasLimit}
                 onChange={handleGasLimitChange}
-                helperText={'单位：wei'}
+                helperText={<>单位：wei {_referenceLimit}</>}
             />
         </Stack>
 

@@ -120,6 +120,10 @@ const Home: React.FC = () => {
             setHeroList(hero)
             setMintBoxList(mintBox)
             setPreSaleList(preSale)
+        }else{
+            setHeroList([])
+            setMintBoxList([])
+            setPreSaleList([])
         }
     }, [loadNFTList])
     /**
@@ -166,10 +170,10 @@ const Home: React.FC = () => {
                         {/*                        fontWeight={"bold"}>*/}
                         {/*    预售*/}
                         {/*</Typography>} value={'sale'}/>*/}
-                        <Tab label={<Typography color={theme => theme.palette.text.primary} variant={'h5'}
-                                                fontWeight={"bold"}>
-                            我的铸造
-                        </Typography>} value={'my'}/>
+                        {/*<Tab label={<Typography color={theme => theme.palette.text.primary} variant={'h5'}*/}
+                        {/*                        fontWeight={"bold"}>*/}
+                        {/*    我的铸造*/}
+                        {/*</Typography>} value={'my'}/>*/}
                     </Tabs>
                 </Box>
                 <SubNav onArrangementChange={handleArrangementChange} arrangement={arrangement} status={status}
@@ -199,15 +203,15 @@ const Home: React.FC = () => {
             {/*    />*/}
 
             {/*</TabPanel>*/}
-            <TabPanel value={value} name={'my'}>
-                <PreSale
-                    list={preSaleList}
-                    contractMap={contractMap}
-                    arrangement={arrangement}
-                    loading={loadNFTListLoading || loadChainLoading}
-                />
+            {/*<TabPanel value={value} name={'my'}>*/}
+            {/*    <PreSale*/}
+            {/*        list={preSaleList}*/}
+            {/*        contractMap={contractMap}*/}
+            {/*        arrangement={arrangement}*/}
+            {/*        loading={loadNFTListLoading || loadChainLoading}*/}
+            {/*    />*/}
 
-            </TabPanel>
+            {/*</TabPanel>*/}
         </Box>
     </>
 }

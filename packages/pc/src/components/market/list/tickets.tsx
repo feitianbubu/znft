@@ -1,13 +1,12 @@
 import React, {
     ForwardRefRenderFunction,
-    useCallback,
-    useEffect,
+    useCallback, useEffect,
     useImperativeHandle,
     useMemo,
     useRef,
     useState
 } from "react";
-import {IChainContractConfigMap, IChainItem} from "@/pc/services/contract";
+import {IChainContractConfigMap} from "@/pc/services/contract";
 import {CustomCard, EArrangement} from "@/pc/components/market";
 import {
     Box,
@@ -20,115 +19,95 @@ import {
     Typography
 } from "@mui/material";
 import {Masonry, LoadingButton} from "@mui/lab";
-import {bnToWei, weiToEth} from "@/pc/utils/eth";
+import {ethToWei, weiToEth} from "@/pc/utils/eth";
 import {useSnackbar} from "notistack";
-import {ContractInterface} from "@ethersproject/contracts/src.ts/index";
-import Provider from "@/pc/instance/provider";
 import {ethers} from "ethers";
 import {useWallet} from "@/pc/context/wallet";
-import {useMintBoxAbi} from "@/pc/context/abi/mint";
-import {useContract} from "@/pc/context/contract";
 import {Modal} from "@lib/react-component";
-import {useReferencePrice} from "@/pc/hook/gas";
+import {useContract} from "@/pc/context/contract";
+import {useReferenceLimit, useReferencePrice} from "@/pc/hook/gas";
 
-const MintBox: React.FC<{ contractMap: IChainContractConfigMap, list: IChainItem[], arrangement: EArrangement, loading?: boolean }> = (props) => {
-    const {list, arrangement, loading} = props;
+import {strToHex} from "@/pc/utils/hex";
+
+interface IItem {
+    name: string,
+    currentPrice: string
+    quality: string,
+    to: string
+    productID: string
+    noticeType: number,
+    result: number
+}
+
+const list: IItem[] = [
+    {
+        name: '门票',
+        currentPrice: ethToWei('0.0001'),
+        quality: '1',
+        to: '0x279A4C36098c4e76182706511AB0346518ad6049',
+        productID: '111001316',
+        noticeType: 30,
+        result: 2
+    }
+]
+const Tickets: React.FC<{ arrangement: EArrangement }> = (props) => {
+    const {arrangement} = props;
     const {enqueueSnackbar} = useSnackbar()
-    const [wallet] = useWallet();
-    const {chainId,address} = wallet;
     const [contract] = useContract();
-    const {data: contractMap} = contract
-    const [mintBox] = useMintBoxAbi()
-    const {abi: mintBoxAbi, loading: abiLoading} = mintBox
-    const [connectLoading, setConnectLoading] = useState(true)
-    const mintBoxContractInstanceRef = useRef<ethers.Contract | null>();
-    const [visible,setVisible] = useState(false);
-    const [buySelected, setBuySelected] = useState<IChainItem | undefined>(undefined)
-    const connectContract = useCallback(async (contractMap: IChainContractConfigMap, chainId: string, mintBoxAbi: ContractInterface) => {
-        setConnectLoading(true)
-        const mintBoxAddress = contractMap[chainId]?.MintBoxContractAddress;
-        const provider = await Provider.getInstance();
-        if (provider) {
-            let singer
-            try {
-                singer = provider.getSigner();
-            } catch (e) {
-                enqueueSnackbar("签名失败，请刷新页面", {variant: "error"})
-                setConnectLoading(false)
-            }
+    const {data: contractMap, loading: loadChainLoading} = contract
+    const [wallet] = useWallet();
+    const {chainId, address} = wallet;
+    const [visible, setVisible] = useState(false);
+    const [buySelected, setBuySelected] = useState<IItem | undefined>(undefined)
 
-            if (mintBoxAddress) {
-                const mintBoxContractInstance: ethers.Contract | null = new ethers.Contract(mintBoxAddress, mintBoxAbi, singer);
-                mintBoxContractInstanceRef.current = mintBoxContractInstance
-            }
-        }
-        setConnectLoading(false)
-    }, [enqueueSnackbar])
-    const [referenceLimit,setReferenceLimit] = useState("");
-    const guess = useCallback(async (currentPrice:string)=>{
-        const mintBoxContractInstance =  mintBoxContractInstanceRef.current
-        if(mintBoxContractInstance){
-            const params = {
-                value:ethers.utils.parseUnits(currentPrice,'wei'),
-            }
-            const res = await mintBoxContractInstance.estimateGas.mintBox(params)
-            setReferenceLimit(bnToWei(res))
-        }
-    },[])
-    useEffect(()=>{
-        if(buySelected){
-            guess(buySelected.currentPrice).then()
-        }
-    },[buySelected, guess])
-    /**
-     * 构建合同
-     */
-    useEffect(() => {
-        if (chainId && mintBoxAbi) {
-            connectContract(contractMap, chainId, mintBoxAbi).then()
-        }
-    }, [chainId, connectContract, contractMap, mintBoxAbi])
     const buyFormRef = useRef<{ gasLimit: number, gasPrice: number }>(null)
-    const [buying,setBuying] =useState(false)
-    const handleBuy = useCallback(async ()=>{
-        const mintBoxContractInstance = mintBoxContractInstanceRef.current
+    const [buying, setBuying] = useState(false)
+    const handleBuy = useCallback(async () => {
         const buyForm = buyFormRef.current
-        if(mintBoxContractInstance&&buyForm&&buySelected){
+        if (buyForm && buySelected) {
             setBuying(true)
-            const {gasLimit,gasPrice} = buyForm
+            const {gasLimit, gasPrice} = buyForm
 
             const params = {
                 from: address,
                 gasPrice, gasLimit,
-                value:ethers.utils.parseUnits(buySelected.currentPrice,'wei'),
+                value: ethers.utils.parseUnits(buySelected.currentPrice, 'wei'),
             }
             try {
-                await mintBoxContractInstance.mintBox(params);
-                enqueueSnackbar("购买成功，等待上链",{variant:"success"})
+                enqueueSnackbar("购买成功，等待上链", {variant: "success"})
                 setBuying(false)
                 setVisible(false)
                 setBuySelected(undefined)
-            }catch (e:any) {
+            } catch (e: any) {
                 setBuying(false)
-                enqueueSnackbar(`购买失败:${e.message}`,{variant: 'error'})
+                enqueueSnackbar(`购买失败:${e.message}`, {variant: 'error'})
             }
 
         }
-    },[address, buySelected, enqueueSnackbar])
-    const handleCancel = useCallback(()=>{
+    }, [address, buySelected, enqueueSnackbar])
+    const handleCancel = useCallback(() => {
         setVisible(false)
         setBuySelected(undefined)
-    },[])
+    }, [])
 
-    const masonryItemRender = useCallback((item: IChainItem,) => {
+    const masonryItemRender = useCallback((item: IItem) => {
         const rateNum = Number.parseInt(item.quality || '1');
         const rate = rateNum == 0 ? 1 : rateNum;
-        const buy = ()=>{
-            setVisible(true)
-            setBuySelected(item)
+        const buy = () => {
+            if(chainId){
+                const chain = contractMap[chainId]
+                if(chain){
+                    setVisible(true)
+                    setBuySelected(item)
+                }else{
+                    enqueueSnackbar("当前链不支持",{variant:"error"})
+                }
+            }else{
+                enqueueSnackbar("正在获取配置，请稍后")
+            }
         }
         return <CustomCard
-            key={`${item.tokenUri}${item.tokenId}${item.quality}${item.creator}`}
+            key={`${item.to}`}
             elevation={0}
             variant="outlined"
         >
@@ -142,7 +121,7 @@ const MintBox: React.FC<{ contractMap: IChainContractConfigMap, list: IChainItem
             <CardContent>
                 <Stack direction={"row"} justifyContent={"space-between"}>
                     <Typography gutterBottom variant="h6" component="div">
-                        盲盒
+                        门票
                     </Typography>
                     <Typography gutterBottom variant="h6" component="div">
                         {weiToEth(item.currentPrice)} eth
@@ -153,21 +132,30 @@ const MintBox: React.FC<{ contractMap: IChainContractConfigMap, list: IChainItem
             </CardContent>
             <CardActions>
                 <LoadingButton
-                    loading={abiLoading || connectLoading||buying}
+                    loading={buying || loadChainLoading}
                     variant={"contained"}
                     size={"small"}
                     onClick={buy}>购买</LoadingButton>
             </CardActions>
         </CustomCard>
-    }, [abiLoading, buying, connectLoading])
-    const gridItemRender = useCallback((item: IChainItem) => {
+    }, [buying, chainId, contractMap, enqueueSnackbar, loadChainLoading])
+    const gridItemRender = useCallback((item: IItem) => {
         const rateNum = Number.parseInt(item.quality || '1');
         const rate = rateNum == 0 ? 1 : rateNum;
-        const buy = ()=>{
-            setVisible(true)
-            setBuySelected(item)
+        const buy = () => {
+            if(chainId){
+                const chain = contractMap[chainId]
+                if(chain){
+                    setVisible(true)
+                    setBuySelected(item)
+                }else{
+                    enqueueSnackbar("当前链不支持",{variant:"error"})
+                }
+            }else{
+                enqueueSnackbar("正在获取配置，请稍后")
+            }
         }
-        return <Grid item={true} key={`${item.tokenUri}${item.tokenId}${item.quality}${item.creator}`} xs={12}
+        return <Grid item={true} key={`${item.to}`} xs={12}
                      sm={4} md={3}>
             <CustomCard elevation={0} variant={'outlined'}>
                 <CardMedia
@@ -178,7 +166,7 @@ const MintBox: React.FC<{ contractMap: IChainContractConfigMap, list: IChainItem
                 <CardContent>
                     <Stack direction={"row"} justifyContent={"space-between"}>
                         <Typography gutterBottom variant="h6" component="div">
-                            盲盒
+                            门票
                         </Typography>
                         <Typography gutterBottom variant="h6" component="div">
                             {weiToEth(item.currentPrice)} eth
@@ -192,17 +180,14 @@ const MintBox: React.FC<{ contractMap: IChainContractConfigMap, list: IChainItem
                         variant={"contained"}
                         size={"small"}
                         onClick={buy}
-                        loading={abiLoading || connectLoading||buying}
+                        loading={buying || loadChainLoading}
                     >购买</LoadingButton>
                 </CardActions>
             </CustomCard>
         </Grid>
 
-    }, [abiLoading, buying, connectLoading])
-    const mintBoxList = useMemo(() => {
-        if (loading) {
-            return;
-        }
+    }, [buying, chainId, contractMap, enqueueSnackbar, loadChainLoading])
+    const ticketsList = useMemo(() => {
         if (list.length == 0) {
             return <Box minHeight={160} display={"flex"} alignItems={"center"} justifyContent={"center"}><Typography
                 color={theme => theme.palette.text.primary} variant={'h6'} textAlign={"center"}>
@@ -219,27 +204,40 @@ const MintBox: React.FC<{ contractMap: IChainContractConfigMap, list: IChainItem
                 {list.map(masonryItemRender)}
             </Masonry>
         }
-    }, [arrangement, gridItemRender, list, loading, masonryItemRender])
+    }, [arrangement, gridItemRender, masonryItemRender])
     return <>
         <Modal
             open={visible}
-            title={'购买盲盒'}
+            title={'购买'}
             onOk={handleBuy}
             onCancel={handleCancel}
             loading={buying}
         >
-            <BuyFormRef ref={buyFormRef} referenceLimit={referenceLimit}/>
+            <BuyFormRef ref={buyFormRef} item={buySelected} from={address} chainId={chainId}/>
         </Modal>
         <Box marginTop={3}>
-            {mintBoxList}
+            {ticketsList}
         </Box></>
 }
-export default MintBox;
-const BuyForm: ForwardRefRenderFunction<{ gasLimit: number, gasPrice: number }, { referenceLimit?:string }> = (props, ref) => {
-    const {referenceLimit} = props
+export default Tickets;
+const BuyForm: ForwardRefRenderFunction<{ gasLimit: number, gasPrice: number }, { item?:IItem,from?:string,chainId?:string }> = (props, ref) => {
+    const {item,from,chainId} = props;
     const [referencePrice] = useReferencePrice();
+    const [referenceLimit,,guess] = useReferenceLimit();
     const [gasPrice, setGasPrice] = useState(20)
     const [gasLimit, setGasLimit] = useState(21000)
+    useEffect(()=>{
+        if(item&&from&&chainId){
+            console.log(item,from)
+            guess({
+                to: item.to,
+                from: from,
+                data:strToHex(JSON.stringify(item)),
+                value: strToHex(weiToEth(item.currentPrice)),
+                chainId:Number.parseInt(chainId)
+            }).then()
+        }
+    },[chainId, from, guess, item])
     const _referenceLimit = useMemo(()=>{
         return referenceLimit?<Typography display={"inline-block"} fontSize={'inherit'} component={'span'} onClick={()=>setGasLimit(Number.parseInt(referenceLimit))}>参考值:{referenceLimit}</Typography>:''
     },[referenceLimit])
@@ -260,6 +258,7 @@ const BuyForm: ForwardRefRenderFunction<{ gasLimit: number, gasPrice: number }, 
     }), [gasLimit, gasPrice])
     return <>
         <Stack direction={"column"} spacing={3} marginTop={3}>
+
             <TextField
                 label="gasPrice"
                 type={"number"}

@@ -4,18 +4,29 @@ import {LoadingButton} from '@mui/lab';
 import {TransitionProps} from '@mui/material/transitions';
 import {ModalProps} from './interface';
 import {PropsWithChildren, useMemo} from 'react';
+
 const Transition = React.forwardRef(function Transition(
     props: TransitionProps & {
-      children: React.ReactElement<any, any>;
+        children: React.ReactElement<any, any>;
     },
     ref: React.Ref<unknown>,
 ) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
-export const Modal:React.FC<PropsWithChildren<ModalProps>> = (props)=>{
-  const {onOk, onCancel, title='', children, okText='确定', cancelText='取消', childrenType, loading=false, ...others} = props;
-  const memo = useMemo(()=>{
-    if (typeof children=='string'||childrenType=='string') {
+export const Modal: React.FC<PropsWithChildren<ModalProps>> = (props) => {
+  const {
+    onOk,
+    onCancel,
+    title = '',
+    children,
+    okText = '确定',
+    cancelText = '取消',
+    childrenType,
+    loading = false,
+    ...others
+  } = props;
+  const memo = useMemo(() => {
+    if (typeof children == 'string' || childrenType == 'string') {
       return <DialogContentText>
         {children}
       </DialogContentText>;
@@ -24,6 +35,7 @@ export const Modal:React.FC<PropsWithChildren<ModalProps>> = (props)=>{
     }
   }, [children, childrenType]);
   return <Dialog
+
     {...others}
     TransitionComponent={Transition}
   >

@@ -22,12 +22,12 @@ import {
     Typography
 } from "@mui/material";
 import {Masonry} from "@mui/lab";
-import {ethToWei, weiToEth} from "@/pc/utils/eth";
+import {bnToWei, ethToWei, weiToEth} from "@/pc/utils/eth";
 import {heroesJson} from "@/pc/constant";
 import {useLoading, useMount} from "@lib/react-hook";
 import {useSnackbar} from "notistack";
 import {ContractInterface} from "@ethersproject/contracts/src.ts/index";
-import {BigNumber, ethers} from "ethers";
+import {ethers} from "ethers";
 import {useWallet} from "@/pc/context/wallet";
 import Provider from "@/pc/instance/provider";
 import {LoadingButton} from '@mui/lab'
@@ -35,19 +35,20 @@ import {Modal} from "@lib/react-component";
 import {useHeroAbi} from "@/pc/context/abi/hero";
 import {useAuctionAbi} from "@/pc/context/abi/auction";
 import {useContract} from "@/pc/context/contract";
+import {useReferencePrice} from "@/pc/hook/gas";
 
 const Hero: React.FC<{ list: IChainItem[], arrangement: EArrangement, loading?: boolean }> = (props) => {
-    const { list, arrangement, loading} = props;
+    const {list, arrangement, loading} = props;
     const [contract] = useContract();
-    const {data:contractMap} = contract
+    const {data: contractMap} = contract
     const {enqueueSnackbar} = useSnackbar()
     const [wallet] = useWallet();
     const {chainId, address} = wallet;
     const [heroesMap, setHeroesMap] = useState<{ [key: string]: string }>({});
     const [hero] = useHeroAbi()
-    const {loading:heroAbiLoading,abi:heroAbi} = hero;
+    const {loading: heroAbiLoading, abi: heroAbi} = hero;
     const [auction] = useAuctionAbi()
-    const {loading:auctionAbiLoading,abi:auctionAbi} = auction;
+    const {loading: auctionAbiLoading, abi: auctionAbi} = auction;
     const [onSaleVisible, setOnSaleVisible] = useState(false);
     const [onSaleSelected, setOnSaleSelected] = useState<IChainItem | undefined>(undefined)
     const [sendVisible, setSendVisible] = useState(false);
@@ -89,7 +90,7 @@ const Hero: React.FC<{ list: IChainItem[], arrangement: EArrangement, loading?: 
     }, [enqueueSnackbar])
 
     const saleFormRef = useRef<{ startingPrice: number, endingPrice: number, duration: number, gasLimit: number, gasPrice: number }>(null)
-    const [onSaleIng,setOnSaleIng] = useState(false)
+    const [onSaleIng, setOnSaleIng] = useState(false)
     const handleSale = useCallback(async () => {
         const auctionContract = auctionContractInstanceRef.current
         const heroContract = heroContractInstanceRef.current
@@ -108,15 +109,15 @@ const Hero: React.FC<{ list: IChainItem[], arrangement: EArrangement, loading?: 
                 let hasRole = false
                 try {
                     hasRole = await heroContract.isApprovedForAll(address, chain.AuctionContractAddress)
-                }catch (e:any) {
+                } catch (e: any) {
                     enqueueSnackbar(`获取权限失败:${e.message}`, {variant: 'error'})
                     setOnSaleIng(false)
                     return
                 }
-                if(!hasRole){
+                if (!hasRole) {
                     try {
                         await heroContract.setApprovalForAll(chain.AuctionContractAddress, true)
-                    }catch (e:any) {
+                    } catch (e: any) {
                         setOnSaleIng(false)
                         enqueueSnackbar(`授权失败:${e.message}`, {variant: 'error'})
                         return
@@ -144,7 +145,7 @@ const Hero: React.FC<{ list: IChainItem[], arrangement: EArrangement, loading?: 
 
     }, [address, chainId, contractMap, enqueueSnackbar, onSaleSelected])
     const sendFormRef = useRef<{ to: string, gasLimit: number, gasPrice: number }>(null)
-    const [onSendIng,setOnSendIng] = useState(false);
+    const [onSendIng, setOnSendIng] = useState(false);
     const handleSend = useCallback(async () => {
         const heroContract = heroContractInstanceRef.current
         const sendForm = sendFormRef.current
@@ -158,13 +159,11 @@ const Hero: React.FC<{ list: IChainItem[], arrangement: EArrangement, loading?: 
                     gasPrice, gasLimit
                 }
                 try {
-                    console.log(heroContract)
                     await heroContract['safeTransferFrom(address,address,uint256)'](address, to, sendSelected.tokenId, params);
                     enqueueSnackbar("发送成功,等待链上确认", {variant: 'success'});
                     setSendSelected(undefined)
                     setSendVisible(false)
                 } catch (e: any) {
-                    console.log(e)
                     setOnSendIng(false)
                     enqueueSnackbar(`发送失败:${e.message}`, {variant: 'error'})
                 }
@@ -176,6 +175,55 @@ const Hero: React.FC<{ list: IChainItem[], arrangement: EArrangement, loading?: 
             enqueueSnackbar("请链接钱包", {variant: 'error'})
         }
     }, [address, chainId, contractMap, enqueueSnackbar, sendSelected])
+    const [saleReferenceLimit, setSaleReferenceLimit] = useState("");
+    const guessSale = useCallback(async (address: string, AuctionContractAddress: string, HeroContractAddress: string, tokenId: string) => {
+        const auctionContract = auctionContractInstanceRef.current
+        const heroContract = heroContractInstanceRef.current
+        if (heroContract && auctionContract) {
+            let hasRole = false
+            try {
+                hasRole = await heroContract.isApprovedForAll(address, AuctionContractAddress)
+            } catch (e: any) {
+                return
+            }
+            if (!hasRole) {
+                try {
+                    await heroContract.setApprovalForAll(AuctionContractAddress, true)
+                } catch (e: any) {
+                    return
+                }
+            }
+            // todo
+            const startingPriceWei = ethToWei('0.01')
+            const endingPriceWei = ethToWei('0.02')
+            const res = await auctionContract.estimateGas.createAuction(HeroContractAddress, tokenId, startingPriceWei, endingPriceWei, 3600,{from:address});
+            setSaleReferenceLimit(bnToWei(res))
+        }
+    }, [])
+    useEffect(() => {
+        if (address && contractMap && chainId && onSaleSelected) {
+            const chain = contractMap[chainId]
+            if (chain) {
+                guessSale(address, chain.AuctionContractAddress, chain.HeroContractAddress, onSaleSelected.tokenId).then()
+            }
+
+        }
+    }, [address, contractMap, chainId, onSaleSelected, guessSale])
+
+    const [sendReferenceLimit, setSendReferenceLimit] = useState("");
+    const guessSend = useCallback(async (address: string, tokenId: string) => {
+        const heroContract = heroContractInstanceRef.current
+        if (heroContract) {
+            const res = await heroContract.estimateGas['safeTransferFrom(address,address,uint256)'](address, "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266", tokenId);
+            setSendReferenceLimit(bnToWei(res))
+        }
+    }, [])
+    useEffect(() => {
+        if (address && sendSelected) {
+            guessSend(address, sendSelected.tokenId).then()
+
+        }
+    }, [address, guessSend, sendSelected])
     useMount(() => {
         initMap()
     })
@@ -349,7 +397,7 @@ const Hero: React.FC<{ list: IChainItem[], arrangement: EArrangement, loading?: 
             keepMounted={true}
             loading={onSaleIng}
         >
-            <SaleFormRef name={heroesMap[onSaleSelected?.tokenUri || '']} ref={saleFormRef}/>
+            <SaleFormRef name={heroesMap[onSaleSelected?.tokenUri || '']} ref={saleFormRef} referenceLimit={saleReferenceLimit}/>
         </Modal>
         <Modal
             open={sendVisible}
@@ -359,11 +407,16 @@ const Hero: React.FC<{ list: IChainItem[], arrangement: EArrangement, loading?: 
             keepMounted={true}
             loading={onSendIng}
         >
-            <SendFormRef name={heroesMap[sendSelected?.tokenUri || '']} ref={sendFormRef}/>
+            <SendFormRef name={heroesMap[sendSelected?.tokenUri || '']} ref={sendFormRef} referenceLimit = {sendReferenceLimit}/>
         </Modal>
         <Divider sx={{marginBottom: 3}}/>
-        {_loading ? <Box display={'flex'} width={'100%'} height={'100%'} justifyContent={'center'} alignItems={'center'}
-                         minHeight={900}>
+        {_loading ? <Box
+            display={'flex'}
+            width={'100%'}
+            height={'100%'}
+            justifyContent={'center'}
+            alignItems={'center'}
+            minHeight={900}>
             <CircularProgress sx={{
                 color: theme => theme.palette.text.primary
             }}/>
@@ -371,13 +424,22 @@ const Hero: React.FC<{ list: IChainItem[], arrangement: EArrangement, loading?: 
     </Box>
 }
 export default Hero;
-const SaleForm: ForwardRefRenderFunction<{ startingPrice: number, endingPrice: number, duration: number, gasLimit: number, gasPrice: number }, { name?: string }> = (props, ref) => {
-    const [startingPrice, setStartingPrice] = useState(0)
-    const [endingPrice, setEndingPrice] = useState(1)
+const SaleForm: ForwardRefRenderFunction<{ startingPrice: number, endingPrice: number, duration: number, gasLimit: number, gasPrice: number }, { name?: string, referenceLimit?: string }> = (props, ref) => {
+    const {referenceLimit} = props
+    const [startingPrice, setStartingPrice] = useState(0.1)
+    const [endingPrice, setEndingPrice] = useState(0.2)
     const [duration, setDuration] = useState(3600)
+    const [referencePrice] = useReferencePrice();
     const [gasPrice, setGasPrice] = useState(20)
     const [gasLimit, setGasLimit] = useState(21000)
-
+    const _referenceLimit = useMemo(() => {
+        return referenceLimit ? <Typography display={"inline-block"} fontSize={'inherit'} component={'span'}
+                                            onClick={() => setGasLimit(Number.parseInt(referenceLimit))}>参考值:{referenceLimit}</Typography> : ''
+    }, [referenceLimit])
+    const _referencePrice = useMemo(() => {
+        return referencePrice ? <Typography display={"inline-block"} fontSize={'inherit'} component={'span'}
+                                            onClick={() => setGasPrice(Number.parseInt(referencePrice))}>参考值:{referencePrice}</Typography> : ''
+    }, [referencePrice])
     const handleStartingPriceChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const _value = Number.parseFloat(e.target.value)
         setStartingPrice(isNaN(_value) ? 0 : _value)
@@ -436,14 +498,14 @@ const SaleForm: ForwardRefRenderFunction<{ startingPrice: number, endingPrice: n
                 type={"number"}
                 value={gasPrice}
                 onChange={handleGasPriceChange}
-                helperText={'单位：wei'}
+                helperText={<>单位:wei {_referencePrice}</>}
             />
             <TextField
                 label="gasLimit"
                 type={"number"}
                 value={gasLimit}
                 onChange={handleGasLimitChange}
-                helperText={'单位：wei'}
+                helperText={<>单位：wei {_referenceLimit}</>}
             />
         </Stack>
 
@@ -451,10 +513,20 @@ const SaleForm: ForwardRefRenderFunction<{ startingPrice: number, endingPrice: n
 }
 const SaleFormRef = React.forwardRef(SaleForm);
 
-const SendForm: ForwardRefRenderFunction<{ to: string, gasLimit: number, gasPrice: number }, { name?: string }> = (props, ref) => {
+const SendForm: ForwardRefRenderFunction<{ to: string, gasLimit: number, gasPrice: number }, { name?: string, referenceLimit?: string  }> = (props, ref) => {
+    const {referenceLimit} = props
     const [to, setTo] = useState("")
     const [gasPrice, setGasPrice] = useState(20)
     const [gasLimit, setGasLimit] = useState(21000)
+    const [referencePrice] = useReferencePrice();
+    const _referenceLimit = useMemo(() => {
+        return referenceLimit ? <Typography display={"inline-block"} fontSize={'inherit'} component={'span'}
+                                            onClick={() => setGasLimit(Number.parseInt(referenceLimit))}>参考值:{referenceLimit}</Typography> : ''
+    }, [referenceLimit])
+    const _referencePrice = useMemo(() => {
+        return referencePrice ? <Typography display={"inline-block"} fontSize={'inherit'} component={'span'}
+                                            onClick={() => setGasPrice(Number.parseInt(referencePrice))}>参考值:{referencePrice}</Typography> : ''
+    }, [referencePrice])
 
     const handleToChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setTo(e.target.value)
@@ -488,14 +560,14 @@ const SendForm: ForwardRefRenderFunction<{ to: string, gasLimit: number, gasPric
                 type={"number"}
                 value={gasPrice}
                 onChange={handleGasPriceChange}
-                helperText={'单位：wei'}
+                helperText={<>单位:wei {_referencePrice}</>}
             />
             <TextField
                 label="gasLimit"
                 type={"number"}
                 value={gasLimit}
                 onChange={handleGasLimitChange}
-                helperText={'单位：wei'}
+                helperText={<>单位：wei {_referenceLimit}</>}
             />
         </Stack>
 

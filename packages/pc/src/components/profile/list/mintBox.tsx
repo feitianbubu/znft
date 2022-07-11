@@ -21,7 +21,7 @@ import {
     Typography
 } from "@mui/material";
 import {Masonry,LoadingButton} from "@mui/lab";
-import {weiToEth} from "@/pc/utils/eth";
+import {bnToWei, weiToEth} from "@/pc/utils/eth";
 import {useSnackbar} from "notistack";
 import {Modal} from "@lib/react-component/lib/modal";
 import {useMintBoxAbi} from "@/pc/context/abi/mint";
@@ -30,6 +30,7 @@ import Provider from "@/pc/instance/provider";
 import {ethers} from "ethers";
 import {useWallet} from "@/pc/context/wallet";
 import {useContract} from "@/pc/context/contract";
+import {useReferencePrice} from "@/pc/hook/gas";
 
 const MintBox: React.FC<{ list: IChainItem[], arrangement: EArrangement, loading?: boolean }> = (props) => {
     const {list, arrangement, loading} = props;
@@ -64,6 +65,56 @@ const MintBox: React.FC<{ list: IChainItem[], arrangement: EArrangement, loading
         }
         setConnectLoading(false)
     }, [enqueueSnackbar])
+    const openFormRef = useRef<{ gasLimit: number, gasPrice: number }>(null)
+    const [openIng,setOpenIng] = useState(false);
+    const handleOpen= useCallback(async ()=>{
+        const mintBoxContract = mintBoxContractInstanceRef.current
+        const openForm = openFormRef.current
+        if (chainId && mintBoxContract && openForm) {
+            const chain = contractMap[chainId]
+            const { gasLimit, gasPrice} = openForm
+            if (chain && openSelected) {
+                setOpenIng(true)
+                const params = {
+                    from: address,
+                    gasPrice, gasLimit
+                }
+                try {
+                    await mintBoxContract.usageBox(openSelected.tokenId, params);
+                    enqueueSnackbar("开盒成功,等待链上确认", {variant: 'success'});
+                    setOpenSelected(undefined)
+                    setOpenVisible(false)
+                } catch (e: any) {
+                    console.log(e)
+                    setOpenIng(false)
+                    enqueueSnackbar(`开盒失败:${e.message}`, {variant: 'error'})
+                    return
+                }
+                setOpenIng(false)
+            } else {
+                enqueueSnackbar("当前不支持", {variant: 'error'})
+            }
+        } else {
+            enqueueSnackbar("请链接钱包", {variant: 'error'})
+        }
+    },[address, chainId, contractMap, enqueueSnackbar, openSelected])
+    const handleOpenCancel = useCallback(()=>{
+        setOpenVisible(false)
+    },[])
+
+    const [referenceLimit,setReferenceLimit] = useState("");
+    const guess = useCallback(async (tokenId:string)=>{
+        const mintBoxContractInstance =  mintBoxContractInstanceRef.current
+        if(mintBoxContractInstance){
+            const res = await mintBoxContractInstance.estimateGas.usageBox(tokenId)
+            setReferenceLimit(bnToWei(res.mul(2)))
+        }
+    },[])
+    useEffect(()=>{
+        if(openSelected){
+            guess(openSelected.tokenId).then()
+        }
+    },[openSelected, guess])
     /**
      * 构建合同
      */
@@ -168,42 +219,6 @@ const MintBox: React.FC<{ list: IChainItem[], arrangement: EArrangement, loading
             </Masonry>
         }
     }, [arrangement, gridItemRender, list, loading, masonryItemRender])
-    const openFormRef = useRef<{ gasLimit: number, gasPrice: number }>(null)
-    const [openIng,setOpenIng] = useState(false);
-    const handleOpen= useCallback(async ()=>{
-        const mintBoxContract = mintBoxContractInstanceRef.current
-        const openForm = openFormRef.current
-        if (chainId && mintBoxContract && openForm) {
-            const chain = contractMap[chainId]
-            const { gasLimit, gasPrice} = openForm
-            if (chain && openSelected) {
-                setOpenIng(true)
-                const params = {
-                    from: address,
-                    gasPrice, gasLimit
-                }
-                try {
-                    await mintBoxContract.usageBox(openSelected.tokenId, params);
-                    enqueueSnackbar("上架成功,等待链上确认", {variant: 'success'});
-                    setOpenSelected(undefined)
-                    setOpenVisible(false)
-                } catch (e: any) {
-                    console.log(e)
-                    setOpenIng(false)
-                    enqueueSnackbar(`上架失败:${e.message}`, {variant: 'error'})
-                    return
-                }
-                setOpenIng(false)
-            } else {
-                enqueueSnackbar("当前不支持", {variant: 'error'})
-            }
-        } else {
-            enqueueSnackbar("请链接钱包", {variant: 'error'})
-        }
-    },[address, chainId, contractMap, enqueueSnackbar, openSelected])
-    const handleOpenCancel = useCallback(()=>{
-        setOpenVisible(false)
-    },[])
 
     return <>
         <Modal
@@ -214,7 +229,7 @@ const MintBox: React.FC<{ list: IChainItem[], arrangement: EArrangement, loading
             keepMounted={true}
             loading={openIng}
         >
-            <OpenFormRef ref={openFormRef}/>
+            <OpenFormRef ref={openFormRef} referenceLimit={referenceLimit}/>
         </Modal>
         <Box marginTop={3}>
             {mintBoxList}
@@ -222,9 +237,19 @@ const MintBox: React.FC<{ list: IChainItem[], arrangement: EArrangement, loading
     </>
 }
 export default MintBox;
-const OpenForm: ForwardRefRenderFunction<{ gasLimit: number, gasPrice: number }, unknown> = (_props, ref) => {
+const OpenForm: ForwardRefRenderFunction<{ gasLimit: number, gasPrice: number }, { referenceLimit?: string }> = (props, ref) => {
+    const {referenceLimit} = props
     const [gasPrice, setGasPrice] = useState(20)
     const [gasLimit, setGasLimit] = useState(21000)
+    const [referencePrice] = useReferencePrice();
+    const _referenceLimit = useMemo(() => {
+        return referenceLimit ? <Typography display={"inline-block"} fontSize={'inherit'} component={'span'}
+                                            onClick={() => setGasLimit(Number.parseInt(referenceLimit))}>参考值:{referenceLimit}</Typography> : ''
+    }, [referenceLimit])
+    const _referencePrice = useMemo(() => {
+        return referencePrice ? <Typography display={"inline-block"} fontSize={'inherit'} component={'span'}
+                                            onClick={() => setGasPrice(Number.parseInt(referencePrice))}>参考值:{referencePrice}</Typography> : ''
+    }, [referencePrice])
     const handleGasPriceChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const _value = Number.parseInt(e.target.value)
         setGasPrice(isNaN(_value) ? 20 : _value)
@@ -244,14 +269,14 @@ const OpenForm: ForwardRefRenderFunction<{ gasLimit: number, gasPrice: number },
                 type={"number"}
                 value={gasPrice}
                 onChange={handleGasPriceChange}
-                helperText={'单位：wei'}
+                helperText={<>单位:wei {_referencePrice}</>}
             />
             <TextField
                 label="gasLimit"
                 type={"number"}
                 value={gasLimit}
                 onChange={handleGasLimitChange}
-                helperText={'单位：wei'}
+                helperText={<>单位：wei {_referenceLimit}</>}
             />
         </Stack>
 
