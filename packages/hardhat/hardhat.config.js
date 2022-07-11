@@ -18,6 +18,7 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
 // You need to export an object to set up your config
 // Go to https://hardhat.org/config/ to learn more
 
+const maticMumApiUrl =`https://polygon-mumbai.g.alchemy.com/v2/${ALCHEMY_MUMBAI_KEY}`;
 /**
  * @type import('hardhat/config').HardhatUserConfig
  */
@@ -25,13 +26,17 @@ module.exports = {
   defaultNetwork: "maticmum",
   networks: {
     hardhat: {
+      forking: {
+        url: maticMumApiUrl,
+        blockNumber: 27123053,
+      }
     },
     rinkeby: {
       url: `https://eth-rinkeby.alchemyapi.io/v2/${ALCHEMY_KEY}`,
       accounts: [`0x${ACCOUNT_PRIVATE_KEY}`]
     },
     maticmum: {
-      url: `https://polygon-mumbai.g.alchemy.com/v2/${ALCHEMY_MUMBAI_KEY}`,
+      url: maticMumApiUrl,
       accounts: [`0x${ACCOUNT_PRIVATE_KEY}`],
     },
   },
