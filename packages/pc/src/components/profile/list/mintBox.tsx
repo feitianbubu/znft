@@ -145,7 +145,7 @@ const MintBox: React.FC<{ list: IChainItem[], arrangement: EArrangement, loading
             <CardContent>
                 <Stack direction={"row"} justifyContent={"space-between"}>
                     <Typography gutterBottom variant="h6" component="div">
-                        盲盒
+                        盲盒{item.tokenId}
                     </Typography>
                     <Typography gutterBottom variant="h6" component="div">
                         {weiToEth(item.currentPrice)} eth
@@ -177,7 +177,7 @@ const MintBox: React.FC<{ list: IChainItem[], arrangement: EArrangement, loading
                 <CardContent>
                     <Stack direction={"row"} justifyContent={"space-between"}>
                         <Typography gutterBottom variant="h6" component="div">
-                            盲盒
+                        盲盒{item.tokenId}
                         </Typography>
                         <Typography gutterBottom variant="h6" component="div">
                             {weiToEth(item.currentPrice)} eth

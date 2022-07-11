@@ -5,14 +5,7 @@ type IAction = {
     value: IState
 }
 const  MODE_KEY='mode'
-const getModeByTime = ()=>{
-    const time = new Date().getHours();
-    if(time>=8&&time<18){
-        return "dark"
-    }else{
-        return "light"
-    }
-}
+
 export const modeReducer: (state: IState, action: IAction) => IState = (state, action) => {
     if (action.type == 'change') {
         return action.value;
@@ -20,7 +13,7 @@ export const modeReducer: (state: IState, action: IAction) => IState = (state, a
         return  state
     }
 };
-export const modeDefaultValue: IState =undefined;
+export const modeDefaultValue: IState ='dark';
 export const ModeContext = React.createContext<{state:IState, dispatch: React.Dispatch<IAction>}>({
     state: modeDefaultValue, dispatch: () => {
         //
@@ -39,12 +32,6 @@ export const ModeProvider :React.FC<PropsWithChildren<unknown>> = (props) => {
             dispatch({
                 type:'change',
                 value:cache
-            })
-        }else{
-            const mode = getModeByTime();
-            dispatch({
-                type:'change',
-                value:mode
             })
         }
     },[])
