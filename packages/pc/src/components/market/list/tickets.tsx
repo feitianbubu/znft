@@ -66,7 +66,7 @@ const Tickets: React.FC<{ arrangement: EArrangement }> = (props) => {
     const buyFormRef = useRef<{ gasLimit: number, gasPrice: number }>(null)
     const [buying, setBuying] = useState(false)
     const handleBuy = useCallback(async () => {
-        
+
         if(!chainId){
             enqueueSnackbar(`当前不支持`, {variant: 'error'})
             return
@@ -102,7 +102,7 @@ const Tickets: React.FC<{ arrangement: EArrangement }> = (props) => {
                 })
                 if(res){
                     enqueueSnackbar("购买成功，等待上链", {variant: "success"})
-                    
+
                 }else{
                     enqueueSnackbar(`购买失败`, {variant: 'error'})
                 }
@@ -112,10 +112,10 @@ const Tickets: React.FC<{ arrangement: EArrangement }> = (props) => {
             }else{
                 enqueueSnackbar(`付款失败`, {variant: 'error'})
             }
-           
+
 
         }
-    }, [address, buySelected, enqueueSnackbar])
+    }, [address, buySelected, chainId, contractMap, enqueueSnackbar])
     const handleCancel = useCallback(() => {
         setVisible(false)
         setBuySelected(undefined)
