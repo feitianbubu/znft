@@ -30,8 +30,18 @@ export const switchMetamaskChain =async (chainId: string,config:{chainId:string,
     }
 
 }
-
-export const sendTransaction = async (request:TransactionRequest)=>{
+// https://docs.metamask.io/guide/sending-transactions.html
+export interface ISendTransactionRequest {
+    nonce: string, // ignored by MetaMask
+  gasPrice: string, // customizable by user during MetaMask confirmation.
+  gas: string, // customizable by user during MetaMask confirmation.
+  to: string, // Required except during contract publications.
+  from:string, // must match user's active address.
+  value: string, // Only required to send ether to the recipient from the initiating external account.
+  data:string, // Optional, but used for defining smart contract creation and interaction.
+  chainId: string, // Used to prevent transaction reuse across blockchains. Auto
+}
+export const sendTransaction = async (request:Partial<ISendTransactionRequest>)=>{
     // const transactionParameters = {
     //     gasPrice: '0x09184e72a000', // customizable by user during MetaMask confirmation.
     //     gas: '0x2710', // customizable by user during MetaMask confirmation.
@@ -47,11 +57,16 @@ export const sendTransaction = async (request:TransactionRequest)=>{
 // As with any RPC call, it may throw an error
     const ethereum = (window as any).ethereum
     if(ethereum){
-        const txHash = await ethereum.request({
-            method: 'eth_sendTransaction',
-            params: [request],
-        });
-        return txHash
+        try {
+            const txHash = await ethereum.request({
+                method: 'eth_sendTransaction',
+                params: [request],
+            });
+            return txHash
+        } catch (error) {
+            return 
+        }
+       
     }
 
 }

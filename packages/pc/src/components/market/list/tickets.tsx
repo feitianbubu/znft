@@ -26,8 +26,9 @@ import {useWallet} from "@/pc/context/wallet";
 import {Modal} from "@lib/react-component";
 import {useContract} from "@/pc/context/contract";
 import {useReferenceLimit, useReferencePrice} from "@/pc/hook/gas";
-
-import {strToHex} from "@/pc/utils/hex";
+import {sendTransaction} from '@/pc/utils/metamask'
+import {strToHex,numToHex} from "@/pc/utils/hex";
+import { buyTickets } from "@/pc/services/restful";
 
 interface IItem {
     name: string,
@@ -36,7 +37,8 @@ interface IItem {
     to: string
     productID: string
     noticeType: number,
-    result: number
+    result: number,
+    orderID:string
 }
 
 const list: IItem[] = [
@@ -46,6 +48,7 @@ const list: IItem[] = [
         quality: '1',
         to: '0x279A4C36098c4e76182706511AB0346518ad6049',
         productID: '111001316',
+        orderID:"",
         noticeType: 30,
         result: 2
     }
@@ -63,25 +66,53 @@ const Tickets: React.FC<{ arrangement: EArrangement }> = (props) => {
     const buyFormRef = useRef<{ gasLimit: number, gasPrice: number }>(null)
     const [buying, setBuying] = useState(false)
     const handleBuy = useCallback(async () => {
+        
+        if(!chainId){
+            enqueueSnackbar(`当前不支持`, {variant: 'error'})
+            return
+        }
+        const chain = contractMap[chainId];
+        if(!chain){
+            enqueueSnackbar(`当前不支持`, {variant: 'error'})
+            return
+        }
         const buyForm = buyFormRef.current
         if (buyForm && buySelected) {
             setBuying(true)
             const {gasLimit, gasPrice} = buyForm
-
             const params = {
                 from: address,
-                gasPrice, gasLimit,
-                value: ethers.utils.parseUnits(buySelected.currentPrice, 'wei'),
+                gasPrice:numToHex(gasPrice),
+                gas:numToHex(gasLimit),
+                value: numToHex(Number.parseInt(buySelected.currentPrice)),
+                data:strToHex(JSON.stringify(buySelected)),
+                chainId:numToHex(Number.parseInt(chainId)),
+                to:buySelected.to
             }
-            try {
-                enqueueSnackbar("购买成功，等待上链", {variant: "success"})
+            const txHash  = await sendTransaction(params)
+            if(txHash){
+                const res = await buyTickets({
+                    userAddress:address,
+                    noticeType:buySelected.noticeType,
+                    result:buySelected.result,
+                    txHash:txHash ,
+                    productID:buySelected.productID,
+                    orderID:buySelected.orderID,
+                    chainID:chainId
+                })
+                if(res){
+                    enqueueSnackbar("购买成功，等待上链", {variant: "success"})
+                    
+                }else{
+                    enqueueSnackbar(`购买失败`, {variant: 'error'})
+                }
                 setBuying(false)
                 setVisible(false)
                 setBuySelected(undefined)
-            } catch (e: any) {
-                setBuying(false)
-                enqueueSnackbar(`购买失败:${e.message}`, {variant: 'error'})
+            }else{
+                enqueueSnackbar(`付款失败`, {variant: 'error'})
             }
+           
 
         }
     }, [address, buySelected, enqueueSnackbar])

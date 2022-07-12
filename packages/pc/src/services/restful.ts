@@ -29,3 +29,16 @@ export const clearCache = (params?:IClearCacheRequest)=>{
     const url = `/v1/clearCache`;
     return Http.post<string>(url,params)
 }
+export interface IBuyTickets {
+    "userAddress": string
+  "noticeType": number,
+  "result": number,
+  "txHash": string,
+  "productID": string,
+  "orderID": string,
+  "chainID": string
+}
+export const buyTickets = (params?:Partial<IBuyTickets>)=>{
+    const url = `/v1/buy`;
+    return Http.post<string>(url,params)
+}

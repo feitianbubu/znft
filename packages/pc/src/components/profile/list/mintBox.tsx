@@ -80,7 +80,8 @@ const MintBox: React.FC<{ list: IChainItem[], arrangement: EArrangement, loading
                     gasPrice, gasLimit
                 }
                 try {
-                    await mintBoxContract.usageBox(openSelected.tokenId, params);
+                    const res  = await mintBoxContract.usageBox(openSelected.tokenId, params);
+                    console.log(res)
                     enqueueSnackbar("开盒成功,等待链上确认", {variant: 'success'});
                     setOpenSelected(undefined)
                     setOpenVisible(false)
@@ -107,7 +108,7 @@ const MintBox: React.FC<{ list: IChainItem[], arrangement: EArrangement, loading
         const mintBoxContractInstance =  mintBoxContractInstanceRef.current
         if(mintBoxContractInstance){
             const res = await mintBoxContractInstance.estimateGas.usageBox(tokenId)
-            setReferenceLimit(bnToWei(res.mul(2)))
+            setReferenceLimit(bnToWei(res.mul(10)))
         }
     },[])
     useEffect(()=>{
