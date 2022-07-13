@@ -16,8 +16,12 @@ function getEnvVariable(key, defaultValue) {
 
 // Helper method for fetching a connection provider to the Ethereum network
 function getProvider() {
-    return new ethers.providers.JsonRpcProvider("https://polygon-mumbai.g.alchemy.com/v2/R_NbFK1zefA_2adH0oXN4uzQQf3c9C6t");
-    return ethers.getDefaultProvider(getEnvVariable("NETWORK", "rinkeby"), {
+    const NETWORK = getEnvVariable("NETWORK", "rinkeby");
+    if(NETWORK === 'maticmum'){
+        const ALCHEMY_MUMBAI_KEY = getEnvVariable("ALCHEMY_MUMBAI_KEY");
+        return new ethers.providers.JsonRpcProvider(`https://polygon-mumbai.g.alchemy.com/v2/${ALCHEMY_MUMBAI_KEY}`);
+    }
+    return ethers.getDefaultProvider(NETWORK, {
         alchemy: getEnvVariable("ALCHEMY_KEY"),
     });
 }
