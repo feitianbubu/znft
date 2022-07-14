@@ -39,6 +39,6 @@ export interface IBuyTickets {
   "chainID": string
 }
 export const buyTickets = (params?:Partial<IBuyTickets>)=>{
-    const url = `/v1/buy`;
+    const url = `/v1/pay`;
     return Http.post<string>(url,params)
 }

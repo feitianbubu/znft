@@ -55,7 +55,7 @@ export const guessGasLimit =async (request?:TransactionRequest)=>{
         const bn = await  provider.estimateGas(request)
         try {
             // todo
-            return bnToWei(bn.mul(10))
+            return bnToWei(bn)
         }catch (e) {
             return
         }

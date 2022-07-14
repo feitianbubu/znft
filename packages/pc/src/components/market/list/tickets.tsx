@@ -111,6 +111,9 @@ const Tickets: React.FC<{ arrangement: EArrangement }> = (props) => {
                 setBuySelected(undefined)
             }else{
                 enqueueSnackbar(`付款失败`, {variant: 'error'})
+                setBuying(false)
+                setVisible(false)
+                setBuySelected(undefined)
             }
 
 
