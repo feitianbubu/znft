@@ -108,7 +108,7 @@ const MintBox: React.FC<{ list: IChainItem[], arrangement: EArrangement, loading
         const mintBoxContractInstance =  mintBoxContractInstanceRef.current
         if(mintBoxContractInstance){
             const res = await mintBoxContractInstance.estimateGas.usageBox(tokenId)
-            setReferenceLimit(bnToWei(res.mul(10)))
+            setReferenceLimit(bnToWei(res.mul(5)))
         }
     },[])
     useEffect(()=>{

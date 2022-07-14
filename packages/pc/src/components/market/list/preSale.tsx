@@ -103,7 +103,7 @@ const PreSale: React.FC<{ contractMap: IChainContractConfigMap, list: IChainItem
                 value:ethers.utils.parseUnits(currentPrice,'wei'),
             }
             const res = await preSaleContractInstance.estimateGas.Support(params)
-            setReferenceLimit(bnToWei(res.mul(10)))
+            setReferenceLimit(bnToWei(res.mul(5)))
         }
     },[])
     useEffect(()=>{

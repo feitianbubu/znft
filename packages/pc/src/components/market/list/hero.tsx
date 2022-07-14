@@ -119,7 +119,7 @@ const Hero: React.FC<{ contractMap: IChainContractConfigMap, list: IChainItem[],
         const auctionContractInstance = auctionContractInstanceRef.current
         if (auctionContractInstance) {
             const res = await auctionContractInstance.estimateGas.bid(tokenId)
-            setReferenceLimit(bnToWei(res.mul(10)))
+            setReferenceLimit(bnToWei(res.mul(5)))
         }
     }, [])
     useEffect(() => {
