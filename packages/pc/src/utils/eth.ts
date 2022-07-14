@@ -41,7 +41,8 @@ export const guessGasPrice =async ()=>{
     if(provider){
         const bn = await  provider.getGasPrice();
         try {
-            return bnToWei(bn)
+            // todo
+            return bnToWei(bn.mul(10))
         }catch (e) {
             return
         }
@@ -53,7 +54,8 @@ export const guessGasLimit =async (request?:TransactionRequest)=>{
         console.log(provider)
         const bn = await  provider.estimateGas(request)
         try {
-            return bnToWei(bn)
+            // todo
+            return bnToWei(bn.mul(10))
         }catch (e) {
             return
         }

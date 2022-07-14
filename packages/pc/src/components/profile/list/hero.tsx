@@ -197,7 +197,7 @@ const Hero: React.FC<{ list: IChainItem[], arrangement: EArrangement, loading?: 
             const startingPriceWei = ethToWei('0.01')
             const endingPriceWei = ethToWei('0.02')
             const res = await auctionContract.estimateGas.createAuction(HeroContractAddress, tokenId, startingPriceWei, endingPriceWei, 3600,{from:address});
-            setSaleReferenceLimit(bnToWei(res))
+            setSaleReferenceLimit(bnToWei(res.mul(10)))
         }
     }, [])
     useEffect(() => {
@@ -215,7 +215,7 @@ const Hero: React.FC<{ list: IChainItem[], arrangement: EArrangement, loading?: 
         const heroContract = heroContractInstanceRef.current
         if (heroContract) {
             const res = await heroContract.estimateGas['safeTransferFrom(address,address,uint256)'](address, "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266", tokenId);
-            setSendReferenceLimit(bnToWei(res))
+            setSendReferenceLimit(bnToWei(res.mul(10)))
         }
     }, [])
     useEffect(() => {
