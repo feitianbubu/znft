@@ -9,6 +9,7 @@ import React, {
 import {IChainContractConfigMap} from "@/pc/services/contract";
 import {CustomCard, EArrangement} from "@/pc/components/market";
 import {
+    Alert,
     Box,
     CardActions,
     CardContent,
@@ -19,7 +20,7 @@ import {
     Typography
 } from "@mui/material";
 import {Masonry, LoadingButton} from "@mui/lab";
-import {ethToWei, weiToEth} from "@/pc/utils/eth";
+import {ethToWei, gweiToWei, weiToEth, weiToGwei} from "@/pc/utils/eth";
 import {useSnackbar} from "notistack";
 import {ethers} from "ethers";
 import {useWallet} from "@/pc/context/wallet";
@@ -65,6 +66,7 @@ const Tickets: React.FC<{ arrangement: EArrangement }> = (props) => {
 
     const buyFormRef = useRef<{ gasLimit: number, gasPrice: number }>(null)
     const [buying, setBuying] = useState(false)
+    const [orderId,setOrderId] = useState("")
     const handleBuy = useCallback(async () => {
 
         if(!chainId){
@@ -82,7 +84,7 @@ const Tickets: React.FC<{ arrangement: EArrangement }> = (props) => {
             const {gasLimit, gasPrice} = buyForm
             const params = {
                 from: address,
-                gasPrice:numToHex(gasPrice),
+                gasPrice:strToHex(gweiToWei(gasPrice.toString())),
                 gas:numToHex(gasLimit),
                 value: numToHex(Number.parseInt(buySelected.currentPrice)),
                 data:strToHex(JSON.stringify(buySelected)),
@@ -100,7 +102,9 @@ const Tickets: React.FC<{ arrangement: EArrangement }> = (props) => {
                     orderID:buySelected.orderID,
                     chainID:chainId
                 })
+
                 if(res){
+                    setOrderId(res.orderID)
                     enqueueSnackbar("购买成功，等待上链", {variant: "success"})
 
                 }else{
@@ -250,7 +254,9 @@ const Tickets: React.FC<{ arrangement: EArrangement }> = (props) => {
             <BuyFormRef ref={buyFormRef} item={buySelected} from={address} chainId={chainId}/>
         </Modal>
         <Box marginTop={3}>
+        
             {ticketsList}
+            {orderId&&<Alert severity="success">最近一次购买的门票:{orderId}</Alert>}
         </Box></>
 }
 export default Tickets;
@@ -267,7 +273,7 @@ const BuyForm: ForwardRefRenderFunction<{ gasLimit: number, gasPrice: number }, 
                 to: item.to,
                 from: from,
                 data:strToHex(JSON.stringify(item)),
-                value: strToHex(weiToEth(item.currentPrice)),
+                value: ethers.utils.parseEther(`${weiToEth(item.currentPrice)}`).toHexString(),
                 chainId:Number.parseInt(chainId)
             }).then()
         }
@@ -275,9 +281,11 @@ const BuyForm: ForwardRefRenderFunction<{ gasLimit: number, gasPrice: number }, 
     const _referenceLimit = useMemo(()=>{
         return referenceLimit?<Typography display={"inline-block"} fontSize={'inherit'} component={'span'} onClick={()=>setGasLimit(Number.parseInt(referenceLimit))}>参考值:{referenceLimit}</Typography>:''
     },[referenceLimit])
-    const _referencePrice = useMemo(()=>{
-        return referencePrice?<Typography display={"inline-block"} fontSize={'inherit'} component={'span'} onClick={()=>setGasPrice(Number.parseInt(referencePrice))}>参考值:{referencePrice}</Typography>:''
-    },[referencePrice])
+    const _referenceGweiPrice = useMemo(()=>weiToGwei(referencePrice,'up'),[referencePrice])
+    const _referencePrice = useMemo(() => {
+        return _referenceGweiPrice ? <Typography display={"inline-block"} fontSize={'inherit'} component={'span'}
+                                            onClick={() => setGasPrice(Number.parseInt(_referenceGweiPrice))}>参考值:{_referenceGweiPrice}</Typography> : ''
+    }, [_referenceGweiPrice])
     const handleGasPriceChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const _value = Number.parseInt(e.target.value)
         setGasPrice(isNaN(_value) ? 20 : _value)
@@ -298,14 +306,14 @@ const BuyForm: ForwardRefRenderFunction<{ gasLimit: number, gasPrice: number }, 
                 type={"number"}
                 value={gasPrice}
                 onChange={handleGasPriceChange}
-                helperText={<>单位:wei  {_referencePrice}</>}
+                helperText={<>单位:gwei  {_referencePrice}</>}
             />
             <TextField
                 label="gasLimit"
                 type={"number"}
                 value={gasLimit}
                 onChange={handleGasLimitChange}
-                helperText={<>单位：wei {_referenceLimit}</>}
+                helperText={<>{_referenceLimit}</>}
             />
         </Stack>
 

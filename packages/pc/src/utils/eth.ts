@@ -12,6 +12,51 @@ export  const bnToWei = (bn?:BigNumber)=>{
         }
     }
 }
+export const weiToGwei = (wei?:string,type?:'up'|'down')=>{
+    console.log('a',wei)
+    if(!wei){
+        return  '0'
+    }
+    try {
+        const gwei = ethers.utils.formatUnits(wei,'gwei')
+        if(type){
+            if(type=='up'){
+               
+                const [v] = gwei.split('.')
+                const _v = BigNumber.from(v)
+                return _v.add(1).toString();
+            }else{
+                const [v] = gwei.split('.')
+                return v
+            }
+        }else{
+            return gwei
+        }
+       
+    }catch (e) {
+        console.log(e)
+        return '0'
+    }
+
+}
+// 仅支持整数gwei
+export const gweiToWei = (gwei?:string)=>{
+    console.log('gweiToWei',gwei)
+    if(!gwei){
+        return  '0'
+    }
+    try {
+        const [int,flat] = gwei.split('.');
+        const bn = BigNumber.from(int)
+        const _flat = flat?flat.padEnd(9,'0'):'0'.padEnd(9,'0')
+        console.log(bn.toString(),_flat.toString())
+       return bn.mul(1000000000).add(BigNumber.from(_flat)).toString()
+    }catch (e) {
+        console.log(e)
+        return '0'
+    }
+
+}
 export const weiToEth = (wei?:string)=>{
     if(!wei){
         return  '0'
@@ -42,7 +87,7 @@ export const guessGasPrice =async ()=>{
         const bn = await  provider.getGasPrice();
         try {
             // todo
-            return bnToWei(bn.mul(10))
+            return bnToWei(bn.mul(5))
         }catch (e) {
             return
         }

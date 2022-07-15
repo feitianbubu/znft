@@ -22,7 +22,7 @@ import {
     Typography
 } from "@mui/material";
 import {Masonry} from "@mui/lab";
-import {bnToWei, ethToWei, weiToEth} from "@/pc/utils/eth";
+import {bnToWei, ethToWei, gweiToWei, weiToEth, weiToGwei} from "@/pc/utils/eth";
 import {heroesJson} from "@/pc/constant";
 import {useLoading, useMount} from "@lib/react-hook";
 import {useSnackbar} from "notistack";
@@ -104,7 +104,8 @@ const Hero: React.FC<{ list: IChainItem[], arrangement: EArrangement, loading?: 
                 const endingPriceWei = ethToWei(endingPrice.toString())
                 const params = {
                     from: address,
-                    gasPrice, gasLimit
+                    gasPrice:gweiToWei(gasPrice.toString()), 
+                    gasLimit
                 }
                 let hasRole = false
                 try {
@@ -156,7 +157,8 @@ const Hero: React.FC<{ list: IChainItem[], arrangement: EArrangement, loading?: 
                 setOnSendIng(true)
                 const params = {
                     from: address,
-                    gasPrice, gasLimit
+                    gasPrice:gweiToWei(gasPrice.toString()), 
+                    gasLimit
                 }
                 try {
                     await heroContract['safeTransferFrom(address,address,uint256)'](address, to, sendSelected.tokenId, params);
@@ -436,10 +438,11 @@ const SaleForm: ForwardRefRenderFunction<{ startingPrice: number, endingPrice: n
         return referenceLimit ? <Typography display={"inline-block"} fontSize={'inherit'} component={'span'}
                                             onClick={() => setGasLimit(Number.parseInt(referenceLimit))}>参考值:{referenceLimit}</Typography> : ''
     }, [referenceLimit])
+    const _referenceGweiPrice = useMemo(()=>weiToGwei(referencePrice,'up'),[referencePrice])
     const _referencePrice = useMemo(() => {
-        return referencePrice ? <Typography display={"inline-block"} fontSize={'inherit'} component={'span'}
-                                            onClick={() => setGasPrice(Number.parseInt(referencePrice))}>参考值:{referencePrice}</Typography> : ''
-    }, [referencePrice])
+        return _referenceGweiPrice ? <Typography display={"inline-block"} fontSize={'inherit'} component={'span'}
+                                            onClick={() => setGasPrice(Number.parseInt(_referenceGweiPrice))}>参考值:{_referenceGweiPrice}</Typography> : ''
+    }, [_referenceGweiPrice])
     const handleStartingPriceChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const _value = Number.parseFloat(e.target.value)
         setStartingPrice(isNaN(_value) ? 0 : _value)
@@ -498,14 +501,14 @@ const SaleForm: ForwardRefRenderFunction<{ startingPrice: number, endingPrice: n
                 type={"number"}
                 value={gasPrice}
                 onChange={handleGasPriceChange}
-                helperText={<>单位:wei {_referencePrice}</>}
+                helperText={<>单位:gwei {_referencePrice}</>}
             />
             <TextField
                 label="gasLimit"
                 type={"number"}
                 value={gasLimit}
                 onChange={handleGasLimitChange}
-                helperText={<>单位：wei {_referenceLimit}</>}
+                helperText={<>{_referenceLimit}</>}
             />
         </Stack>
 
@@ -523,10 +526,11 @@ const SendForm: ForwardRefRenderFunction<{ to: string, gasLimit: number, gasPric
         return referenceLimit ? <Typography display={"inline-block"} fontSize={'inherit'} component={'span'}
                                             onClick={() => setGasLimit(Number.parseInt(referenceLimit))}>参考值:{referenceLimit}</Typography> : ''
     }, [referenceLimit])
+    const _referenceGweiPrice = useMemo(()=>weiToGwei(referencePrice,'up'),[referencePrice])
     const _referencePrice = useMemo(() => {
-        return referencePrice ? <Typography display={"inline-block"} fontSize={'inherit'} component={'span'}
-                                            onClick={() => setGasPrice(Number.parseInt(referencePrice))}>参考值:{referencePrice}</Typography> : ''
-    }, [referencePrice])
+        return _referenceGweiPrice ? <Typography display={"inline-block"} fontSize={'inherit'} component={'span'}
+                                            onClick={() => setGasPrice(Number.parseInt(_referenceGweiPrice))}>参考值:{_referenceGweiPrice}</Typography> : ''
+    }, [_referenceGweiPrice])
 
     const handleToChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setTo(e.target.value)
@@ -560,14 +564,14 @@ const SendForm: ForwardRefRenderFunction<{ to: string, gasLimit: number, gasPric
                 type={"number"}
                 value={gasPrice}
                 onChange={handleGasPriceChange}
-                helperText={<>单位:wei {_referencePrice}</>}
+                helperText={<>单位:gwei {_referencePrice}</>}
             />
             <TextField
                 label="gasLimit"
                 type={"number"}
                 value={gasLimit}
                 onChange={handleGasLimitChange}
-                helperText={<>单位：wei {_referenceLimit}</>}
+                helperText={<>{_referenceLimit}</>}
             />
         </Stack>
 

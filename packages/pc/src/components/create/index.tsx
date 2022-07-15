@@ -30,7 +30,7 @@ import {heroesJson} from "@/pc/constant";
 import {useContract} from "@/pc/context/contract";
 import {useHeroAbi} from "@/pc/context/abi/hero";
 import {useReferencePrice} from "@/pc/hook/gas";
-import {bnToWei} from "@/pc/utils/eth";
+import {bnToWei, gweiToWei, weiToGwei} from "@/pc/utils/eth";
 
 const CREATE_ROLE = "0x154c00819833dac601ee5ddded6fda79d9d8b506b911b3dbd54cdb95fe6c3686"
 // todo 暂时叫这个
@@ -89,10 +89,13 @@ const Create: React.FC = () => {
             setCreateIng(true)
             if (form && selected) {
                 const {gasPrice,gasLimit } = form
+                console.log(gasPrice,gasPrice.toString())
                 const params = {
                     from: address,
-                    gasPrice, gasLimit,
+                    gasPrice:gweiToWei(gasPrice.toString()), 
+                    gasLimit,
                 }
+                console.log(params)
                 try {
                     await heroContract.mint(address,HERO_TYPE,selected.bsID.toString(),params)
                     enqueueSnackbar("铸造成功，等待上链",{variant:'success'})
@@ -216,9 +219,11 @@ const Form: ForwardRefRenderFunction<{ currHp: number, level: number, power: num
     const _referenceLimit = useMemo(()=>{
         return referenceLimit?<Typography display={"inline-block"} fontSize={'inherit'} component={'span'} onClick={()=>setGasLimit(Number.parseInt(referenceLimit))}>参考值:{referenceLimit}</Typography>:''
     },[referenceLimit])
-    const _referencePrice = useMemo(()=>{
-        return referencePrice?<Typography display={"inline-block"} fontSize={'inherit'} component={'span'} onClick={()=>setGasPrice(Number.parseInt(referencePrice))}>参考值:{referencePrice}</Typography>:''
-    },[referencePrice])
+    const _referenceGweiPrice = useMemo(()=>weiToGwei(referencePrice,'up'),[referencePrice])
+    const _referencePrice = useMemo(() => {
+        return _referenceGweiPrice ? <Typography display={"inline-block"} fontSize={'inherit'} component={'span'}
+                                            onClick={() => setGasPrice(Number.parseInt(_referenceGweiPrice))}>参考值:{_referenceGweiPrice}</Typography> : ''
+    }, [_referenceGweiPrice])
     const handleCurrHpChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const _value = Number.parseInt(e.target.value)
         setCurrHp(isNaN(_value) ? 100 : _value)
@@ -290,14 +295,14 @@ const Form: ForwardRefRenderFunction<{ currHp: number, level: number, power: num
                 type={"number"}
                 value={gasPrice}
                 onChange={handleGasPriceChange}
-                helperText={<>单位:wei  {_referencePrice}</>}
+                helperText={<>单位:gwei  {_referencePrice}</>}
             />
             <TextField
                 label="gasLimit"
                 type={"number"}
                 value={gasLimit}
                 onChange={handleGasLimitChange}
-                helperText={<>单位：wei {_referenceLimit}</>}
+                helperText={<>{_referenceLimit}</>}
             />
         </Stack>
 

@@ -40,5 +40,8 @@ export interface IBuyTickets {
 }
 export const buyTickets = (params?:Partial<IBuyTickets>)=>{
     const url = `/v1/pay`;
-    return Http.post<string>(url,params)
+    return Http.post<{
+        "code": string
+        "orderID": string
+      }>(url,params)
 }

@@ -20,7 +20,7 @@ import {
     Typography
 } from "@mui/material";
 import {Masonry, LoadingButton} from "@mui/lab";
-import {bnToWei, weiToEth} from "@/pc/utils/eth";
+import {bnToWei, gweiToWei, weiToEth, weiToGwei} from "@/pc/utils/eth";
 import {useSnackbar} from "notistack";
 import {ContractInterface} from "@ethersproject/contracts/src.ts/index";
 import Provider from "@/pc/instance/provider";
@@ -99,7 +99,7 @@ const MintBox: React.FC<{ contractMap: IChainContractConfigMap, list: IChainItem
 
             const params = {
                 from: address,
-                gasPrice, gasLimit,
+                gasPrice:gweiToWei(gasPrice.toString()), gasLimit,
                 value:ethers.utils.parseUnits(buySelected.currentPrice,'wei'),
             }
             try {
@@ -243,9 +243,11 @@ const BuyForm: ForwardRefRenderFunction<{ gasLimit: number, gasPrice: number }, 
     const _referenceLimit = useMemo(()=>{
         return referenceLimit?<Typography display={"inline-block"} fontSize={'inherit'} component={'span'} onClick={()=>setGasLimit(Number.parseInt(referenceLimit))}>参考值:{referenceLimit}</Typography>:''
     },[referenceLimit])
-    const _referencePrice = useMemo(()=>{
-        return referencePrice?<Typography display={"inline-block"} fontSize={'inherit'} component={'span'} onClick={()=>setGasPrice(Number.parseInt(referencePrice))}>参考值:{referencePrice}</Typography>:''
-    },[referencePrice])
+    const _referenceGweiPrice = useMemo(()=>weiToGwei(referencePrice,'up'),[referencePrice])
+    const _referencePrice = useMemo(() => {
+        return _referenceGweiPrice ? <Typography display={"inline-block"} fontSize={'inherit'} component={'span'}
+                                            onClick={() => setGasPrice(Number.parseInt(_referenceGweiPrice))}>参考值:{_referenceGweiPrice}</Typography> : ''
+    }, [_referenceGweiPrice])
     const handleGasPriceChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const _value = Number.parseInt(e.target.value)
         setGasPrice(isNaN(_value) ? 20 : _value)
@@ -265,14 +267,14 @@ const BuyForm: ForwardRefRenderFunction<{ gasLimit: number, gasPrice: number }, 
                 type={"number"}
                 value={gasPrice}
                 onChange={handleGasPriceChange}
-                helperText={<>单位:wei  {_referencePrice}</>}
+                helperText={<>单位:gwei  {_referencePrice}</>}
             />
             <TextField
                 label="gasLimit"
                 type={"number"}
                 value={gasLimit}
                 onChange={handleGasLimitChange}
-                helperText={<>单位：wei {_referenceLimit}</>}
+                helperText={<>{_referenceLimit}</>}
             />
         </Stack>
 
