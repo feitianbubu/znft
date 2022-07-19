@@ -153,7 +153,7 @@ const Home: React.FC = () => {
     }, [])
     return <>
         <Avatar/>
-        <Box paddingLeft={6} paddingRight={6} minHeight={800}>
+        <Box paddingLeft={6} paddingRight={6} minHeight={732}>
 
             <Box display={"flex"}>
                 <Box sx={{borderBottom: 1, borderColor: 'divider'}} flex={1}>

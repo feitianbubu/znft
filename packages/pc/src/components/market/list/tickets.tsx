@@ -28,7 +28,7 @@ import {Modal} from "@lib/react-component";
 import {useContract} from "@/pc/context/contract";
 import {useReferenceLimit, useReferencePrice} from "@/pc/hook/gas";
 import {sendTransaction} from '@/pc/utils/metamask'
-import {strToHex,numToHex} from "@/pc/utils/hex";
+import {strToHex,numToHex, bnStrToHex} from "@/pc/utils/hex";
 import { buyTickets } from "@/pc/services/restful";
 
 interface IItem {
@@ -84,7 +84,7 @@ const Tickets: React.FC<{ arrangement: EArrangement }> = (props) => {
             const {gasLimit, gasPrice} = buyForm
             const params = {
                 from: address,
-                gasPrice:strToHex(gweiToWei(gasPrice.toString())),
+                gasPrice:bnStrToHex(gweiToWei(gasPrice.toString())),
                 gas:numToHex(gasLimit),
                 value: numToHex(Number.parseInt(buySelected.currentPrice)),
                 data:strToHex(JSON.stringify(buySelected)),
@@ -151,8 +151,8 @@ const Tickets: React.FC<{ arrangement: EArrangement }> = (props) => {
         >
             <Box
                 component="img"
-                alt="The house from the offer."
-                src={"http://172.24.135.32:3080/static/img/mintBox.jpg"}
+                alt="mint box"
+                src={"/web/images/mintBox.jpg"}
                 width={'100%'}
 
             />
@@ -198,8 +198,8 @@ const Tickets: React.FC<{ arrangement: EArrangement }> = (props) => {
             <CustomCard elevation={0} variant={'outlined'}>
                 <CardMedia
                     component="img"
-                    alt="green iguana"
-                    image={"http://172.24.135.32:3080/static/img/mintBox.jpg"}
+                    alt="mint box"
+                    image={"/web/images/mintBox.jpg"}
                 />
                 <CardContent>
                     <Stack direction={"row"} justifyContent={"space-between"}>

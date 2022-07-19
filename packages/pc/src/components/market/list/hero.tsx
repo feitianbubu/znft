@@ -166,7 +166,7 @@ const Hero: React.FC<{ contractMap: IChainContractConfigMap, list: IChainItem[],
         }
     }, [auctionAbi, chainId, connectContract, contractMap])
     const masonryItemRender = useCallback((item: IChainItem,) => {
-        const image = item.tokenUri ? `https://img7.99.com/yhkd/image/data/hero//big-head/${item.tokenUri}.jpg` : 'http://172.24.135.32:3080/static/img/empty.jpg'
+        const image = item.tokenUri?`/web/images/heroes/${item.tokenUri}.jpg`: '/web/images/empty.jpg'
         const name = heroesMap[item.tokenUri || '']
         const rateNum = Number.parseInt(item.quality || '1');
         const rate = rateNum == 0 ? 1 : rateNum;
@@ -215,7 +215,7 @@ const Hero: React.FC<{ contractMap: IChainContractConfigMap, list: IChainItem[],
     const gridItemRender = useCallback((item: IChainItem) => {
         const rateNum = Number.parseInt(item.quality || '1');
         const rate = rateNum == 0 ? 1 : rateNum;
-        const image = item.tokenUri ? `https://img7.99.com/yhkd/image/data/hero//big-head/${item.tokenUri}.jpg` : 'http://172.24.135.32:3080/static/img/empty.jpg'
+        const image = item.tokenUri?`/web/images/heroes/${item.tokenUri}.jpg`: '/web/images/empty.jpg'
         const name = heroesMap[item.tokenUri || '']
         const buy = () => {
             setVisible(true)

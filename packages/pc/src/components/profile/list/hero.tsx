@@ -238,7 +238,7 @@ const Hero: React.FC<{ list: IChainItem[], arrangement: EArrangement, loading?: 
         }
     }, [chainId, connectContract, contractMap, auctionAbi, heroAbi])
     const masonryItemRender = useCallback((item: IChainItem,) => {
-        const image = item.tokenUri ? `https://img7.99.com/yhkd/image/data/hero//big-head/${item.tokenUri}.jpg` : 'http://172.24.135.32:3080/static/img/empty.jpg'
+        const image = item.tokenUri?`/web/images/heroes/${item.tokenUri}.jpg`: '/web/images/empty.jpg'
         const name = heroesMap[item.tokenUri || '']
         const rateNum = Number.parseInt(item.quality || '1');
         const rate = rateNum == 0 ? 1 : rateNum;
@@ -257,7 +257,7 @@ const Hero: React.FC<{ list: IChainItem[], arrangement: EArrangement, loading?: 
         >
             <Box
                 component="img"
-                alt="The house from the offer."
+                alt="hero"
                 src={image}
                 width={'100%'}
             />
@@ -301,7 +301,7 @@ const Hero: React.FC<{ list: IChainItem[], arrangement: EArrangement, loading?: 
     const gridItemRender = useCallback((item: IChainItem) => {
         const rateNum = Number.parseInt(item.quality || '1');
         const rate = rateNum == 0 ? 1 : rateNum;
-        const image = item.tokenUri ? `https://img7.99.com/yhkd/image/data/hero//big-head/${item.tokenUri}.jpg` : 'http://172.24.135.32:3080/static/img/empty.jpg'
+        const image = item.tokenUri?`/web/images/heroes/${item.tokenUri}.jpg`: '/web/images/empty.jpg'
         const name = heroesMap[item.tokenUri || '']
         const onSale = () => {
             setOnSaleVisible(true)
@@ -316,7 +316,7 @@ const Hero: React.FC<{ list: IChainItem[], arrangement: EArrangement, loading?: 
             <CustomCard elevation={0} variant={'outlined'}>
                 <CardMedia
                     component="img"
-                    alt="green iguana"
+                    alt="hero"
                     image={image}
                 />
                 <CardContent>
@@ -418,7 +418,7 @@ const Hero: React.FC<{ list: IChainItem[], arrangement: EArrangement, loading?: 
             height={'100%'}
             justifyContent={'center'}
             alignItems={'center'}
-            minHeight={900}>
+            minHeight={732}>
             <CircularProgress sx={{
                 color: theme => theme.palette.text.primary
             }}/>

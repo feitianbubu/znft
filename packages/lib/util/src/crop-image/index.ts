@@ -341,7 +341,6 @@ export const cropImage:(file:File, params:ICropImageParams)=>Promise<void>= asyn
   const {onOk, onCancel, ...others} = params;
 
   let cropper:Cropper|null=null;
-  console.log('cropImage');
   panel.open({
     ...others,
     afterAnimation: async (_tag, content)=>{

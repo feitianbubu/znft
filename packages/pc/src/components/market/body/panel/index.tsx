@@ -133,15 +133,15 @@ const Home: React.FC = () => {
     const listRender = useCallback(( item:IChainItem)=>{
         const rateNum =  Number.parseInt(item.quality||'1');
         const rate = rateNum==0?1:rateNum;
-        let image = item.tokenUri?`https://img7.99.com/yhkd/image/data/hero//big-head/${item.tokenUri}.jpg`: 'http://172.24.135.32:3080/static/img/empty.jpg'
+        let image = item.tokenUri?`/web/images/heroes/${item.tokenUri}.jpg`: '/web/images/empty.jpg'
         let name = heroesMap[item.tokenUri||'']
         if(chainInfo){
             if(isPreSale(item,chainInfo)){
-                image = "http://172.24.135.32:3080/static/img/preSale.jpg";
+                image = "/web/images/preSale.jpg";
                 name='预售'
             }
             if(isMintBox(item,chainInfo)){
-                image = "http://172.24.135.32:3080/static/img/mintBox.jpg";
+                image = "/web/images/mintBox.jpg";
                 name='盲盒'
             }
         }

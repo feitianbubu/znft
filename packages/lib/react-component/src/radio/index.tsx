@@ -13,7 +13,6 @@ export const Radio :React.FC<PropsWithChildren<RadioProps>> = (props)=>{
     return value||_value;
   }, [_value, value]);
   const handleChange = useCallback((event: React.ChangeEvent<HTMLInputElement>, value:string) => {
-    console.log('change', value);
     set_value(value);
     onChange?.(event, value);
   }, [onChange]);

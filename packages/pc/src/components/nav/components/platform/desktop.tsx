@@ -31,7 +31,7 @@ const menu: { text: string, route: string, disabled?: boolean }[] = [{
 }, {
     text: '文档', route: '/docs',
 }, {
-    text: '联系我们', route: '/chat', disabled: true
+    text: '水龙头', route: '/faucet'
 }
 ]
 const MaterialUISwitch = styled(Switch)(({theme}) => ({

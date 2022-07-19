@@ -89,13 +89,11 @@ const Create: React.FC = () => {
             setCreateIng(true)
             if (form && selected) {
                 const {gasPrice,gasLimit } = form
-                console.log(gasPrice,gasPrice.toString())
                 const params = {
                     from: address,
                     gasPrice:gweiToWei(gasPrice.toString()), 
                     gasLimit,
                 }
-                console.log(params)
                 try {
                     await heroContract.mint(address,HERO_TYPE,selected.bsID.toString(),params)
                     enqueueSnackbar("铸造成功，等待上链",{variant:'success'})
@@ -144,7 +142,7 @@ const Create: React.FC = () => {
                 const click = () => {
                     handleClickCreate(item)
                 }
-                const image = item.bsID?`https://img7.99.com/yhkd/image/data/hero//big-head/${item.bsID}.jpg`: 'http://172.24.135.32:3080/static/img/empty.jpg'
+                const image = item.bsID?`/web/images/heroes/${item.bsID}.jpg`: '/web/images/empty.jpg'
                 return <Grid key={item.bsID} item={true} xs={2}>
                     <Card>
                         <CardMedia
@@ -168,13 +166,13 @@ const Create: React.FC = () => {
     const child = useMemo(() => {
         return loading ?
             <Box display={'flex'} width={'100%'} height={'100%'} justifyContent={'center'} alignItems={'center'}
-                 minHeight={900}>
+                 minHeight={732}>
                 <CircularProgress sx={{
                     color: theme => theme.palette.text.primary
                 }}/>
             </Box> : hasAuth == false ?
                 <Box display={'flex'} width={'100%'} height={'100%'} justifyContent={'center'} alignItems={'center'}
-                     minHeight={900}>
+                     minHeight={732}>
                     <Typography color={theme => theme.palette.text.primary} variant={'h3'} fontWeight={"bold"}
                                 textAlign={'center'}>
                         403
@@ -200,7 +198,7 @@ const Create: React.FC = () => {
         >
             <FormRef name={selected?.name} ref={ref} referenceLimit={referenceLimit}/>
         </Modal>
-        <Box minHeight={900}>
+        <Box minHeight={732}>
             {child}
         </Box>
     </>

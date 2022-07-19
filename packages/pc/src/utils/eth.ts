@@ -41,7 +41,6 @@ export const weiToGwei = (wei?:string,type?:'up'|'down')=>{
 }
 // 仅支持整数gwei
 export const gweiToWei = (gwei?:string)=>{
-    console.log('gweiToWei',gwei)
     if(!gwei){
         return  '0'
     }

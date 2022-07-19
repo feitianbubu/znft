@@ -7,7 +7,7 @@ import {ENUM_BREAK_POINTS} from "@/pc/constant/enum";
 
 const BannerBody  = styled('div')({
     width:'100%',
-    minHeight:'900px',
+    minHeight:'732px',
     backgroundImage: `url(${bg.src})`,
     backgroundSize:'cover',
     position:'relative'

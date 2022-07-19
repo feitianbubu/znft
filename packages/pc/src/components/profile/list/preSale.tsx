@@ -33,8 +33,8 @@ const PreSale:React.FC<{contractMap:IChainContractConfigMap,list:IChainItem[],ar
         >
             <Box
                 component="img"
-                alt="The house from the offer."
-                src={"http://172.24.135.32:3080/static/img/preSale.jpg"}
+                alt="pre sale"
+                src={"/web/images/preSale.jpg"}
                 width={'100%'}
 
             />
@@ -64,8 +64,8 @@ const PreSale:React.FC<{contractMap:IChainContractConfigMap,list:IChainItem[],ar
             <CustomCard elevation={0} variant={'outlined'}>
                 <CardMedia
                     component="img"
-                    alt="green iguana"
-                    image={"http://172.24.135.32:3080/static/img/preSale.jpg"}
+                    alt="pre sale"
+                    image={"/web/images/preSale.jpg"}
                 />
                 <CardContent>
                     <Stack direction={"row"} justifyContent={"space-between"}>

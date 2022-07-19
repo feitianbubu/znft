@@ -134,8 +134,8 @@ const MintBox: React.FC<{ contractMap: IChainContractConfigMap, list: IChainItem
         >
             <Box
                 component="img"
-                alt="The house from the offer."
-                src={"http://172.24.135.32:3080/static/img/mintBox.jpg"}
+                alt="mint box"
+                src={"/web/images/mintBox.jpg"}
                 width={'100%'}
 
             />
@@ -172,8 +172,8 @@ const MintBox: React.FC<{ contractMap: IChainContractConfigMap, list: IChainItem
             <CustomCard elevation={0} variant={'outlined'}>
                 <CardMedia
                     component="img"
-                    alt="green iguana"
-                    image={"http://172.24.135.32:3080/static/img/mintBox.jpg"}
+                    alt="mint box"
+                    image={"/web/images/mintBox.jpg"}
                 />
                 <CardContent>
                     <Stack direction={"row"} justifyContent={"space-between"}>

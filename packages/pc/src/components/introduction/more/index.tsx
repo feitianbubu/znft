@@ -11,7 +11,7 @@ import bg1 from "@/pc/asset/bg-part1.png";
 
 const BannerBody = styled('div')({
     width: '100%',
-    minHeight: '900px',
+    minHeight: '732px',
     backgroundImage:`url(${bg1.src})`,
     backgroundSize:'contain',
     backgroundRepeat: 'repeat-y',

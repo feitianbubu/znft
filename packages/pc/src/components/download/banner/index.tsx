@@ -9,7 +9,7 @@ import googlePlay from '@/pc/asset/googlePlay.png'
 import androidDown from '@/pc/asset/androidDown.png'
 const BannerBody  = styled('div')({
     width:'100%',
-    minHeight:'900px',
+    minHeight:'732px',
     backgroundSize:'cover',
     position:'relative'
 })

@@ -139,7 +139,7 @@ const Home: React.FC = () => {
     const handleChange = useCallback((event: React.SyntheticEvent, newValue: number|string) => {
         setValue(newValue);
     },[])
-    return <Box paddingLeft={6} paddingRight={6} minHeight={800}>
+    return <Box paddingLeft={6} paddingRight={6} minHeight={708}>
         <SubNav onArrangementChange={handleArrangementChange} arrangement={arrangement} status={status}  loadNFTListLoading={loadNFTListLoading} />
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
             <Tabs value={value} onChange={handleChange} aria-label="basic tabs example" centered={true}>
