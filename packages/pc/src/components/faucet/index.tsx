@@ -69,7 +69,7 @@ const Faucet: React.FC = () => {
                             <MenuItem value={10}>10</MenuItem>
                             <MenuItem value={30}>30</MenuItem>
                             <MenuItem value={50}>50</MenuItem>
-                            <MenuItem value={50}>80</MenuItem>
+                            <MenuItem value={80}>80</MenuItem>
                         </Select>
                     </FormControl>
                     <TextField label="您的地址" variant="outlined" value={address} onChange={handleAddressChange} />

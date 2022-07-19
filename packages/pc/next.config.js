@@ -39,8 +39,8 @@ const moduleExports = withTM({
                 basePath: false,
             },
             {
-                source: `/v1/:path*`,
-                destination: `http://${serverHost}:3080/v1/:path*`,
+                source: `/api/:path*`,
+                destination: `http://${serverHost}:3080/api/:path*`,
                 basePath: false,
             }
         ]

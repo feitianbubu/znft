@@ -54,7 +54,7 @@ export interface IFaucetRequest {
 }
 
 export const faucet = (params?: Partial<IFaucetRequest>) => {
-    const url = `/api/${VERSION}/v1/faucet`;
+    const url = `/api/${VERSION}/faucet`;
     return Http.post<{
         "txHash": string
     }>(url, params)
